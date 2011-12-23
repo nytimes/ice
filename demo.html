@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+<title>bigICE</title>
+<link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
+<script type="text/javascript" src="lib/jquery-1.6.1.js"></script>
+<script type="text/javascript" src="lib/codemirror/js/codemirror.js"></script>
+</head>
+
+<body>
+	<div class="control">
+		<strong>Set User:</strong>
+		<select onchange="setUser(this)">	
+			<option data-userid="11" data-username="Min Hur">Min Hur</option>
+			<option data-userid="22" data-username="Rachel Berger">Rachel Berger</option>
+			<option data-userid="33" data-username="Luke Vnenchak">Luke Vnenchak</option>
+			<option data-userid="44" data-username="Brad Kagawa">Brad Kagawa</option>
+			<option data-userid="55" data-username="Matt DeLambo">Matt DeLambo</option>
+		</select>
+	</div>
+	<div class="control">
+		<strong>Options:</strong>
+		<button class="ct-enabled" onclick="javascript:toggleTracking(this)">Disable Change Tracking</button>
+		<button onclick="javascript:toggleDel(this)">Show/Hide Changes</button>
+	</div>
+	<div id="content">
+		<div id="text-wrapper" style="margin-right: 20px;">
+			<div id="textbody" style="width: 100%;background: white;padding: 10px;">
+				<p>Filed at <strong>2:43 a.m. EST</strong></p>
+				<p>EUGENE, Ore. (AP) - <span class="ins cts-2" data-cid="8056" data-userid="22" data-username="Rachel Berger" title="Modified by Rachel Berger - 03/24/2011 3:08pm">Oregon</span> Duck <span class="ins cts-1" data-cid="3107" data-userid="44" data-username="Brad Kagawa" title="Modified by Brad Kagawa - 03/24/2011 4:43pm">college</span> fans raised the test roof at McArthur Court in Eugene on Monday night, but their cheers weren't enough to carry more than 1,100 miles to <span class="ice-avoid">Arizona</span> to help their football team become No. 1.</p>
+				<p>The 3,500 fans who watched six big-screen TVs in the <span class="del cts-3" data-username="Min Hur" data-cid="6283" data-userid="11" title="Modified by Min Hur - 04/14/2011 4:36pm">basketball</span> arena famed for its thundering acoustics created a deafening din when Oregon came back to tie the game in the fourth quarter after forcing a fumble.</p>
+				<p>But all was silence after Auburn kicked a field goal in the final seconds to win the BCS championship 22-19.</p>
+			</div>
+		</div>				
+		<div id="codemirror-wrapper" style="margin-right: 20px;">
+			<textarea id="codemirror" style="width:100%"></textarea>
+		</div>				
+	</div>
+
+<script type="text/javascript">
+
+	// ICE SCRIPTS ARE LOADED AT THE BOTTOM OF THIS PAGE IN LOADDEV.JS
+
+	// START: called in loaddev.js script...
+	window.initIce = function() {
+		var iceCallback = function() {
+			startIce();
+		};
+		initCodeMirror(iceCallback);
+		var $textbody = $('#textbody');
+		$(document).keyup(function (event) {
+			codemirror.setCode($textbody.html());
+		});
+	};
+	
+	function startIce() {
+		var text = document.getElementById('textbody');
+		window.cube = new ice.InlineChangeEditor({
+			element: text,
+			handleEvents: true,
+			currentUser: {id: 11, name: 'Min Hur'},
+			plugins : ['IceAddTitlePlugin', 'IceSmartQuotesPlugin', 'IceEmdashPlugin', {
+					name : 'IceCopyPastePlugin',
+					settings : {
+						pasteType : 'formattedClean',
+						preserve : 'p,a[href],i,em,b,span'
+					}
+				}
+			],
+			changeTypes : {
+				insertType: {tag: 'span', alias: 'ins'},
+				deleteType: {tag: 'span', alias: 'del'}
+			}
+		}, function() { codemirror.setCode($('#textbody').html()); });
+	}
+
+	function initCodeMirror(callback) {
+		window.codemirror = CodeMirror.fromTextArea('codemirror', {
+			height: "300px",
+			parserfile: ["parsexml.js"],
+			stylesheet: "lib/codemirror/css/xmlcolors.css",
+			path: "lib/codemirror/js/",
+			lineNumbers: false,
+			onLoad: callback
+		});
+	}
+
+	function setUser(el) {
+		var name = $(el).find(':selected').data('username');
+		var id = $(el).find(':selected').data('userid');
+		cube.setCurrentUser({id: id, name: name});
+	}
+	
+	function toggleDel(el) {
+		var body = document.getElementById('textbody');
+		var button = $(el);
+		if ($(body).hasClass('CT-hide')) {
+			$(body).removeClass('CT-hide');
+		} else {
+			$(body).addClass('CT-hide');
+		}
+	}
+
+	function toggleTracking(el) {
+		var button = $(el);
+		if(button.hasClass('ct-enabled')) {
+			cube.disableChangeTracking();
+			button.text('Enable Change Tracking').removeClass('ct-enabled').addClass('ct-disabled');
+		} else {
+			cube.enableChangeTracking();
+			button.text('Disable Change Tracking').removeClass('ct-disabled').addClass('ct-enabled');
+		}
+	}
+</script>
+
+
+<script type="text/javascript" src="lib/loaddev.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+dist
+*.diff
+*.patch
+*.bak
+*.log
+*.swp
+.DS_Store
+.project

@@ -1,0 +1,25 @@
+javascript_compressor:  closure
+gzip_assets:            on
+compress_assets:        on
+
+javascripts:
+  ice_editor_plugin:
+    - lib/tinymce/jscripts/tiny_mce/plugins/ice/editor_plugin.js
+  sr_editor_plugin:
+    - lib/tinymce/jscripts/tiny_mce/plugins/icesearchreplace/editor_plugin.js
+  ice.min:
+    - lib/rangy-1.2/rangy-core.js
+    - lib/rangy-1.2/rangy-cssclassapplier.js
+    - lib/rangy-1.2/rangy-selectionsaverestore.js
+    - lib/rangy-1.2/rangy-serializer.js
+    - src/ice.js
+    - src/dom.js
+    - src/bookmark.js
+    - src/selection.js
+    - src/range.js
+    - src/icePlugin.js
+    - src/icePluginManager.js
+    - src/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js
+    - src/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js
+    - src/plugins/IceSmartQuotesPlugin/IceSmartQuotesPlugin.js
+    - src/plugins/IceEmdashPlugin/IceEmdashPlugin.js

@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>tinyICE</title>
+<link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
+<script type="text/javascript" src="lib/jquery-1.6.1.js"></script>
+<script type="text/javascript" src="lib/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
+<script type="text/javascript" src="lib/codemirror/js/codemirror.js"></script>
+<script type="text/javascript">
+	
+	// ICE SCRIPTS ARE LOADED AT THE BOTTOM OF THIS PAGE IN LOADDEV.JS
+
+	// START: called in loaddev.js script...
+	window.initIce = function() {
+		initCodeMirror();
+	};
+
+	function initCodeMirror() {
+		window.codemirror = CodeMirror.fromTextArea('codemirror', {
+			height: "300px",
+			parserfile: ["parsexml.js"],
+			stylesheet: "lib/codemirror/css/xmlcolors.css",
+			path: "lib/codemirror/js/",
+			lineNumbers: false,
+			onLoad: initTiny
+		});
+	}
+
+	function initTiny() {
+		var url = window.location.href.substring(0, window.location.href.lastIndexOf('/ice/') + 5) + 'src/tinymce/';
+		
+		tinymce.init({
+			mode: "exact",
+			elements: "tinymce",
+			theme: "advanced",
+			plugins: 'contextmenu,ice,icesearchreplace',
+			theme_advanced_buttons1: "bold,italic,underline,|,undo,redo,|,search,replace,|,ice_togglechanges,ice_toggleshowchanges,iceaccept,icereject",
+			theme_advanced_buttons2 : "",
+			theme_advanced_buttons3 : "",
+			theme_advanced_buttons4 : "",
+			theme_advanced_toolbar_location: "top",
+			theme_advanced_toolbar_align: "left",
+			init_instance_callback: function(ed) {
+				ed.onSetContent.add(function(ed, o) {
+					codemirror.setCode(ed.getContent());
+				});
+				codemirror.setCode(ed.getContent());
+				ed.onEvent.add(handleEvent);
+			},
+			ice: {
+				user: { name: 'Min Hur', id: 11},
+				preserveOnPaste: 'p,a[href],i,em,b,span'
+			}
+		});
+	}
+	
+	function handleEvent(ed, e) {
+		if (e.type =='keypress') codemirror.setCode(ed.getContent());
+	}
+
+	function setUser(el) {
+		var name = $(el).find(':selected').data('username');
+		var id = $(el).find(':selected').data('userid');
+		tinymce.execCommand('ice_changeuser', {id: id, name: name});
+	}
+	
+</script>
+</head>
+<body>
+	<div class="control">
+		<strong>Set User:</strong>
+		<select onchange="setUser(this)">	
+			<option data-userid="11" data-username="Min Hur">Min Hur</option>
+			<option data-userid="22" data-username="Rachel Berger">Rachel Berger</option>
+			<option data-userid="33" data-username="Luke Vnenchak">Luke Vnenchak</option>
+			<option data-userid="44" data-username="Brad Kagawa">Brad Kagawa</option>
+			<option data-userid="55" data-username="Matt DeLambo">Matt DeLambo</option>
+		</select>
+	</div>
+	<div id="content">
+		<div id="tinymce-wrapper" style="margin-right: 20px;">
+			<textarea id="tinymce" rows="20" cols="80" style="width: 100%">
+				<p>Filed at <strong>2:43 a.m. EST</strong></p>
+				<p>EUGENE, Ore. (AP) - <span class="ins cts-2" data-cid="8056" data-userid="22" data-username="Rachel Berger" title="Modified by Rachel Berger - 03/24/2011 3:08pm">Oregon</span> Duck<span class="ins cts-1" data-cid="3107" data-userid="44" data-username="Brad Kagawa" title="Modified by Brad Kagawa - 03/24/2011 4:43pm"> college</span> fans raised the test roof at McArthur Court in Eugene on Monday night, but their cheers weren't enough to carry more than 1,100 miles to <span class="">Arizona</span> to help their football team become No. 1.</p>
+				<p>The 3,500 fans who watched six big-screen TVs in the <span class="del cts-3" data-username="Min Hur" data-cid="6283" data-userid="11" title="Modified by Min Hur - 04/14/2011 4:36pm">basketball</span> arena famed for its thundering acoustics created a deafening din when Oregon came back to tie the game in the fourth quarter after forcing a fumble.</p>
+				<p>But all was silence after Auburn kicked a field goal in the final seconds to win the BCS championship 22-19.</p>
+			</textarea>
+		</div>
+		<div id="codemirror-wrapper" style="margin-right: 20px;">
+			<textarea id="codemirror" style="width:100%"></textarea>
+		</div>				
+	</div>
+
+
+<script type="text/javascript" src="lib/loaddev.js"></script>
+
+</body>
+</html>

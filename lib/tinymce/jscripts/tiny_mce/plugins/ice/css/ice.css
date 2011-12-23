@@ -1,0 +1,39 @@
+.CT-hide .del, .CT-hide .del {
+	display: none;
+}
+
+.CT-hide .ins, .CT-hide .ins {
+	color: #333333;
+	background: none !important;
+  border: none !important; 
+}
+
+.del {
+	text-decoration: line-through;
+}
+.cts-1 {
+    color: green;
+}
+.cts-2 {
+    color: #004090;
+}
+
+.cts-3 {
+    color: purple;
+}
+
+.cts-4 {
+    color: #F06000;
+}
+
+.cts-5 {
+    color: #C02000;
+}
+
+.cts-6 {
+    color: #801080;
+}
+
+.cts-7 {
+		color: #1080B0;
+}
