@@ -1,15 +1,15 @@
 <?php
 /*
-Plugin Name: Ice Visual Revisions (?)
+Plugin Name: Ice Visual Revisions
 Plugin URI: [URL to a webpage about the WP plugin, optional]
 Description: [few sentences explaining the functionality]
 Version: 1.0
-Author: [authors]
+Author: Andrew Ozz
 Author URI: (optional)
 
-Copyright [authors]
+Copyright Andrew Ozz
 
-Released under the GPL v.2, etc.
+Released under the GPL v.2
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
