@@ -21,9 +21,9 @@
 		contentEditable: true,
 		css: 'css/ice.css',
 		manualInit: false,
-		afterLoad: function() {},
 		afterInit: function() {},
 		afterClean: function(body) { return body; },
+		beforePasteClean: function(body) { return body; },
 		afterPasteClean: function(body) { return body; },
 
 		/**
@@ -101,7 +101,7 @@
 						ed.onEvent.add(function(ed, e) {
 							return changeEditor.handleEvent(e);
 						});
-						self.afterInit.call(self);
+						setTimeout(function() { self.afterInit.call(self); }, 10);
 					});
 				}, 5);
 			});
