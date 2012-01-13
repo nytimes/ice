@@ -70,5 +70,6 @@ There isn't too much new here - this is exactly how jammit works by itself in a 
 
 ## Compatibility
 
-     * CORS support on the server that houses the assets is required if gettit is used in production environments under debug mode, and in development environments that reference files cross-domain.
-     * Browser support is the same as lab.js - http://labjs.com/documentation.php - unless files in production and/or development are being fetched cross-domain, which requires CORS support, and mostly affects IE, requiring version 8+ - http://caniuse.com/cors.
+* CORS support on the server that houses the assets is required if gettit is used in production environments under debug mode, and in development environments that reference files cross-domain.
+
+* Browser support is the same as lab.js - http://labjs.com/documentation.php - unless files in production and/or development are being fetched cross-domain, which requires CORS support, and mostly affects IE, requiring version 8+ - http://caniuse.com/cors.
