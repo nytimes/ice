@@ -1,0 +1,32 @@
+package_assets: on 
+embed_assets: on
+compress_assets: on
+gzip_assets: on
+template_function: _.template
+package_path: packages
+javascript_compressor: closure
+compressor_options:
+  compilation_level: ADVANCED_OPTIMIZATIONS
+
+javascripts:
+  core:
+    - js/temp/test1.js
+    - js/temp/test2.js
+    - js/temp/test1.jst
+    - js/temp/underscore.js
+  common:
+    - js/temp/test3.js
+    - js/temp/test2.jst
+  util:
+    - js/temp/test4.js
+  bad:
+    - js/temp/test5.js
+    - js/temp/hack1.jst
+
+stylesheets:
+  common:
+    - css/test1.css
+  core:
+    - css/test2.css
+  bad:
+    - css/test3.css

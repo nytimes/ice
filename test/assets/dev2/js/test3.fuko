@@ -1,0 +1,2 @@
+<div><%= test1 %> me</div>
+<div><%= test2 %> socket</div>

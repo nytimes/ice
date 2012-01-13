@@ -1,0 +1,31 @@
+package_assets: on # (on, off, always)
+embed_assets: on # (on, off, datauri)
+compress_assets: on # (on, off)
+gzip_assets: on # (on, off)
+template_function: _.template # (defaults to the built-in micro-templating)
+package_path: packages # (defaults to assets)
+javascript_compressor: closure # (yui, closure)
+compressor_options:
+  compilation_level: ADVANCED_OPTIMIZATIONS
+
+javascripts:
+  core:
+    - js/temp/test1.js
+    - js/temp/test2.js
+    - js/temp/test1.jst
+    - js/temp/underscore.js
+  common:
+    - js/temp/test3.js
+  util:
+    - js/temp/test4.js
+  bad:
+    - js/temp/test5.js
+    - js/temp/hack1.jst
+
+stylesheets:
+  common:
+    - css/test1.css
+  core:
+    - css/test2.css
+  bad:
+    - css/test3.css

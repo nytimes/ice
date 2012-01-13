@@ -1,0 +1,7 @@
+javascript_compressor:  closure
+gzip_assets:            on
+compress_assets:        on
+
+javascripts:
+  gettit.min:
+    - gettit.js

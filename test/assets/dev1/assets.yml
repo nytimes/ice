@@ -1,0 +1,23 @@
+package_assets: on 
+embed_assets: on
+compress_assets: on
+gzip_assets: on
+template_function: _.template
+package_path: packages
+javascript_compressor: closure
+compressor_options:
+  compilation_level: ADVANCED_OPTIMIZATIONS
+
+javascripts:
+  testj1:
+    - dev1/js/test1.js
+    - dev1/js/test2.js
+  ignorebundle:
+    - dev1/js/test3.js
+
+stylesheets:
+  testc1:
+    - dev1/css/test1.css
+    - dev1/css/test2.css
+  ignorebundle:
+    - dev1/css/test3.css

@@ -1,0 +1,13 @@
+package_assets: on 
+embed_assets: on
+compress_assets: on
+gzip_assets: on
+template_namespace: window.dev2
+template_extension: fuko
+package_path: packages
+javascript_compressor: closure
+
+javascripts:
+  testj1:
+    - dev2/js/test3.fuko
+    - dev2/js/test4.fuko

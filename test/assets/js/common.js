@@ -1,0 +1,1 @@
+window.test.common = 'true';

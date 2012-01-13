@@ -1,0 +1,12 @@
+package_assets: on 
+embed_assets: on
+compress_assets: on
+gzip_assets: on
+template_function: _.template
+package_path: packages
+javascript_compressor: closure
+
+javascripts:
+  testj1:
+    - dev2/js/test3.jst
+    - dev2/js/test4.jst
