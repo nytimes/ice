@@ -11,6 +11,6 @@ end
 
 desc "create docco docs with rocco"
 task :docs do
-	%x[rocco gettit.js ; mv gettit.html docs/]
+	%x[mkdir -p docs/annotated ; rocco gettit.js ; mv gettit.html docs/annotated/index.html]
 end
 
