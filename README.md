@@ -1,5 +1,9 @@
 # gettit.js
 
+Where jammit falls in love with javascript.
+
+[Check out the annnotated source](http://delambo.github.com/gettit/docs/annotated/)
+
 ## Jamming Off Rails
 
 [jammit](http://documentcloud.github.com/jammit/) provides the ability to package, concatenate and compress JS and CSS resources and allows one to pre cache assets by using the eponymous utility. However, to take advantage of the packaging and templating facilities the application has to be running in a Rails environment. This is where gettit comes in.
