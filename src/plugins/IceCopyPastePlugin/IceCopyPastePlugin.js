@@ -170,10 +170,6 @@ IceCopyPastePlugin.prototype = {
 			html = ice.dom.getHtml(html);
 		}
 
-		// Restore the body with the original content fragment.
-		this._ice.element.innerHTML = '';
-		this._ice.element.appendChild(frag);
-		
 		if(stripTags) {
 			// Strip out change tracking tags.
 			html = this._ice.getCleanContent(html);
@@ -183,6 +179,10 @@ IceCopyPastePlugin.prototype = {
 		html = this.afterPasteClean.call(this, html);
 
 		html = ice.dom.trim(html);
+		
+		// Restore the body with the original content fragment.
+		this._ice.element.innerHTML = '';
+		this._ice.element.appendChild(frag);
 		
 		var range = this._ice.getCurrentRange();
 		range.setStartAfter(this._tmpNode);
@@ -214,7 +214,7 @@ IceCopyPastePlugin.prototype = {
 			
 			// Paste all of the children in the fragment.
 			while(fragment.firstChild) {
-				if(fragment.firstChild.nodeType === 3 && !jQuery.trim(fragment.firstChild.value)) {
+				if(fragment.firstChild.nodeType === 3 && !jQuery.trim(fragment.firstChild.nodeValue)) {
 					fragment.removeChild(fragment.firstChild);
 					continue;
 				}
