@@ -264,7 +264,7 @@ InlineChangeEditor.prototype = {
 
 		var changeid = this.startBatchChange();
 		// Send a dummy node to be inserted, if node is undefined
-		this._insertNode(node || document.createTextNode('&#xfeff;'), range, !node);
+		this._insertNode(node || document.createTextNode('\uFEFF'), range, !node);
 		this.pluginsManager.fireNodeInserted(node, range);
 		this.endBatchChange(changeid);
     return true;
@@ -697,6 +697,7 @@ InlineChangeEditor.prototype = {
 		else if(!inCurrentUserInsert) node = this.createIceNode('insertType', node);
 
 		range.insertNode(node);
+
 		if(insertingDummy) {
 			// Create a selection of the dummy character we inserted
 			// which will be removed after it bubbles up to the final handler.
@@ -1158,15 +1159,15 @@ InlineChangeEditor.prototype = {
 	},
 
 	/**
-	 * Handles arrow, delete key events, and othoers.
+	 * Handles arrow, delete key events, and others.
 	 *
 	 * @param {event} e The event object.
 	 * return {void|boolean} Returns false if default event needs to be blocked.
 	 */
 	_handleAncillaryKey: function(e) {
-		var key			= e.keyCode;
+		var key	= e.keyCode;
 		var preventDefault = true;
-		var shiftKey	   = e.shiftKey;
+		var shiftKey = e.shiftKey;
 
 		switch (key) {
 			case ice.dom.DOM_VK_DELETE:
@@ -1176,7 +1177,7 @@ InlineChangeEditor.prototype = {
 
 			case 46:
 				// Key 46 is the DELETE key.
-				this.deleteContents(true);
+				preventDefault = this.deleteContents(true);
 				this.pluginsManager.fireKeyPressed(e);
 			break;
 
@@ -1282,9 +1283,7 @@ InlineChangeEditor.prototype = {
 				default:
 					// If we are in a deletion, move the range to the end/outside.
 					this._moveRangeToValidTrackingPos(range, range.startContainer);
-					if (!this.insert()) {
-						return false;
-					}
+					return this.insert();
 				break;
 			}
 		}
