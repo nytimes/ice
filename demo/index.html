@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	
+	<style type="text/css">
+		body {
+      font-size: 16px;
+      line-height: 24px;
+      background: #EFEFEF;
+      height: 100%;
+      color: #666;
+      font-family: arial, sans-serif;
+    }
+		div.container {
+      width: 720px;
+      margin: 0 auto;
+    }
+		iframe {
+			box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+			-moz-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+			-webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+			margin-bottom: 20px;
+		}
+		h1, h3 {
+			color: #555;
+		}
+	</style>
+	
+</head>
+
+<body>
+	
+	<div class="container">
+
+		<h1>Ice Demo</h1>
+	
+		<p>
+			Ice is a track changes implementation, built in javascript, for anything that is contenteditable on the web. The following are demos of Ice in action:
+		</p>
+		<h3>Contenteditable</h3>
+		<p>
+			With some text editing management of your own, Ice can be initialized on any element that is contenteditable. The following is a makeshift editor, made out of a `div` element container and some `p` root blocks. With the editor buttons, you can change the user being tracked, toggle change tracking, and toggle the visibility of changes.
+		</p>
+		<iframe width="100%" width="700px" height="430px" src="demo.html" frameborder="0" seamless ></iframe>
+
+		<h3>Tinymce Plugin</h3>
+		<p>
+			With tinymce handling the text editing, Ice can initialize and operate in a more configurable editing environment. Notice, the last six buttons in the toolbar can be toggled to modify changes or change state. In addition, this example shows off the ease in customizing and plugging in styles for tracking tags, with a highlighter style contributed by Andrew Ozz at Wordpress. Since Andrew's style only uses two colors, one for inserts and one for deletes, you can hover over changes to get a title popup with more information about the user for a change.
+		</p>
+		<iframe width="100%" width="700px" height="460px" src="demo-mce.html" frameborder="0" seamless></iframe>
+
+		
+	</div>
+
+</body>
+
+</html>
