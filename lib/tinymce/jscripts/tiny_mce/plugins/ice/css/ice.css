@@ -8,32 +8,20 @@
   border: none !important; 
 }
 
+.ins,
+.del {
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	color: #000;
+	padding: 1px 0 2px;
+}
+
+.ins {
+	background-color: #e5ffcd;
+}
+
 .del {
 	text-decoration: line-through;
-}
-.cts-1 {
-    color: green;
-}
-.cts-2 {
-    color: #004090;
-}
-
-.cts-3 {
-    color: purple;
-}
-
-.cts-4 {
-    color: #F06000;
-}
-
-.cts-5 {
-    color: #C02000;
-}
-
-.cts-6 {
-    color: #801080;
-}
-
-.cts-7 {
-		color: #1080B0;
+	color: #555;
+	background-color: #e8e8e8;
 }

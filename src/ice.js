@@ -62,7 +62,7 @@ InlineChangeEditor = function(options, callback) {
 	this._styles = [];
 	// Incremented for each new user and appended to they style prefix, and dropped in the
 	// ice node class attribute.
-	this._uniqueStyleIndex = 1;
+	this._uniqueStyleIndex = 0;
 	this._browserType = null;
 	// One change may create multiple ice nodes, so this keeps track of the current batch id.
 	this._batchChangeid = null;
