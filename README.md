@@ -2,6 +2,10 @@
 
 Ice is a track changes implementation, built in javascript, for anything that is `contenteditable` on the web. Conceived by the CMS Group at The New York Times, ice has been piloting successfully for articles written in the newsroom.
 
+## Demo
+
+[Check it out!](http://nytd.github.com/ice/demo/)
+
 ## Features
 
 - Track multi-user inserts and deletes with the option to turn on and off tracking or highlighting.
