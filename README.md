@@ -11,6 +11,8 @@ Ice is a track changes implementation, built in javascript, for anything that is
 
 ## Get Started
 
+***
+
 **_Contenteditable initialization_** - If you are comfortable with maintaining your own text editing utilities, then you can initialize ice on any block element:
 
      var tracker = new ice.InlineChangeEditor({
@@ -45,19 +47,43 @@ Additional options and post-init callback:
        ]
      }, function() { console.log('ice post-init callback') });
 
+***
 
-Useful utilities in the API:
+**_Useful utilities in the API:_**
+     
+**acceptChange, rejectChange**
 
      // Accept/Reject the change at the current range/cursor position or at the given `optionalNode`
      tracker.acceptChange(optionalNode);
      tracker.rejectChange(optionalNode);
 
+**acceptAll, rejectAll**
+
      // Accept/Reject all of the changes in the editable region.
      tracker.acceptAll();
      tracker.rejectAll();
 
-     // Returns a clean version, without tracking tags, of the content in the editable element or out of the optional `body` param. After cleaning, the `optionalCallback` param is called which should further modify and return the body.
+**getCleanContent**
+
+     // Returns a clean version, without tracking tags, of the content in the editable element or
+     // out of the optional `body` param. After cleaning, the `optionalCallback` param is called
+     // which should further modify and return the body.
      tracker.getCleanContent(optionalBody, optionalCallback);
+
+**setCurrentUser**
+
+     // Set the desired user to track. A user object has the following properties: { `id`, `name` }.
+     tracker.setCurrentUser({id: 2, name: 'Miss T'});
+
+**getChanges**
+
+     // Get the internal list of change objects which are modeled from all of the change tracking
+     // nodes in the DOM. This might be useful to add a more sophisticated change tracking UI/UX.
+     // The list is key'ed with the unique change ids (`cid attribute`) and points to an object
+     // with metadata for a change: [changeid] => {`type`, `time`, `userid`, `username`}
+     var changes = tracker.getChanges();
+
+***
 
 **_Tinymce initialization_** - Add the ice plugin to your tinymce plugins directory and include the following in your tinymce init:
 
@@ -67,19 +93,24 @@ Useful utilities in the API:
         ice: {
           user: { name: 'Miss T', id: 1},
           preserveOnPaste: 'p,a[href],i,em,strong',
-					// Optional param - defaults to the css found in the plugin directory
-					css: 'http://example.com/custom.css'
+          // Optional param - defaults to the css found in the plugin directory
+          css: 'http://example.com/custom.css'
         },
         ...
       });
+
+***
 
 **_Wordpress initialization_**
 
      In testing - more to come soon.
 
+***
+
 ## Limitations/Dependencies
 
 - ice depends on jQuery. We will be working to remove this dependency at some point.
+- ice needs to be initialized after the DOM ready event fires.
 - ice was originally created for the simple markup behind nytimes.com articles (`p`, `a`, `em`, `strong`). As such, it requires that all text editing takes place in a common root block element, and that there are no other blocks found in the editor. Any type of inline elements are ok, inside of the common root blocks. 
 - Unfortunately, we haven't been able to test this across all browsers and versions. We know that it tests well in modern Firefox (5+) and Webkit browsers, and "seems to work" in IE7+. We intend to do more testing and get a better idea about what ice can support across browsers, shortly.
 
