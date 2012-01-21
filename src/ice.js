@@ -104,7 +104,7 @@ InlineChangeEditor.prototype = {
 		ice.env || (ice.env = {});
 		ice.env.element = this.element;
 		ice.env.document = this.element.ownerDocument;
-		ice.env.window = ice.env.document.defaultView || window;
+		ice.env.window = ice.env.document.defaultView || ice.env.document.parentWindow || window;
 		ice.env.frame = ice.env.window.frameElement;
 		ice.env.selection = this.selection = new ice.Selection(ice.env.frame);
 	 },
@@ -1257,7 +1257,7 @@ InlineChangeEditor.prototype = {
 		if (!this.pluginsManager.fireKeyPressed(e)) return false;
 
 		var c = null;
-		if (e.which === null) {
+		if (e.which == null) {
 			// IE.
 			c = String.fromCharCode(e.keyCode);
 		} else if (e.which > 0) {
