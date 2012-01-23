@@ -1,9 +1,34 @@
+body {
+	font-size: 16px;
+	line-height: 24px;
+	background: #EFEFEF;
+	height: 100%;
+	color: #6F6F6F;
+	font-family: Helvetica Neue,Helvetica,Arial;
+}
+div.container {
+	width: 720px;
+	margin: 0 auto;
+}
+.editor {
+	box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+	-moz-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+	margin-bottom: 30px;
+	padding: 10px;
+	width: 700px;
+	height: 440px;
+}
+h1, h3 {
+	color: #7F7F7F;
+	text-shadow: 0 1px 0 white;
+}
 .control { font: 12px Arial; padding: 5px; display: inline-block; margin-bottom: 5px; }
 .control button { margin-right: 5px; }
 #content { color: #333333; font: 14px; }
 #content, #tinymce-wrapper { height: 300px; }
 #text-wrapper { 
-	width: 623px;
+	width: 620px;
 	background: #CFCFCF;
 	min-height: 300px;
 	max-height: 300px;
@@ -29,7 +54,7 @@ a.mceButton16 img.mceIcon { width: 16px; height: 16px; padding: 2px;}
 .CT-hide .ins, .CT-hide .ins {
 	color: #333333;
 	background: none !important;
-  border: none !important; 
+	border: none !important; 
 	text-decoration: none;
 }
 
