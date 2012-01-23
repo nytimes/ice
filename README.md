@@ -27,8 +27,10 @@ Ice is a track changes implementation, built in javascript, for anything that is
        // set a user object to associate with each change
        currentUser: { id: 1, name: 'Miss T' }
      });
+     // setup and start event handling for track changes
+     tracker.startTracking();
 
-Additional options and post-init callback:
+Additional options:
 
      var tracker = new ice.InlineChangeEditor({
        element: document.getElementById('mytextelement'),
@@ -49,7 +51,7 @@ Additional options and post-init callback:
            }
          }
        ]
-     }, function() { console.log('ice post-init callback') });
+     }).startTracking();
 
 ***
 

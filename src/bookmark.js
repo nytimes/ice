@@ -2,10 +2,11 @@
 
 var exports = this, Bookmark;
 
-Bookmark = function(range, keepOldBookmarks) {
+Bookmark = function(env, range, keepOldBookmarks) {
 
-	this.element = ice.env.element;
-	this.selection = ice.env.selection;
+	this.env = env;
+	this.element = env.element;
+	this.selection = this.env.selection;
 	
 	// Remove all bookmarks?
 	if (!keepOldBookmarks) {
@@ -22,7 +23,7 @@ Bookmark = function(range, keepOldBookmarks) {
 	// Collapse to the end of range.
 	range.collapse(false);
 
-	var endBookmark	= ice.env.document.createElement('span');
+	var endBookmark	= this.env.document.createElement('span');
 	endBookmark.style.display = 'none';
 	ice.dom.setHtml(endBookmark, '&nbsp;');
 	ice.dom.addClass(endBookmark, 'iceBookmark iceBookmark_end');
@@ -37,7 +38,7 @@ Bookmark = function(range, keepOldBookmarks) {
 	range.collapse(true);
 
 	// Create the start bookmark.
-	var startBookmark = ice.env.document.createElement('span');
+	var startBookmark = this.env.document.createElement('span');
 	startBookmark.style.display = 'none';
 	ice.dom.addClass(startBookmark, 'iceBookmark iceBookmark_start');
 	ice.dom.setHtml(startBookmark, '&nbsp;');
@@ -69,13 +70,13 @@ Bookmark = function(range, keepOldBookmarks) {
 	}
 
 	if (!endBookmark.previousSibling) {
-		var tmp = ice.env.document.createTextNode('');
+		var tmp = this.env.document.createTextNode('');
 		ice.dom.insertBefore(endBookmark, tmp);
 	}
 
 	// The original range object must be changed.
 	if (!startBookmark.nextSibling) {
-		var tmp = ice.env.document.createTextNode('');
+		var tmp = this.env.document.createTextNode('');
 		ice.dom.insertAfter(startBookmark, tmp);
 	}
 
@@ -105,7 +106,7 @@ Bookmark.prototype = {
 				}
 			} else {
 				// Create a text node in parent.
-				this.end.parentNode.appendChild(ice.env.document.createTextNode(''));
+				this.end.parentNode.appendChild(this.env.document.createTextNode(''));
 				startPos = ice.dom.getFirstChild(this.end.nextSibling);
 			}
 		} else {
@@ -113,7 +114,7 @@ Bookmark.prototype = {
 				startPos = ice.dom.getFirstChild(this.start.nextSibling);
 			} else {
 				if (!this.start.previousSibling) {
-					var tmp = ice.env.document.createTextNode('');
+					var tmp = this.env.document.createTextNode('');
 					ice.dom.insertBefore(this.start, tmp);
 				}
 
@@ -159,6 +160,6 @@ Bookmark.prototype = {
 	}
 };
 
-exports.ice.Bookmark = Bookmark;
+exports.Bookmark = Bookmark;
 
-}).call(this);
+}).call(this.ice);

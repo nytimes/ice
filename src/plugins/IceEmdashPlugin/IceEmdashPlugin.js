@@ -1,6 +1,6 @@
 (function() {
 
-var exports = this, ice = this.ice;
+var exports = this;
 
 /**
  * When active, this plugin will convert two successively typed dashes, within
@@ -41,12 +41,12 @@ IceEmdashPlugin.prototype = {
 						// Extract the last character/dash and insert an emdash
 						range.extractContents();
 						range.collapse();
-						var mdash = ice.env.document.createTextNode('\u2014');
+						var mdash = this._ice.env.document.createTextNode('\u2014');
 						this._ice.insert(mdash, range);
 						range = this._ice.getCurrentRange();
 						range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 						range.collapse(true);
-						ice.env.selection.addRange(range);
+						this._ice.env.selection.addRange(range);
 						return false;
 					}
 				}
@@ -59,6 +59,6 @@ IceEmdashPlugin.prototype = {
 };
 
 ice.dom.noInclusionInherits(IceEmdashPlugin, ice.IcePlugin);
-exports.ice._plugin.IceEmdashPlugin = IceEmdashPlugin;
+exports._plugin.IceEmdashPlugin = IceEmdashPlugin;
 
-}).call(this);
+}).call(this.ice);

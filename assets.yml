@@ -16,7 +16,6 @@ javascripts:
     - src/dom.js
     - src/bookmark.js
     - src/selection.js
-    - src/range.js
     - src/icePlugin.js
     - src/icePluginManager.js
     - src/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js

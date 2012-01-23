@@ -9,7 +9,7 @@ $(document).ready(function() {
 				'<p>a paragraph</p>' +
 			'</div>');
 		var changeEditor = getIce(el);
-		var range = ice.env.selection.createRange();
+		var range = changeEditor.env.selection.createRange();
 		
 		// Insert at the end of a paragraph.	
 		range.setStart(el.find('p')[0], 0);

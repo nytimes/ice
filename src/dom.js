@@ -62,9 +62,6 @@ dom.getElementDimensions = function (element) {
 	};
 	return result;
 };
-dom.ready = function(doc, callback) {
-	jQuery(doc).ready(callback);
-};
 dom.trim = function (string) {
 	return jQuery.trim(string);
 };
@@ -182,68 +179,6 @@ dom.getSiblings = function (element, dir, elementNodesOnly, stopElem) {
 			}
 		}
 		return elems;
-	}
-};
-dom.normalize = function (element) {
-	if (dom.isBlockElement(element) === true) {
-		return false;
-	}
-	while (element.nextSibling) {
-		var next = element.nextSibling;
-		if (element.nodeType === dom.TEXT_NODE) {
-			if (next.nodeType === dom.TEXT_NODE) {
-				dom.remove(next);
-				element.nodeValue += next.nodeValue;
-			} else {
-				break;
-			}
-		} else if (element.tagName === next.tagName) {
-			dom.remove(next);
-			var childLen = next.childNodes.length;
-			while (childLen > 0) {
-				element.appendChild(next.firstChild);
-				childLen = next.childNodes.length;
-			}
-		} else {
-			break;
-		}
-	}
-	while (element.previousSibling) {
-		var prev = element.previousSibling;
-		if (element.nodeType === dom.TEXT_NODE) {
-			if (prev.nodeType === dom.TEXT_NODE) {
-				dom.remove(element);
-				prev.nodeValue += element.nodeValue;
-				element = prev;
-			} else {
-				break;
-			}
-		} else if (element.tagName === prev.tagName) {
-			dom.remove(element);
-			var childLen = element.childNodes.length;
-			while (childLen > 0) {
-				prev.appendChild(element.firstChild);
-				childLen = element.childNodes.length;
-			}
-			element = prev;
-		} else {
-			break;
-		}
-	}
-};
-dom.normalizeChildren = function (parent) {
-	if (parent.nodeType !== dom.ELEMENT_NODE) {
-		return false;
-	}
-	var nodeLen = parent.childNodes.length;
-	for (var i = 0; i < nodeLen; i++) {
-		var child = parent.childNodes[i];
-		if (child) {
-			if (child.nodeType !== dom.TEXT_NODE) {
-				dom.normalizeChildren(child);
-			}
-			dom.normalize(child);
-		}
 	}
 };
 dom.getNodeTextContent = function (node) {
@@ -501,37 +436,6 @@ dom.is = function (node, exp) {
 dom.extend = function(deep, target, object1, object2) {
 	return jQuery.extend.apply(this, arguments);
 };
-dom.getTextNodes = function (parent, removeEmpty) {
-	var nodes = [];
-	if (parent && parent.childNodes) {
-		var ln = parent.childNodes.length;
-		for (var i = 0; i < ln; i++) {
-			var child = parent.childNodes[i];
-			if (child.nodeType === dom.TEXT_NODE) {
-				if (removeEmpty === true && /^\s*$/.test(child.data) === true) {
-					dom.remove(child);
-				} else {
-					nodes.push(child);
-				}
-			} else if (child.childNodes && child.childNodes.length > 0) {
-				nodes = nodes.concat(dom.getTextNodes(child));
-			}
-		}
-	}
-	return nodes;
-};
-dom.getFirstBlockParent = function (elem, stopEl) {
-	while (elem.parentNode) {
-		elem = elem.parentNode;
-		if (stopEl && elem === stopEl) {
-			return null;
-		}
-		if (dom.isBlockElement(elem) === true) {
-			return elem;
-		}
-	}
-	return null;
-};
 dom.walk = function (elem, callback, lvl) {
 	if (!elem) {
 		return;
@@ -713,12 +617,6 @@ dom.arrayMerge = function (array1, array2) {
 		array1.push(array2[i]);
 	}
 	return array1;
-};
-dom.removeArrayIndex = function (array, index) {
-	if (!array || dom.isset(array[index]) === false) {
-		return null;
-	}
-	return array.splice(index, 1);
 };
 /**
  * Removes allowedTags from the given content html string. If allowedTags is a string, then it
@@ -953,6 +851,6 @@ dom.tsIso8601ToTimestamp = function (tsIso8601) {
 	return null;
 };
 
-exports.ice.dom = dom;
+exports.dom = dom;
 
-}).call(this);
+}).call(this.ice);

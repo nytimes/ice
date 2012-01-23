@@ -9,7 +9,7 @@ $(document).ready(function() {
 				'<p>a <em>left<span class="ins cts-1" userid="1" cid="1">ist</span></em> paragraph</p>' +
 			'</div>');
 		var changeEditor = getIce(el);
-		var range = ice.env.selection.createRange();
+		var range = changeEditor.env.selection.createRange();
 	
 		// Delete left through different user insert.
 		range.setStartAfter(el.find('em')[0]);
@@ -28,10 +28,10 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 
-		ok(el.find('[cid=2]').text() === ' p'
-				&& el.find('[cid=4]').text() === 'ist'
-				&& el.find('[cid=7]').text() === 'left'
-				&& el.find('[cid=11]').text() === 'a ', 
+		ok(el.find('.del:eq(3)').text() === ' p'
+				&& el.find('.del:eq(2)').text() === 'ist'
+				&& el.find('.del:eq(1)').text() === 'left'
+				&& el.find('.del:eq(0)').text() === 'a ', 
 			'Deleted left through different user insert.');
 
 		// Setup for deleting right, through different user insert
@@ -371,9 +371,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		
-		ok(el.find('[cid=3]').text() === ' t'
-				&& el.find('[cid=5]').text() === 't ',
+
+		ok(el.find('.del:eq(0)').text() === 't ' && el.find('.del:eq(3)').text() === ' t',
 			'Deleted left through adjacent, different-user deletes.');
 
 		// Setup for deleting right through adjacent, different-user deletes
@@ -382,7 +381,7 @@ $(document).ready(function() {
 			'</div>');
 		changeEditor = getIce(el);
 		
-		// Delete left through adjacent, different-user deletes
+		// Delete right through adjacent, different-user deletes
 		range.setStart(el.find('p:eq(0)')[0], 0);
 		range.moveStart('character', 3)
 		range.collapse(true);
@@ -391,8 +390,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		
-		ok(el.find('[cid=3]').text() === 't '
-				&& el.find('[cid=5]').text() === ' t',
+		ok(el.find('.del:eq(0)').text() === 't ' && el.find('.del:eq(3)').text() === ' t',
 			'Deleted right through adjacent, different-user deletes.');
 
 		// Setup for deleting left through adjacent, same-user deletes
@@ -410,9 +408,9 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		
-		ok(el.find('[cid=1]').text() === 't delete1'
-				&& el.find('[cid=2]').text() === 'delete2 '
-				&& el.find('[cid=3]').text() === 't',
+		ok(el.find('.del:eq(0)').text() === 't delete1'
+				&& el.find('.del:eq(1)').text() === 'delete2 '
+				&& el.find('.del:eq(2)').text() === 't',
 			'Delete left through adjacent, same-user deletes.');
 
 		// Setup for deleting right through adjacent, same-user deletes
@@ -430,8 +428,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		
-		ok(el.find('[cid=2]').text() === 'delete2 t'
-				&& el.find('[cid=3]').text() === 't ',
+		ok(el.find('.del:eq(2)').text() === 'delete2 t' && el.find('.del:eq(0)').text() === 't ',
 			'Deleted right through adjacent, same-user deletes.');
 
 	

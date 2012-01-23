@@ -9,14 +9,14 @@ $(document).ready(function() {
 		changeEditor = getIce(el);
 
 		ok(el.find('p').length === 1, 'Paragraph was added to empty element.');
-		ok(el.find('p')[0] === ice.env.selection.getRangeAt(0).startContainer
-				|| el.find('p')[0] === ice.env.selection.getRangeAt(0).startContainer.parentNode, 
+		ok(el.find('p')[0] === changeEditor.env.selection.getRangeAt(0).startContainer
+				|| el.find('p')[0] === changeEditor.env.selection.getRangeAt(0).startContainer.parentNode, 
 			'Range was initialized to contain the paragraph.');
 		
 		// Setup for multi-user/paragraph initialization.
 		var el = jQuery('<div><p>test <span class="ins cts-1" time="987654321" userid="2" username="Hank" cid="1">content</span> in paragraph one.</p><p>test <span class="del cts-2" time="987654321" userid="3" username="Bob" cid="2">content</span> in paragraph two.</p></div>');
 		var changeEditor = getIce(el);
-		var range = ice.env.selection.createRange();
+		var range = changeEditor.env.selection.createRange();
 
 		ok(changeEditor.isTracking, 'Tracking is turned on.');
 		var c1 = changeEditor._changes[1], c2 = changeEditor._changes[2];
@@ -97,10 +97,10 @@ $(document).ready(function() {
 		</div>');
 		var changeEditor = getIce(el);
 		
-		var range = ice.env.selection.createRange();
+		var range = changeEditor.env.selection.createRange();
 		range.setStart(el.find('[cid=4]')[0], 1);
 		range.collapse(true);
-		ice.env.selection.addRange(range);
+		changeEditor.env.selection.addRange(range);
 		changeEditor.acceptChange();
 		changeEditor.acceptChange(jQuery(el).find('[cid=2]:eq(0)'));
 
@@ -115,10 +115,10 @@ $(document).ready(function() {
 		</div>');
 		var changeEditor = getIce(el);
 
-		var range = ice.env.selection.createRange();
+		var range = changeEditor.env.selection.createRange();
 		range.setStart(el.find('[cid=4]')[0], 1);
 		range.collapse(true);
-		ice.env.selection.addRange(range);
+		changeEditor.env.selection.addRange(range);
 		changeEditor.rejectChange();
 		changeEditor.rejectChange(jQuery(el).find('[cid=2]'));
 

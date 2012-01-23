@@ -4,11 +4,10 @@ var exports = this, defaults, InlineChangeEditor;
 
 defaults = {
 	// ice node attribute names:
-	attrNamePrefix: 'data-',
-	changeIdAttribute: 'cid',
-	userIdAttribute: 'userid',
-	userNameAttribute: 'username',
-	timeAttribute: 'time',
+	changeIdAttribute: 'data-cid',
+	userIdAttribute: 'data-userid',
+	userNameAttribute: 'data-username',
+	timeAttribute: 'data-time',
 	// Prepended to `changeType.alias` for classname uniqueness, if needed
 	attrValuePrefix: '',
 	// Block element tagname, which wrap text and other inline nodes in `this.element`
@@ -24,8 +23,8 @@ defaults = {
 	// Invoking `this.getCleanContent()` will remove all delete type nodes and remove the tags
 	// for the other types, leaving the html content in place.
 	changeTypes: {
-		insertType: {tag: 'insert', alias: 'ins'},
-		deleteType: {tag: 'delete', alias: 'del'}
+		insertType: {tag: 'insert', alias: 'ins', action: 'Inserted'},
+		deleteType: {tag: 'delete', alias: 'del', action: 'Deleted'}
 	},
 	// If `true`, setup event listeners on `this.element` and handle events - good option for a basic
 	// setup without a text editor. Otherwise, when set to `false`, events need to be manually passed 
@@ -41,72 +40,70 @@ defaults = {
 	avoid: '.ice-avoid'
 };
 
-InlineChangeEditor = function(options, callback) {
+InlineChangeEditor = function(options) {
 	options || (options = {});
 	if(!options.element) throw Error("`options.element` must be defined for ice construction.");
 
 	ice.dom.extend(true, this, defaults, options);
 
-	// Prefix the attribute names.
-	this.changeIdAttribute = this.attrNamePrefix + this.changeIdAttribute;
-	this.userIdAttribute = this.attrNamePrefix + this.userIdAttribute;
-	this.userNameAttribute = this.attrNamePrefix + this.userNameAttribute;
-	this.timeAttribute = this.attrNamePrefix + this.timeAttribute;
-	
-	// Tracks all changes in the element according to the following model:
-	//  [changeid] => {`type`, `time`, `userid`, `username`}
-	this._changes = [];
-	// Tracks all of the styles for users according to the following model:
-	//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
-	this._userStyles = {};
-	this._styles = [];
-	// Incremented for each new user and appended to they style prefix, and dropped in the
-	// ice node class attribute.
-	this._uniqueStyleIndex = 0;
-	this._browserType = null;
-	// One change may create multiple ice nodes, so this keeps track of the current batch id.
-	this._batchChangeid = null;
-	// Incremented for each new change, dropped in the changeIdAttribute.
-	this._uniqueIDIndex = 1;
-	// Temporary bookmark tags for deletes, when delete placeholding is active
-	this._delBookmark = 'tempdel';
-	this.isPlaceHoldingDeletes = false;
-	
 	this.pluginsManager = new ice.IcePluginManager(this);
-	if(options.plugins)
-		this.pluginsManager.usePlugins('ice-init', options.plugins);
-
-	this.element.setAttribute('contentEditable', this.contentEditable);
-
-	// If we are handling events setup the delegate to handle various events on `this.element`.
-	if(this.handleEvents) {
-		var self = this;
-		ice.dom.bind(self.element, 'keyup keydown keypress mousedown mouseup', function(e) {
-			return self.handleEvent(e);
-		});
-	}
-
-	this.initializeEnvironment();
-	this.initializeChangeEditor();
-	this.initializeRange();
-
-	this.pluginsManager.fireEnabled(this.element);
-	
-	callback && callback.call(this);
+	if(options.plugins) this.pluginsManager.usePlugins('ice-init', options.plugins);	
 }
 
 InlineChangeEditor.prototype = {
+
+	// Data structure for modelling changes in the element according to the following model:
+	//  [changeid] => {`type`, `time`, `userid`, `username`}
+	_changes: {},
+	// Tracks all of the styles for users according to the following model:
+	//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
+	_userStyles: {},
+	_styles: {},
+	// Incremented for each new user and appended to they style prefix, and dropped in the
+	// ice node class attribute.
+	_uniqueStyleIndex: 0,
+	_browserType: null,
+	// One change may create multiple ice nodes, so this keeps track of the current batch id.
+	_batchChangeid: null,
+	// Incremented for each new change, dropped in the changeIdAttribute.
+	_uniqueIDIndex: 1,
+	// Temporary bookmark tags for deletes, when delete placeholding is active.
+	_delBookmark: 'tempdel',
+	isPlaceHoldingDeletes: false,
+	
+	/**
+	 * Turns on change tracking - sets up events, if needed, and initializes the environment,
+	 * range, and editor.
+	 */
+	startTracking: function() {
+		this.element.setAttribute('contentEditable', this.contentEditable);
+
+		// If we are handling events setup the delegate to handle various events on `this.element`.
+		if(this.handleEvents) {
+			var self = this;
+			ice.dom.bind(self.element, 'keyup keydown keypress mousedown mouseup', function(e) {
+				return self.handleEvent(e);
+			});
+		}
+
+		this.initializeEnvironment();
+		this.initializeEditor();
+		this.initializeRange();
+
+		this.pluginsManager.fireEnabled(this.element);
+		return this;
+	},
 
 	/**
 	 * Initializes the `env` object with pointers to key objects of the page.
 	 */
 	initializeEnvironment: function() {
-		ice.env || (ice.env = {});
-		ice.env.element = this.element;
-		ice.env.document = this.element.ownerDocument;
-		ice.env.window = ice.env.document.defaultView || ice.env.document.parentWindow || window;
-		ice.env.frame = ice.env.window.frameElement;
-		ice.env.selection = this.selection = new ice.Selection(ice.env.frame);
+		this.env || (this.env = {});
+		this.env.element = this.element;
+		this.env.document = this.element.ownerDocument;
+		this.env.window = this.env.document.defaultView || this.env.document.parentWindow || window;
+		this.env.frame = this.env.window.frameElement;
+		this.env.selection = this.selection = new ice.Selection(this.env);
 	 },
 
 	/**
@@ -117,8 +114,8 @@ InlineChangeEditor.prototype = {
 		range.setStart(ice.dom.find(this.element, this.blockEl)[0], 0);
 		range.collapse(true);
 		this.selection.addRange(range);
-		if(ice.env.frame)
-			ice.env.frame.contentWindow.focus();
+		if(this.env.frame)
+			this.env.frame.contentWindow.focus();
 		else
 			this.element.focus();
 	 },
@@ -127,10 +124,10 @@ InlineChangeEditor.prototype = {
 	 * Initializes the content in the editor - cleans non-block nodes found between blocks and
 	 * initializes the editor with any tracking tags found in the editing element.
 	 */
-	initializeChangeEditor: function() {
+	initializeEditor: function() {
 		// Clean the element html body - add an empty block if there is no body, or remove any
 		// content between block elements.
-		var self = this, body = ice.env.document.createElement('div');
+		var self = this, body = this.env.document.createElement('div');
 		if(this.element.childNodes.length) {
 			ice.dom.each(ice.dom.contents(this.element), function(i, node) {
 				if(ice.dom.isBlockElement(node))
@@ -223,13 +220,13 @@ InlineChangeEditor.prototype = {
 	 * Returns a tracking tag for the given `changeType`, with the optional `childNode` appended.
 	 */
 	createIceNode: function(changeType, childNode) {
-		var node = ice.env.document.createElement(this.changeTypes[changeType].tag);
+		var node = this.env.document.createElement(this.changeTypes[changeType].tag);
 		ice.dom.addClass(node, this._getIceNodeClass(changeType));
 
-		node.appendChild(childNode ? childNode : ice.env.document.createTextNode(''));
+		node.appendChild(childNode ? childNode : this.env.document.createTextNode(''));
 		this.addChange(this.changeTypes[changeType].alias, [node]);
 		
-		this.pluginsManager.fireNodeCreated(node);
+		this.pluginsManager.fireNodeCreated(node, {'action': this.changeTypes[changeType].action});
 		return node;
 	},
 
@@ -267,7 +264,7 @@ InlineChangeEditor.prototype = {
 		this._insertNode(node || document.createTextNode('\uFEFF'), range, !node);
 		this.pluginsManager.fireNodeInserted(node, range);
 		this.endBatchChange(changeid);
-    return true;
+		return true;
 	},
 
 	/**
@@ -673,7 +670,7 @@ InlineChangeEditor.prototype = {
 		return id;
 	},
 
-	startBatchChange: function(ctnType) {
+	startBatchChange: function() {
 		this._batchChangeid = this.getNewChangeId();
 		return this._batchChangeid;
 	},
@@ -709,12 +706,12 @@ InlineChangeEditor.prototype = {
 
 	_deleteFromSelection: function(range) {
 		// Bookmark the range and get elements between.
-		var bookmark = new ice.Bookmark(range);
-		var elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
-
-		var b1 = ice.dom.parents(range.startContainer, this.blockEl)[0];
-		var b2 = ice.dom.parents(range.endContainer, this.blockEl)[0];
-		var betweenBlocks = new Array();
+		var bookmark = new ice.Bookmark(this.env, range),
+			elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
+			b1 = ice.dom.parents(range.startContainer, this.blockEl)[0],
+			b2 = ice.dom.parents(range.endContainer, this.blockEl)[0],
+			betweenBlocks = new Array(),
+			eln = elements.length;
 
 		var eln = elements.length;
 		for (var i = 0; i < eln; i++) {
@@ -762,7 +759,7 @@ InlineChangeEditor.prototype = {
 
 		var startEl = bookmark.start.previousSibling;
 		if (!startEl) {
-			startEl = ice.env.document.createTextNode('');
+			startEl = this.env.document.createTextNode('');
 			ice.dom.insertBefore(bookmark.start, startEl);
 			this.selection.addRange(range);
 			bookmark.selectBookmark();
@@ -877,7 +874,7 @@ InlineChangeEditor.prototype = {
 				if (textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode)) === true) {
 					var prevSibling = textAddNode.previousSibling;
 					if (!prevSibling || prevSibling.nodeType !== ice.dom.TEXT_NODE) {
-						prevSibling = ice.env.document.createTextNode('');
+						prevSibling = this.env.document.createTextNode('');
 						ice.dom.insertBefore(textAddNode, prevSibling);
 					}
 					range.setStart(prevSibling, prevSibling.data.length);
@@ -997,7 +994,7 @@ InlineChangeEditor.prototype = {
 
 				// The textAddNode is a tracking node that may be empty now - clean it up.
 				if(textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
-					var newstart = ice.env.document.createTextNode('');
+					var newstart = this.env.document.createTextNode('');
 					ice.dom.insertBefore(textAddNode, newstart);
 					range.setStart(newstart, 0);
 					range.collapse(true);
@@ -1043,7 +1040,7 @@ InlineChangeEditor.prototype = {
 						ctNode.lastChild.nodeValue += removedChar;
 						range.setStart(ctNode.lastChild, (ctNode.lastChild.nodeValue.length - 1));
 					} else {
-						var charNode = ice.env.document.createTextNode(removedChar);
+						var charNode = this.env.document.createTextNode(removedChar);
 						ctNode.appendChild(charNode);
 						range.setStart(charNode, 0);
 					}
@@ -1077,7 +1074,7 @@ InlineChangeEditor.prototype = {
 					if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
 						ctNode.lastChild.nodeValue += removedChar;
 					} else {
-						var charNode = ice.env.document.createTextNode(removedChar);
+						var charNode = this.env.document.createTextNode(removedChar);
 						ctNode.appendChild(charNode);
 					}
 
@@ -1122,7 +1119,7 @@ InlineChangeEditor.prototype = {
 				if (ctNode.firstChild && ctNode.firstChild.nodeType === ice.dom.TEXT_NODE) {
 					ctNode.firstChild.nodeValue = removedChar + ctNode.firstChild.nodeValue;
 				} else {
-					var charNode = ice.env.document.createTextNode(removedChar);
+					var charNode = this.env.document.createTextNode(removedChar);
 					ice.dom.insertBefore(ctNode.firstChild, charNode);
 				}
 
@@ -1313,8 +1310,8 @@ InlineChangeEditor.prototype = {
 					var range = this.getCurrentRange();
 
 					if (ice.dom.isBrowser('msie') === true) {
-						var selStart = ice.env.document.createTextNode('');
-						var selEnd = ice.env.document.createTextNode('');
+						var selStart = this.env.document.createTextNode('');
+						var selEnd = this.env.document.createTextNode('');
 
 						if (this.element.firstChild) {
 							ice.dom.insertBefore(this.element.firstChild, selStart);

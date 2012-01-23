@@ -1,7 +1,6 @@
 (function() {
 
 var exports = this;
-this.ice._plugin = {};
 
 var IcePluginManager = function(ice_instance) {
 
@@ -11,9 +10,6 @@ var IcePluginManager = function(ice_instance) {
 	this.activePlugin = null,
 	this.pluginSets = {},
 	this.activePluginSet = null,
-	this.pluginsURL = '',
-	this.callbacks = {},
-	this.allowTextInput = false,
 
 	this._ice = ice_instance;
 };
@@ -25,7 +21,6 @@ IcePluginManager.prototype = {
 		for (var name in this.plugins) {
 			plugins.push(name);
 		}
-
 		return plugins;
 	},
 
@@ -87,10 +82,8 @@ IcePluginManager.prototype = {
 		}
 	},
 
-	setActivePlugin: function(name, allowTextInput) {
-		allowTextInput	  = allowTextInput || false;
-		this.activePlugin   = name;
-		this.allowTextInput = allowTextInput;
+	setActivePlugin: function(name) {
+		this.activePlugin = name;
 	},
 
 	getActivePlugin: function() {
@@ -98,37 +91,24 @@ IcePluginManager.prototype = {
 	},
 
 	_getPluginName: function(pluginConstructor) {
-		var fn	= pluginConstructor.toString();
+		var fn = pluginConstructor.toString();
 		var start = 'function '.length;
-		var name  = fn.substr(start, (fn.indexOf('(') - start));
+		var name = fn.substr(start, (fn.indexOf('(') - start));
 		return name;
 	},
 
 	/**
 	 * Removes specified plugin.
-	 *
-	 * @param {string} plugin Name of the plugin.
-	 *
-	 * @return void
 	 */
 	removePlugin: function(plugin) {
 		if (this.plugins[plugin]) {
 			// Call the remove fn of the plugin incase it needs to do cleanup.
 			this.plugins[plugin].remove();
-
-			// Remove the keyPress listeners for this plugin.
-			this.removeKeyPressListener(this.plugins[plugin]);
-			this.fireCallbacks('pluginRemoved', plugin);
 		}
 	},
 
 	/**
 	 * Returns the plugin object for specified plugin name.
-	 *
-	 * @param {string} name Name of the plugin.
-	 *
-	 * @return The Ice plugin object.
-	 * @type {IcePlugin}
 	 */
 	getPlugin: function(name) {
 		return this.plugins[name];
@@ -137,13 +117,6 @@ IcePluginManager.prototype = {
 
 	/**
 	 * Add a new set of plugins.
-	 *
-	 * @param {string}   name	 Name of the plugin set (e.g. "simpleEditing").
-	 * @param {array}	plugins  List of plugin names that are in the set.
-	 * @param {boolean}  load	 If true then script files will be loaded.
-	 * @param {function} callback Call back function.
-	 *
-	 * @return void
 	 */
 	usePlugins: function(name, plugins, callback) {
 		var self = this;
@@ -172,55 +145,6 @@ IcePluginManager.prototype = {
 			}
 		}
 		return false;
-	},
-
-	addKeyPressListener: function(keys, plugin, evtFunction, data) {
-		var keysArray = keys.toLowerCase().split('+').sort();
-		var listener  = {
-			plugin: plugin,
-			fn: evtFunction,
-			data: data
-		};
-
-		var keysStr = keysArray.join('+');
-		if (!this.keyPressListeners[keysStr]) {
-			this.keyPressListeners[keysStr] = [];
-		}
-
-		this.keyPressListeners[keysStr].push(listener);
-	},
-
-	removeKeyPressListener: function(plugin, keys) {
-		if (plugin && keys && this.keyPressListeners[keys]) {
-			var ln = this.keyPressListeners[keys].length;
-			for (var i = 0; i < ln; i++) {
-				var listener = this.keyPressListeners[keys][i];
-				if (listener.plugin === plugin) {
-					this.keyPressListeners[keys].splice(i, 1);
-					break;
-				}
-			}
-		} else if (plugin) {
-			// Remove all key listeners for a specific plugin.
-			for (var k in this.keyPressListeners) {
-				if (this.keyPressListeners.hasOwnProperty(k) === false) {
-					continue;
-				}
-
-				var ln = this.keyPressListeners[k].length;
-				if (ln === 0) {
-					delete this.keyPressListeners[k];
-				} else {
-					for (var i = 0; i < ln; i++) {
-						var listener = this.keyPressListeners[k][i];
-						if (listener.plugin === plugin) {
-							this.keyPressListeners[k].splice(i, 1);
-							break;
-						}
-					}
-				}
-			}
-		}
 	},
 
 	fireKeyPressed: function(e) {
@@ -312,7 +236,7 @@ IcePluginManager.prototype = {
 					}
 				}
 			}
-		}//end if
+		}
 
 		return true;
 	},
@@ -331,9 +255,9 @@ IcePluginManager.prototype = {
 		}
 	},
 
-	fireNodeCreated: function(node) {
+	fireNodeCreated: function(node, option) {
 		for (var i in this.plugins) {
-			if (this.plugins[i].nodeCreated(node) === false) {
+			if (this.plugins[i].nodeCreated(node, option) === false) {
 				return false;
 			}
 		}
@@ -352,7 +276,6 @@ IcePluginManager.prototype = {
 				val = false;
 			}
 		}
-
 		return val;
 	},
 
@@ -363,7 +286,6 @@ IcePluginManager.prototype = {
 				val = false;
 			}
 		}
-
 		return val;
 	},
 
@@ -374,7 +296,6 @@ IcePluginManager.prototype = {
 				val = false;
 			}
 		}
-
 		return val;
 	},
 
@@ -385,7 +306,6 @@ IcePluginManager.prototype = {
 				val = false;
 			}
 		}
-
 		return val;
 	},
 
@@ -407,33 +327,10 @@ IcePluginManager.prototype = {
 				this.plugins[i].caretUpdated();
 			}
 		}
-	},
-
-	registerCallback: function(type, id, callback) {
-		if (ice.dom.isFn(callback) === false) {
-			return;
-		}
-
-		if (ice.dom.isset(this.callbacks[type]) === false) {
-			this.callbacks[type] = {};
-		}
-
-		this.callbacks[type][id] = callback;
-	},
-
-	fireCallbacks: function(type, data) {
-		if (ice.dom.isset(this.callbacks[type]) === true) {
-			for (var id in this.callbacks[type]) {
-				this.callbacks[type][id].call(type, data);
-			}
-		}
-	},
-
-	removeCallback: function(type, id) {
-		delete this.callbacks[type][id];
 	}
 };
 
-exports.ice.IcePluginManager = IcePluginManager;
+exports._plugin = {};
+exports.IcePluginManager = IcePluginManager;
 
-}).call(this);
+}).call(this.ice);

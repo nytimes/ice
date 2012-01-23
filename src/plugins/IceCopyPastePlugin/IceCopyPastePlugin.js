@@ -1,6 +1,6 @@
 (function() {
 
-var exports = this, ice = this.ice, IceCopyPastePlugin;
+var exports = this, IceCopyPastePlugin;
 
 IceCopyPastePlugin = function(ice_instance) {
 	this._ice = ice_instance;
@@ -45,6 +45,8 @@ IceCopyPastePlugin.prototype = {
 		settings = settings || {};
 		ice.dom.extend(this, settings);
 
+		//this._ice.changeTypes.cutType = { tag: 'delete', alias: 'del', action: 'Cut'}
+
 		this.preserve += ',' + this._tmpNodeTagName;
 		this.setupPreserved();
 	},
@@ -71,7 +73,7 @@ IceCopyPastePlugin.prototype = {
 	 */
 	doCut: function(html) {
 		var range = this._ice.getCurrentRange(), child, last;
-		this._tmpNode = ice.env.document.createElement('span');
+		this._tmpNode = this._ice.env.document.createElement('span');
 		range.insertNode(this._tmpNode);
 		range.setStartAfter(this._tmpNode);
 		range.collapse(true);
@@ -84,8 +86,8 @@ IceCopyPastePlugin.prototype = {
 		range.setStartBefore(this._tmpNode);
 		range.collapse(true);
 		range.setEndAfter(last);
-		ice.env.selection.addRange(range);
-		this._ice.deleteContents();
+		this._ice.env.selection.addRange(range);
+		this._ice.deleteContents(null, null, 'cutType');
 		ice.dom.remove(this._tmpNode);
 	},
 	
@@ -120,17 +122,17 @@ IceCopyPastePlugin.prototype = {
 			}
 			range.setStart(firstBlock, 0);
 			range.collapse(true);
-			ice.env.selection.addRange(range);
+			this._ice.env.selection.addRange(range);
 		}
 		
-		this._tmpNode = ice.env.document.createElement(this._tmpNodeTagName);
+		this._tmpNode = this._ice.env.document.createElement(this._tmpNodeTagName);
 		range.insertNode(this._tmpNode);
 
 		var frag = ice.dom.extractContent(this._ice.element);
 		
-		var newrange = ice.env.selection.createRange();
+		var newrange = this._ice.env.selection.createRange();
 		newrange.selectNodeContents(this._ice.element);
-		ice.env.selection.addRange(newrange);
+		this._ice.env.selection.addRange(newrange);
 		
 		switch (this.pasteType) {
 			case 'formatted':
@@ -190,7 +192,7 @@ IceCopyPastePlugin.prototype = {
 
 		var newEl = null;
 		var fragment = range.createContextualFragment(html);
-		var changeid = this._ice.startBatchChange(this._ice.changeTypes['insertType'].alias);
+		var changeid = this._ice.startBatchChange();
 
 		// If fragment contains block level elements, most likely we will need to
 		// do some splitting so we do not have P tags in P tags, etc. Split the
@@ -202,7 +204,7 @@ IceCopyPastePlugin.prototype = {
 			range.setEndAfter(block.lastChild);
 			this._ice.selection.addRange(range);
 			var contents = range.extractContents();
-			var newblock = ice.env.document.createElement(this._ice.blockEl);
+			var newblock = this._ice.env.document.createElement(this._ice.blockEl);
 			newblock.appendChild(contents);
 			ice.dom.insertAfter(block, newblock);
 
@@ -288,7 +290,7 @@ IceCopyPastePlugin.prototype = {
 			return oldEl;
 		}
 
-		var div = ice.env.document.createElement('div');
+		var div = this._ice.env.document.createElement('div');
 		div.id = id;
 		div.setAttribute('contentEditable', true);
 		ice.dom.setStyle(div, 'width', '0px');
@@ -321,11 +323,12 @@ IceCopyPastePlugin.prototype = {
 		this.cutElement.innerHTML = html;
 		range.setStart(this.cutElement.firstChild, 0);
 		range.setEndAfter(this.cutElement.lastChild, this.cutElement.lastChild.length);
+		var self = this;
 		// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
 		setTimeout(function() {
 			range.setStart(crange.startContainer, crange.startOffset);
 			range.collapse(true);
-			ice.env.selection.addRange(range);
+			self._ice.env.selection.addRange(range);
 			ice.dom.remove(this.cutElement);
 		}, 10);
 	},
@@ -373,7 +376,7 @@ IceCopyPastePlugin.prototype = {
 	 */
 	cleanPreserved: function(body) {
 		var self = this;
-		var bodyel = ice.env.document.createElement('div');
+		var bodyel = this._ice.env.document.createElement('div');
 		bodyel.innerHTML = body;
 
 		// Strip out any tags not found in `this._tags`, replacing the tags with their inner contents.
@@ -576,8 +579,8 @@ IceCopyPastePlugin.prototype = {
 			range.collapse(true);
 			this._ice.selection.addRange(range);
 			// Set focus back to ice element.
-			if(ice.env.frame) {
-				ice.env.frame.contentWindow.focus();
+			if(this._ice.env.frame) {
+				this._ice.env.frame.contentWindow.focus();
 			} else {
 				this._ice.element.focus();
 			}
@@ -585,7 +588,7 @@ IceCopyPastePlugin.prototype = {
 			this._tmpNode.parentNode.removeChild(this._tmpNode);
 			this._tmpNode = null;
 			// Kill any empty change nodes.
-			var ins = ice.env.document.getElementsByClassName(this._ice.changeTypes['insertType'].alias);
+			var ins = this._ice.env.document.getElementsByClassName(this._ice.changeTypes['insertType'].alias);
 			for(var i = 0; i < ins.length; i++) {
 				if(!ins[i].textContent) {
 					if(ins[i].parentNode) {
@@ -600,6 +603,6 @@ IceCopyPastePlugin.prototype = {
 };
 
 ice.dom.noInclusionInherits(IceCopyPastePlugin, ice.IcePlugin);
-exports.ice._plugin.IceCopyPastePlugin = IceCopyPastePlugin;
+exports._plugin.IceCopyPastePlugin = IceCopyPastePlugin;
 
-}).call(this);
+}).call(this.ice);
