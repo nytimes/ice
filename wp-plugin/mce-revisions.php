@@ -132,7 +132,7 @@ function vrev_load_revisions_content($content) {
 	$runonce = true;
 	if ( $post->post_status == 'publish' || $post->post_status == 'future' ) {
 		$meta = get_post_meta($post_ID, '_ice_revisions_content');
-		$content = (string) array_pop($meta);
+		$content = empty($meta) ? $content : (string) array_pop($meta);
 	}
 
 	return $content;
