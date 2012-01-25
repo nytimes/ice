@@ -1,17 +1,21 @@
 <?php
 /*
 Plugin Name: Ice Visual Revisions
-Plugin URI: [URL to a webpage about the WP plugin, optional]
-Description: [few sentences explaining the functionality]
+Description: Adds revision tracking to the visual editor. Once a new post is saved as draft, added or deleted text is stored with the user name and time of the change.
 Version: 1.0
-Author: Andrew Ozz
-Author URI: (optional)
+Author: Automattic, Andrew Ozz
 
-Copyright Andrew Ozz
+Copyright (c) Automattic, Andrew Ozz
+
+Includes the Ice plugin for TinyMCE released under the GPL version 2 by: The New York Times, CMS Group, Matthew DeLambo
 
 Released under the GPL v.2
 
-    This program is distributed in the hope that it will be useful,
+    This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License, version 2, as
+	published by the Free Software Foundation.
+	
+	This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -34,14 +38,19 @@ add_filter('mce_buttons', 'vrev_add_mce_buttons');
 function vrev_add_mce_buttons($buttons) {
 	return array_merge( $buttons, array(
 		'|',
-		'iceaccept',
-		'icereject',
 		'iceacceptall',
 		'icerejectall',
 		'|',
-		'ice_toggleshowchanges',
-	//	'ice_togglechanges',
-	//	'ice_smartquotes'
+		'ice_toggleshowchanges'
+	));
+}
+
+add_filter('mce_buttons_2', 'vrev_add_mce_buttons_2');
+function vrev_add_mce_buttons_2($buttons) {
+	return array_merge( $buttons, array(
+		'|',
+		'iceaccept',
+		'icereject'
 	));
 }
 
@@ -54,22 +63,22 @@ function vrev_mce_settings($settings) {
 
 	/*
 	Any of the following can be set by using the 'mce_ice_settings' filter.
-	Note that the array is json encoded before adding it to the MCE settings.
-		deleteTag: 'span',
-		insertTag: 'span',
-		deleteClass: 'del',
-		insertClass: 'ins',
-		attrPrefix: 'data-',
-		preserveOnPaste: 'p',
-		isTracking: true,
-		contentEditable: true,
-		css: 'css/ice.css',
-		manualInit: false,
-		user: { name: 'Some Name', id: Math.random() },
+	Note that the array is json encoded before adding it to the MCE settings (default values shown).
+		'deleteTag' => 'span',
+		'insertTag' => 'span',
+		'deleteClass' => 'del',
+		'insertClass' => 'ins',
+		'attrPrefix' => 'data-',
+		'preserveOnPaste' => 'p',
+		'isTracking' => true,
+		'contentEditable' => true,
+		'css' => 'css/ice.css',
+		'manualInit' => false,
+		'user' => array{ 'name' => 'Some Name', 'id' => rand() },
 	*/
 	$ice_settings = array(
 		'user' => array(
-			'name' => esc_html( $current_user->display_name ),
+			'name' => esc_attr( $current_user->display_name ),
 			'id' => $current_user->ID
 		),
 		'manualInit' => true,
