@@ -11,11 +11,13 @@ With gettit, you can take advantage of all the jammit goodness - configuration/a
 ### Docs
 
 [documentation](http://delambo.github.com/gettit/)
+
 [annotated source](http://delambo.github.com/gettit/docs/annotated/)
 
 ### Download
 
 [development version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.js)
+
 [production version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.min.js)
 
 ## Usage
