@@ -20,6 +20,10 @@ With gettit, you can take advantage of all the jammit goodness - configuration/a
 
 [production version 0.3.1](http://delambo.github.com/gettit/downloads/gettit.min.js)
 
+### Code
+
+[github](https://github.com/delambo/gettit)
+
 ## Usage
 
 ### Example Script Tag
@@ -82,7 +86,7 @@ Environment - development or production - which determines how gettit loads. In 
 
 ### data-version
 
-Value to be appended to production asset urls when fetching. For example, given the version `2.1.1`, gettit will append `?r=2.1.1` to all assset urls. This is helpful to bust the cache for different release versions in production. The verion attribute is optional for development/debug mode, where gettit will auto-generate a unique id to append to asset urls when fetching to always avoid browser caching.
+Value to be appended to production asset urls when fetching. For example, given the version `2.1.1`, gettit will append `?r=2.1.1` to all assset urls. This is helpful to bust the cache for different release versions in production. The version attribute is optional for development/debug mode, where gettit will auto-generate a unique id to append to asset urls when fetching to always avoid browser caching.
 
 ### data-env-path
 
