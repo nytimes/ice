@@ -2,23 +2,21 @@
 
 Where jammit falls in love with javascript.
 
-### Docs
-
-[documentation](http://delambo.github.com/gettit/)
-
-[annotated source](http://delambo.github.com/gettit/docs/annotated/)
-
-### Download
-
-[development version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.js)
-
-[production version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.min.js)
-
 ## Jamming Off Rails
 
 [jammit](http://documentcloud.github.com/jammit/) provides the ability to package, concatenate and compress javascript and CSS resources and allows you to pre cache assets by using the eponymous utility. However, to take advantage of the packaging and templating facilities the application has to be running in a Rails environment. This is where gettit comes in.
 
 With gettit, you can take advantage of all the jammit goodness - configuration/assets definition, packaging based on environment, debug mode, etc - but without Rails. In place of Rails templating, gettit uses a single script tag for configuration so it should work in any framework/environment.
+
+### Docs
+
+[documentation](http://delambo.github.com/gettit/)
+[annotated source](http://delambo.github.com/gettit/docs/annotated/)
+
+### Download
+
+[development version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.js)
+[production version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.min.js)
 
 ## Usage
 
