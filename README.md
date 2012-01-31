@@ -16,9 +16,9 @@ With gettit, you can take advantage of all the jammit goodness - configuration/a
 
 ### Download
 
-[development version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.js)
+[development version 0.3.1](http://delambo.github.com/gettit/downloads/gettit.js)
 
-[production version 0.3.0](http://delambo.github.com/gettit/downloads/gettit.min.js)
+[production version 0.3.1](http://delambo.github.com/gettit/downloads/gettit.min.js)
 
 ## Usage
 
