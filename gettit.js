@@ -19,6 +19,8 @@
 		templateExt: 'jst',
 		// The function used to compile javascript templates.
 		templateFunc: '',
+		// Version number appended to request urls as a query param. Useful for busting cache.
+		version: '',
 		// Callback called after all javascripts/templates are loaded.
 		cb: '(function(){})'
 	};
@@ -28,12 +30,12 @@
 	// using the given `options`. In debug/development, fetch the `options.assets` file.
 	var load = function(options) {
 		var params = extend(defaults, options),
-			cacheBust = '?r=' + new Date().getTime(),
 			cb = function() { params.cb && eval(params.cb+'()'); };
+		var cacheBust = '?r=' + params.version || new Date().getTime()
 
 		if(params.env == 'production' && !params.isDebugging) {
 			// Production mode - fetch assets from params directly.
-			fetchAssets(params.jsAssets, params.cssAssets, params.path, '', cb);
+			fetchAssets(params.jsAssets, params.cssAssets, params.path, cacheBust, cb);
 		} else {
 			// Development/debug mode - get package names from the filenames in `jsAssets` and `cssAssets`. 
 			var jsPackages = [], cssPackages = [];
@@ -633,6 +635,7 @@
 		assets: tag.getAttribute('data-assets') || undefined,
 		env: tag.getAttribute('data-env') || undefined,
 		path: tag.getAttribute('data-env-path') || undefined,
+		version: tag.getAttribute('data-version') || undefined,
 		cb: tag.getAttribute('data-callback') || undefined
 	});
 	

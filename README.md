@@ -32,6 +32,7 @@ The following is an example script that would be included on a page (static, dyn
              data-js-assets = "js/core.js, js/common.js, js/util.js"
              data-css-assets = "css/core.css, css/common.css"
              data-env = "production"
+             data-version = "2.1.1"
              data-env-path = "http://example.com/assets/"
              data-callback = "window.test"
      ></script>
@@ -78,6 +79,10 @@ Comma-delimited list of paths to the packaged css files, relative to the path in
 ### data-env
 
 Environment - development or production - which determines how gettit loads. In development, gettit will load files listed under the packages in the assets.yml individually, and will compile any javascript templates. In production, gettit will load the asset packages listed in the `data-js-assets` and `data-css-assets`.
+
+### data-version
+
+Value to be appended to production asset urls when fetching. For example, given the version `2.1.1`, gettit will append `?r=2.1.1` to all assset urls. This is helpful to bust the cache for different release versions in production. The verion attribute is optional for development/debug mode, where gettit will auto-generate a unique id to append to asset urls when fetching to always avoid browser caching.
 
 ### data-env-path
 

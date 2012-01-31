@@ -1,0 +1,10 @@
+docs
+gettit.min.js
+gettit.min.js.gz
+*.diff
+*.patch
+*.bak
+*.log
+*.swp
+.DS_Store
+.project
