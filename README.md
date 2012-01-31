@@ -12,6 +12,8 @@ With gettit, you can take advantage of all the jammit goodness - configuration/a
 
 ## Usage
 
+### Example Script Tag
+
 The following is an example script that would be included on a page (static, dynamically injected, or possibly generated/templated):
 
      <script type = "text/javascript" 
@@ -23,6 +25,8 @@ The following is an example script that would be included on a page (static, dyn
              data-env-path = "http://example.com/assets/"
              data-callback = "window.test"
      ></script>
+
+### Example Jammit Assets File
 
 The following is an example (the corresponding) assets.yml file you would use for dependency management and building in jammit:
 
@@ -49,17 +53,29 @@ The following is an example (the corresponding) assets.yml file you would use fo
 
 ## Script Attributes API
 
-**data-assets:** Path to the jammit assets config file, relative to the `data-env-path`, if it exists, or it can be a full url.
+### data-assets
 
-**data-js-assets:** Comma-delimited list of paths to the packaged js files, relative to the path in `data-env-path`, if it exists, or they can be full urls.
+Path to the jammit assets config file, relative to the `data-env-path`, if it exists, or it can be a full url.
 
-**data-css-assets:** Comma-delimited list of paths to the packaged css files, relative to the path in `data-env-path`, if it exists, or they can be full urls.
+### data-js-assets
 
-**data-env:** Environment - development or production - which determines how gettit loads. In development, gettit will load files listed under the packages in the assets.yml individually, and will compile any javascript templates. In production, gettit will load the asset packages listed in the `data-js-assets` and `data-css-assets`.
+Comma-delimited list of paths to the packaged js files, relative to the path in `data-env-path`, if it exists, or they can be full urls.
 
-**data-env-path:** Optional path/uri to be prepended to package paths in `data-js-assets`, `data-css-assets`, and the assets config file defined in `data-assets`.
+### data-css-assets
 
-**data-callback:** Evaluated as a function after gettit fully loads the js and css packages.
+Comma-delimited list of paths to the packaged css files, relative to the path in `data-env-path`, if it exists, or they can be full urls.
+
+### data-env
+
+Environment - development or production - which determines how gettit loads. In development, gettit will load files listed under the packages in the assets.yml individually, and will compile any javascript templates. In production, gettit will load the asset packages listed in the `data-js-assets` and `data-css-assets`.
+
+### data-env-path
+
+Optional path/uri to be prepended to package paths in `data-js-assets`, `data-css-assets`, and the assets config file defined in `data-assets`.
+
+### data-callback 
+
+Evaluated as a function after gettit fully loads the js and css packages.
 
 ## Debugging
 
@@ -75,8 +91,18 @@ There isn't too much new here - this is exactly how jammit works by itself in a 
 
 ## Compatibility
 
-* If assets are fetched cross-domain in production _when using debug mode_, or in development, then CORS support is required on the server that houses the assets.
+### Cross-Domain Requests
 
-* Browser support is the same as [lab.js support](http://labjs.com/documentation.php), unless files in production and/or development are being fetched cross-domain, which requires CORS support, and [mostly affects IE, requiring version 8+](http://caniuse.com/cors).
+If assets are fetched cross-domain in production _when using debug mode_, or in development, then CORS support is required on the server that houses the assets.
 
-* Unfortunately, you can't use glob rules in the jammit configuration/assets file because gettit wouldn't know how to expand the patterns for fetching files and paths. I appologize in advance for all of your time, explicitly listing asset files.
+### Browser Support
+
+Browser support is the same as [lab.js support](http://labjs.com/documentation.php), unless files in production and/or development are being fetched cross-domain, which requires CORS support, and [mostly affects IE, requiring version 8+](http://caniuse.com/cors).
+
+### Limitations
+
+Unfortunately, you can't use glob rules in the jammit configuration/assets file because gettit wouldn't know how to expand the patterns for fetching files and paths. I appologize in advance for all of your time, explicitly listing asset files.
+
+## License
+
+MIT
