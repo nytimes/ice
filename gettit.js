@@ -56,22 +56,26 @@
 				});
 
 				// Use the `javascripts` yaml definition to create `scripts` and `templates` file lists.
-				each(keys(yaml.javascripts), function(packageName) {
-					if(indexOf(jsPackages, packageName) > -1) {
-						each(yaml.javascripts[packageName], function(js) {
-							if(js.substr(js.length-3) == '.js')
-								scripts.push(js);
-							else if(js.substr(js.length-params.templateExt.length) == params.templateExt)
-								templates.push(js);
-						});
-					}
-				});
-				
+				if(yaml.javascripts) {
+					each(jsPackages, function(package) {
+						if(yaml.javascripts[package]) {
+							each(yaml.javascripts[package], function(js) {
+								if(js.substr(js.length-3) == '.js')
+									scripts.push(js);
+								else if(js.substr(js.length-params.templateExt.length) == params.templateExt)
+									templates.push(js);
+							});
+						}
+					});
+				}
+
 				// Use the `stylesheets` yaml definition to create a `css` file list.
-				each(keys(yaml.stylesheets), function(packageName) {
-					if(indexOf(cssPackages, packageName) > -1)
-						css = css.concat(yaml.stylesheets[packageName]);
-				});
+				if(yaml.stylesheets) {
+					each(cssPackages, function(package) {
+						if(yaml.stylesheets[package])
+							css = css.concat(yaml.stylesheets[package]);
+					});
+				}
 			
 				// Fetch the assets parsed from yaml. In the callback, fetch and compile the templates.
 				fetchAssets(scripts, css, params.path, cacheBust, function() {
