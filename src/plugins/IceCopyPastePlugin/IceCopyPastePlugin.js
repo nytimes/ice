@@ -1,3 +1,48 @@
+(function() {
+
+var exports = this, IceCopyPastePlugin;
+
+IceCopyPastePlugin = function(ice_instance) {
+	this._ice = ice_instance;
+	this._tmpNode = null;
+	this._tmpNodeTagName = 'icepaste';
+	this._pasteId = 'icepastediv';
+	var self = this;
+	
+	// API
+
+	// 'formatted' - paste will be MS Word cleaned.
+	// 'formattedClean' - paste will be MS Word cleaned, insert and 
+	//    delete tags will be removed keeping insert content in place,
+	//    and tags not found in `preserve` will be stripped.
+	this.pasteType = 'formattedClean';
+
+	// Subset of tags that will not be stripped when pasteType
+	// is set to 'formattedClean'. Parameter is of type string with
+	// comma delimited tag and attribute definitions. For example:
+	//   'p,a[href],i[style|title],span[*]'
+	// Would allow `p`, `a`, `i` and `span` tags. The attributes for
+	// each one of these tags would be cleaned as follows: `p` tags
+	// would have all attributes removed, `a` tags will have all but 
+	// `href` attributes removed, `i` tags will have all but `style` 
+	// and `title` attributes removed, and `span` tags will keep all attributes.
+	this.preserve = 'p';
+
+	// Callback triggered before any paste cleaning happens
+	this.beforePasteClean = function(body) { return body; };
+
+	// Callback triggered at the end of the paste cleaning
+	this.afterPasteClean = function(body) { return body; };
+
+	// Event Listeners
+	ice_instance.element.oncopy = function() { return self.handleCopy.apply(self) };
+	ice_instance.element.oncut = function() { return self.handleCut.apply(self) };
+	// We can't listen for `onpaste` unless we use an algorithm that temporarily switches
+	// out the body and lets the browser paste there (found it hard to maintain in mce).
+	// Instead, we'll watch the keydown event and handle paste with a typical temp element 
+	// algorithm, which means that pasting from the context menu won't work.
+}
+
 IceCopyPastePlugin.prototype = {
 
 	setSettings: function(settings) {
