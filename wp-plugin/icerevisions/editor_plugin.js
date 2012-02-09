@@ -18,8 +18,11 @@
 					function() {
 						var DOM = tinymce.DOM, content;
 
-						if ( ed.id != 'content' || !ice.isTracking || ed.isHidden() )
+						if ( ed.id != 'content' || !ice.isTracking )
 							return;
+
+						if ( ed.isHidden() )
+							ed.load();
 
 						content = ed.getContent();
 						if ( ed.getParam('wpautop', true) && typeof(switchEditors) != 'undefined' )
@@ -57,6 +60,9 @@
 			// init Ice after MCE is ready and content is loaded and re-init Ice when switching from HTML to Visual mode
 			ed.onLoadContent.add(function(ed, o) {
 				if ( ed.id != 'content' && ed.id != 'wp_mce_fullscreen' ) // only on the main editor 
+					return;
+
+				if ( ed.isHidden() )
 					return;
 
 				if ( o.initial )

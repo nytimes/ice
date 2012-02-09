@@ -6,6 +6,7 @@ IceCopyPastePlugin = function(ice_instance) {
 	this._ice = ice_instance;
 	this._tmpNode = null;
 	this._tmpNodeTagName = 'icepaste';
+	this._pasteId = 'icepastediv';
 	var self = this;
 	
 	// API
@@ -36,7 +37,10 @@ IceCopyPastePlugin = function(ice_instance) {
 	// Event Listeners
 	ice_instance.element.oncopy = function() { return self.handleCopy.apply(self) };
 	ice_instance.element.oncut = function() { return self.handleCut.apply(self) };
-	ice_instance.element.onpaste = function() { return self.handlePaste.apply(self) };
+	// We can't listen for `onpaste` unless we use an algorithm that temporarily switches
+	// out the body and lets the browser paste there (found it hard to maintain in mce).
+	// Instead, we'll watch the keydown event and handle paste with a typical temp element 
+	// algorithm, which means that pasting from the context menu won't work.
 }
 
 IceCopyPastePlugin.prototype = {
@@ -51,6 +55,12 @@ IceCopyPastePlugin.prototype = {
 		this.setupPreserved();
 	},
 
+	keyDown: function(e) {
+		if(e.keyCode == 86) {
+			this.handlePaste();
+		}
+	},
+	
 	/**
 	 * Saves the current selection in a document fragment, then calls a cut handler
 	 * after a brief timeout, giving the browser time to cut.
@@ -128,32 +138,30 @@ IceCopyPastePlugin.prototype = {
 		this._tmpNode = this._ice.env.document.createElement(this._tmpNodeTagName);
 		range.insertNode(this._tmpNode);
 
-		var frag = ice.dom.extractContent(this._ice.element);
-		
-		var newrange = this._ice.env.selection.createRange();
-		newrange.selectNodeContents(this._ice.element);
-		this._ice.env.selection.addRange(newrange);
-		
 		switch (this.pasteType) {
 			case 'formatted':
-				this.handleFormattedPaste(frag);
+				this.setupPaste();
 				break;
 			case 'formattedClean':
-				this.handleFormattedPaste(frag, true);
+				this.setupPaste(true);
 				break;
 		}
 	   return true;
 	},
 
 	/**
-	 * Set a timeout, giving the browser time to paste the new content into
-	 * the ice element, then call the paste handler.
+	 * Create a temporary div and set focus to it so that the browser can paste into it. 
+	 * Set a timeout to push a paste handler on to the end of the execution stack.
 	 */
-	handleFormattedPaste: function(frag, stripTags) {
-		var self = this;
-		window.setTimeout(function() {
-			self.handleFormattedPasteValue(frag, stripTags);
-		}, 1);
+	setupPaste: function(stripTags) {
+		var div = this.createDiv(this._pasteId), self = this;
+		div.focus();
+
+		div.onpaste = function() {
+			setTimeout(function() {
+				self.handlePasteValue(stripTags);
+			}, 1);
+		};
 		return true;
 	},
 
@@ -162,11 +170,10 @@ IceCopyPastePlugin.prototype = {
 	 * paste, format it, remove any Microsoft or extraneous tags outside of `this.preserve`
 	 * and merge the pasted content into the original fragment body.
 	 */
-	handleFormattedPasteValue: function(frag, stripTags) {
-
+	handlePasteValue: function(stripTags) {
 		// Get the pasted content.
-		var html = this.beforePasteClean(this._ice.element.innerHTML);
-		
+		var html = ice.dom.getHtml(document.getElementById(this._pasteId));
+
 		var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
 		if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {  
 			html = ice.dom.getHtml(html);
@@ -179,13 +186,8 @@ IceCopyPastePlugin.prototype = {
 		}
 
 		html = this.afterPasteClean.call(this, html);
-
 		html = ice.dom.trim(html);
-		
-		// Restore the body with the original content fragment.
-		this._ice.element.innerHTML = '';
-		this._ice.element.appendChild(frag);
-		
+
 		var range = this._ice.getCurrentRange();
 		range.setStartAfter(this._tmpNode);
 		range.collapse(true);
@@ -293,14 +295,13 @@ IceCopyPastePlugin.prototype = {
 		var div = this._ice.env.document.createElement('div');
 		div.id = id;
 		div.setAttribute('contentEditable', true);
-		ice.dom.setStyle(div, 'width', '0px');
-		ice.dom.setStyle(div, 'height', '0px');
+		ice.dom.setStyle(div, 'width', '1px');
+		ice.dom.setStyle(div, 'height', '1px');
 		ice.dom.setStyle(div, 'overflow', 'hidden');
-		// Use position fixed to prevent page scrolling when the div is appended to body.
 		ice.dom.setStyle(div, 'position', 'fixed');
 		ice.dom.setStyle(div, 'top', '10px');
 		ice.dom.setStyle(div, 'left', '10px');
-	
+
 		document.body.appendChild(div);
 		return div;
 	},
@@ -606,3 +607,4 @@ ice.dom.noInclusionInherits(IceCopyPastePlugin, ice.IcePlugin);
 exports._plugin.IceCopyPastePlugin = IceCopyPastePlugin;
 
 }).call(this.ice);
+

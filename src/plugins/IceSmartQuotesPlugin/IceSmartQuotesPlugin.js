@@ -13,15 +13,15 @@ IceSmartQuotesPlugin.prototype = {
 	 */
 	convert: function(element) {
 		var self = this;
-		ice.dom.each(element.getElementsByTagName(this.ice.blockEl), function(i, el) {
+		ice.dom.each(element.getElementsByTagName(this._ice.blockEl), function(i, el) {
 			var deletes = [];
 			try {
-				self.ice.placeholdDeletes();
+				self._ice.placeholdDeletes();
 				self._convertBlock(el);
 			} catch(e) {
 				console.error(e);
 			} finally {
-				self.ice.revertDeletePlaceholders();
+				self._ice.revertDeletePlaceholders();
 			}
 		});
 	},
@@ -49,7 +49,7 @@ IceSmartQuotesPlugin.prototype = {
 		var isDouble = function(c) { return c === duble || c === smartDoubleLeft || c === smartDoubleRight; };
 		var isSingle = function(c) { return c === single || c === smartSingleLeft || c === smartSingleRight; };
 		
-		var range = this.ice.selection.createRange();
+		var range = this._ice.selection.createRange();
 		var block = el.cloneNode(true);
 		range.setStart(block, 0);
 		range.collapse(true);
@@ -161,7 +161,7 @@ IceSmartQuotesPlugin.prototype = {
 	},
 
 	replaceCharAtPosition: function(c, pos, el) {
-		var range = this.ice.selection.createRange();
+		var range = this._ice.selection.createRange();
 		range.setStart(el, 0);
 		while(pos-- > 1) {
 			range.moveStart('character', 1);
@@ -173,7 +173,7 @@ IceSmartQuotesPlugin.prototype = {
 		range.collapse(true);
 		range.moveEnd('character', 1);
 		range.extractContents();
-		this.ice.insert(c, range);
+		this._ice.insert(c, range);
 	}
 
 };

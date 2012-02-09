@@ -8,7 +8,7 @@ jQuery(document).ready(function($){
 		if ( typeof(tinymce) == 'undefined' ) {
 			e.preventDefault();
 			alert('Please remove all revision tracking spans before ' + action);
-		} else if ( !tinymce.get('content') || tinymce.get('content').isHidden() ) {
+		} else if ( !tinymce.get('content') ) {
 			e.preventDefault();
 			alert('Please switch to Visual mode before ' + action);
 		} else {

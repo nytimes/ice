@@ -14,7 +14,10 @@
 		insertTag: 'span',
 		deleteClass: 'del',
 		insertClass: 'ins',
-		attrPrefix: 'data-',
+		changeIdAttribute: 'data-cid',
+		userIdAttribute: 'data-userid',
+		userNameAttribute: 'data-username',
+		timeAttribute: 'data-time',
 		preserveOnPaste: 'p',
 		user: { name: 'Unknown User', id: Math.random() },
 		isTracking: true,
@@ -32,6 +35,24 @@
 		init: function(ed, url) {
 			var self = this, changeEditor = {};
 
+			/*
+			To add MCE custom event handlers:
+			ed.iceAfterLoad.add( function(){ //callback }, (optional scope) );
+
+			Can also use:
+			ed.afterInit.addToTop() to add with higher event priority
+			ed.afterInit.remove(func_ref) to remove observer function (named functions only)
+			*/
+
+			ed.iceAfterInit = new tinymce.util.Dispatcher(self);
+			ed.iceAfterClean = new tinymce.util.Dispatcher(self);
+		//	ed.iceAfterPasteClean = new tinymce.util.Dispatcher(self); // no way to convert to event?
+
+			ed.iceAccept = new tinymce.util.Dispatcher(self);
+			ed.iceReject = new tinymce.util.Dispatcher(self);
+			ed.iceAcceptAll = new tinymce.util.Dispatcher(self);
+			ed.iceRejectAll = new tinymce.util.Dispatcher(self);
+
 			/**
 			 * After the editor renders, initialize ice.
 			 */
@@ -43,8 +64,8 @@
 				self.deleteSelector = '.' + self.deleteClass;
 
 				// Add insert and delete tag/attribute rules.
-				// Important: keep `id` and `style` in attributes list in case `insertTag` is a `span` - tinymce uses temporary spans with ids
-				// and spans with inline styles to set font color.
+				// Important: keep `id` and `style` in attributes list in case `insertTag` is a `span` - tinymce uses spans
+				// with ids and inline styles.
 				ed.serializer.addRules(self.insertTag + '[id|class|style|title|username|userid|cid]');
 
 				if ( self.insertTag != self.deleteTag )
@@ -53,7 +74,7 @@
 				ed.serializer.addRules('tempdel[data-allocation]');
 
 				dom.loadCSS(self.css.indexOf('://') > 0 ? self.css : (url + '/' + self.css));
-				
+
 				if ( !self.manualInit )
 					ed.execCommand('initializeice');
 
@@ -75,7 +96,10 @@
 						element: ed.getBody(),
 						isTracking: self.isTracking,
 						contentEditable: self.contentEditable,
-						attrNamePrefix: self.attrPrefix,
+						changeIdAttribute: self.changeIdAttribute,
+						userIdAttribute: self.userIdAttribute,
+						userNameAttribute: self.userNameAttribute,
+						timeAttribute: self.timeAttribute,
 						currentUser: {
 							id: self.user.id,
 							name: self.user.name
@@ -89,6 +113,7 @@
 								settings: {
 									pasteType: 'formattedClean',
 									preserve: self.preserveOnPaste,
+									beforePasteClean: self.beforePasteClean,
 									afterPasteClean: self.afterPasteClean
 								}
 							}
@@ -97,12 +122,15 @@
 							insertType: {tag: self.insertTag, alias: self.insertClass},
 							deleteType: {tag: self.deleteTag, alias: self.deleteClass}
 						}
-					}, function() {
-						ed.onEvent.add(function(ed, e) {
-							return changeEditor.handleEvent(e);
-						});
-						setTimeout(function() { self.afterInit.call(self); }, 10);
+					}).startTracking();
+					ed.onEvent.add(function(ed, e) {
+						return changeEditor.handleEvent(e);
 					});
+					setTimeout(function() {
+						self.afterInit.call(self);
+						// MCE custom event
+						ed.iceAfterInit.dispatch(self);
+					}, 1);
 				}, 5);
 			});
 
@@ -124,6 +152,7 @@
 			 */
 			ed.addCommand('icecleanbody', function(el) {
 				var body = changeEditor.getCleanContent(el || ed.getContent(), self.afterClean);
+				ed.iceAfterClean.dispatch({body: body, scope: self});
 				return body;
 			});
 
@@ -191,9 +220,22 @@
 			 * insert tag and keeps the contents in place.
 			 */
 			ed.addCommand('iceaccept', function(node) {
+				var n = node || ed.selection.getNode(), parents = [];
 				ed.undoManager.add();
-				changeEditor.acceptChange(node || ed.selection.getNode());
-				cleanup();
+
+				//changeEditor.acceptChange(node);
+
+				ed.iceAccept.dispatch({node: n, scope: self});
+
+				if ( isInsert(n) ) {
+					ed.dom.remove(n, true);
+				} else if ( isDelete(n) ) {
+					parents.push( n.parentNode );
+					ed.dom.remove(n);
+				}
+
+				cleanup(parents);
+				ed.execCommand('ice_initenv'); // temp until the event is used?
 			});
 
 			/**
@@ -202,9 +244,21 @@
 			 * in the case of an insert, removes the node.
 			 */
 			ed.addCommand('icereject', function(node) {
+				var n = node || ed.selection.getNode(), parents = [];
 				ed.undoManager.add();
-				changeEditor.rejectChange(node || ed.selection.getNode());
-				cleanup();
+
+				//changeEditor.rejectChange(node);
+				ed.iceReject.dispatch({node: n, scope: self});
+
+				if ( isInsert(n) ) {
+					parents.push( n.parentNode );
+					ed.dom.remove(n);
+				} else if ( isDelete(n) ) {
+					ed.dom.remove(n, true);
+				}
+
+				cleanup(parents);
+				ed.execCommand('ice_initenv'); // temp until the event is used?
 			});
 
 			/**
@@ -212,9 +266,21 @@
 			 * tags keeping the inner content in place. Defers to cleaning technique.
 			 */
 			ed.addCommand('iceacceptall', function() {
+				var inserts = ed.dom.select(self.insertSelector), deletes = ed.dom.select(self.deleteSelector), parents = [];
+
 				ed.undoManager.add();
-				changeEditor.acceptAll();
-				cleanup();
+				//changeEditor.acceptAll();
+
+				tinymce.each(deletes, function(el){
+					parents.push( el.parentNode );
+				});
+
+				ed.iceAcceptAll.dispatch(self);
+				ed.dom.remove(deletes);
+				ed.dom.remove(inserts, true);
+
+				cleanup(parents);
+				ed.execCommand('ice_initenv'); // temp until the event is used?
 			});
 
 			/**
@@ -222,9 +288,21 @@
 			 * keeping the inner content in place.
 			 */
 			ed.addCommand('icerejectall', function() {
+				var inserts = ed.dom.select(self.insertSelector), deletes = ed.dom.select(self.deleteSelector), parents = [];
+
 				ed.undoManager.add();
-				changeEditor.rejectAll();
-				cleanup();
+				//changeEditor.rejectAll();
+
+				tinymce.each(inserts, function(el){
+					parents.push( el.parentNode );
+				});
+
+				ed.iceRejectAll.dispatch(self);
+				ed.dom.remove(deletes, true);
+				ed.dom.remove(inserts);
+
+				cleanup(parents);
+				ed.execCommand('ice_initenv'); // temp until the event is used?
 			});
 
 			/**
@@ -371,11 +449,11 @@
 				if (isInsideChangeTag(n)) {
 					cm.setDisabled('iceaccept', false);
 					cm.setDisabled('icereject', false);
+					cleanup();
 				} else {
 					cm.setDisabled('iceaccept', true);
 					cm.setDisabled('icereject', true);
 				}
-				cleanup();
 			});
 
 			/**
@@ -386,9 +464,32 @@
 				return !!ed.dom.getParent(n, self.insertSelector + ',' + self.deleteSelector);
 			}
 
-			function cleanup() {
+			function isInsert(n) {
+				return ed.dom.is(n, self.insertSelector);
+			}
+
+			function isDelete(n) {
+				return ed.dom.is(n, self.deleteSelector);
+			}
+
+			function cleanup(parents) {
 				var empty = ed.dom.select(self.insertSelector + ':empty,' + self.deleteSelector + ':empty');
-				ed.dom.remove(empty);
+				parents = parents || [];
+
+				if ( empty && empty[0] ) {
+					tinymce.each(empty, function(el){
+						parents.push( el.parentNode );
+					});
+					ed.dom.remove(empty);
+				}
+
+				if ( parents && parents[0] ) {
+					tinymce.each(parents, function(el){
+						if ( ed.dom.is(el, 'p:empty, li:empty, span:empty, div:empty') )
+							ed.dom.remove(el);
+					});
+				}
+
 				// Browsers insert breaks into empty paragraphs as a space holder - clean that up
 				// Not playing nice with Webkit...
 				/*tinymce.each(ed.dom.select('br'), function(br, i) {
