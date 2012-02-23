@@ -56,6 +56,10 @@ IceCopyPastePlugin.prototype = {
 	},
 
 	keyDown: function(e) {
+		if (e.metaKey !== true && e.ctrlKey !== true) {
+    		return;
+    	}
+		
 		if(e.keyCode == 86) {
 			this.handlePaste();
 		}
