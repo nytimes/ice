@@ -485,11 +485,15 @@ InlineChangeEditor.prototype = {
 	/**
 	 * Add a new change tracking typeName with the given tag and alias.
 	 */
-	addChangeType: function(typeName, tag, alias) {
-		this.changeTypes[typeName] = {
+	addChangeType: function(typeName, tag, alias, action) {
+		var changeType = this.changeTypes[typeName];
+		
+		changeType = {
 			tag: tag,
 			alias: alias
 		};
+		
+		if (action) changeType.action = action;
 	},
 
 	/**
