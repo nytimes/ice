@@ -149,7 +149,7 @@ dom.stripEnclosingTags = function(content, allowedTags) {
 	var c = jQuery(content);
 	c.find('*').not(allowedTags).replaceWith(function() {
 		var $this = jQuery(this);
-		return $this.is('iframe') ? "" : $this.contents();
+		return $this.contents();
 	});
 	return c[0];
 };
