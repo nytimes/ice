@@ -12,6 +12,7 @@ defaults = {
 	attrValuePrefix: '',
 	// Block element tagname, which wrap text and other inline nodes in `this.element`
 	blockEl: 'p',
+	blockEls: ['p', 'ol', 'ul', 'li', 'h2', 'blockquote'],
 	// Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
 	// in ice node class attributes - cts1, cts2, cts3, ...
 	stylePrefix: 'cts',
@@ -111,7 +112,7 @@ InlineChangeEditor.prototype = {
 	 */
 	initializeRange: function() {
 		var range = this.selection.createRange();
-		range.setStart(ice.dom.find(this.element, this.blockEl)[0], 0);
+		range.setStart(ice.dom.find(this.element, this.blockEls.join(', '))[0], 0);
 		range.collapse(true);
 		this.selection.addRange(range);
 		if(this.env.frame)
@@ -517,7 +518,7 @@ InlineChangeEditor.prototype = {
 				// Moving outside of the element and nothing is left on the page
 				onEdge = true;
 			}
-			if(onEdge || ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEl)) {
+			if(onEdge || ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
 				range.setStartAfter(voidEl);
 				range.collapse(true);
 				break;
@@ -708,8 +709,8 @@ InlineChangeEditor.prototype = {
 		// Bookmark the range and get elements between.
 		var bookmark = new ice.Bookmark(this.env, range),
 			elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
-			b1 = ice.dom.parents(range.startContainer, this.blockEl)[0],
-			b2 = ice.dom.parents(range.endContainer, this.blockEl)[0],
+			b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
+			b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
 			betweenBlocks = new Array(),
 			eln = elements.length;
 
@@ -717,7 +718,7 @@ InlineChangeEditor.prototype = {
 		for (var i = 0; i < eln; i++) {
 			var elem = elements[i];
 
-			if(ice.dom.is(elem, this.blockEl))
+			if(ice.dom.is(elem, this.blockEls.join(', ')))
 				betweenBlocks.push(elem);
 
 			// Ignore empty space
@@ -734,7 +735,7 @@ InlineChangeEditor.prototype = {
 					ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
 					if(ice.dom.getNodeTextContent(block).length === 0) {
 						continue;
-					} else if(ice.dom.is(elem, this.blockEl)) {
+					} else if(ice.dom.is(elem, this.blockEls.join(', '))) {
 						// If we are deleting a block tag then wrap all inner html in a delete. Simplest, but 
 						// not the best solution since it will wrap deletes and other void non-tracking nodes.
 						var ctNode = this.createIceNode('deleteType');
@@ -779,11 +780,11 @@ InlineChangeEditor.prototype = {
 
 	_deleteFromRight: function(range) {
 	
-		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0] 
-				|| ice.dom.is(range.startContainer, this.blockEl) && range.startContainer 
+		var parentBlock = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] 
+				|| ice.dom.is(range.startContainer, this.blockEls.join(', ')) && range.startContainer 
 				|| null;
 		var nextBlock = parentBlock && parentBlock.nextSibling || null;
-		var isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) 
+		var isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEls.join(', ')) 
 				&& ice.dom.getNodeTextContent(range.startContainer) == '');
 		
 		// Move end of range to position it on the inside of any adjacent container that it 
@@ -800,14 +801,14 @@ InlineChangeEditor.prototype = {
 		}
 
 		// Deleting from beginning of block to end of previous block - merge the blocks
-		if(ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEl) || isEmptyBlock) {
+		if(ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
 			// Since the range is moved by character, it may have passed through empty blocks.
 			// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-			if(nextBlock !== ice.dom.parents(range.endContainer, this.blockEl)[0])
+			if(nextBlock !== ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0])
 				range.setEnd(nextBlock, 0);
 			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
 			ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
-			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEl)[0] || parentBlock, true);
+			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || parentBlock, true);
 		}
 		
 		// If we are deleting into, or in, a non-tracking/void container then move cursor to left of container
@@ -890,12 +891,15 @@ InlineChangeEditor.prototype = {
 
 	_deleteFromLeft: function(range) {
 
-		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0]
-				|| ice.dom.is(range.startContainer, this.blockEl)
+//		var blockElement = ice.dom.getBlockParent(range.startContainer, this.element) || ice.dom.isBlockElement(range.startContainer) && 
+	//										 range.startContainer || null;
+
+		var parentBlock = ice.dom.getBlockParent(range.startContainer, this.element)
+				|| ice.dom.isBlockElement(range.startContainer)
 				&& range.startContainer
 				|| null,
-			prevBlock = parentBlock && parentBlock.previousSibling || null,
-			isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) && ice.dom.getNodeTextContent(range.startContainer) == '');
+			prevBlock = parentBlock && (parentBlock.previousSibling || ice.dom.getBlockParent(parentBlock, this.element)) /*.previousSibling*/ || null,
+			isEmptyBlock = (ice.dom.isBlockElement(range.startContainer) && ice.dom.getNodeTextContent(range.startContainer) == '');
 		
 		// Move range to position the cursor on the inside of any adjacent container that it is going
 		// to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
@@ -913,14 +917,18 @@ InlineChangeEditor.prototype = {
 		}
 	
 		// Deleting from beginning of block to end of previous block - merge the blocks
-		if(ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+		if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
 			// Since the range is moved by character, it may have passed through empty blocks.
 			// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-			if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
+			if(prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
 				range.setStart(prevBlock, 0);
+			} 
+			//else if (prevBlock == ice.dom.getBlockParent(parentBlock, this.element)) { // Blocks on blocks
+				//range.setStart(prevBlock, 0);
+			//}
 			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
 			ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
-			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
+			return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
 		}
 		
 		// If we are deleting into, or in, a void container then move cursor to left of container

@@ -227,7 +227,7 @@ dom.isBlockElement = function (element) {
 	case 'h4':
 	case 'h5':
 	case 'h6':
-	case 'img':
+	//case 'img':
 		return true;
 		break;
 	default:
@@ -283,6 +283,27 @@ dom.isChildOfTagName = function (el, name) {
 	} catch (e) {}
 	return parentNode;
 };
+
+
+dom.isChildOfTagNames = function (el, names) {
+	var parentNode = null;
+	try {
+		while (el && el.parentNode) {
+			if (el.parentNode && el.parentNode.tagName) {
+				tagName = el.parentNode.tagName.toLowerCase();
+				for (var i = 0; i < names.length; i++) {
+					if (tagName === names[i]) {
+						parentNode = el.parentNode;
+						break;
+					}
+				}
+			}
+			el = el.parentNode;
+		}
+	} catch (e) {}
+	return parentNode;
+};
+
 dom.isChildOfClassName = function (el, name) {
 	var parentNode = null;
 	try {
@@ -691,10 +712,17 @@ dom.getBlockParent = function(node, container) {
 	return null;
 };
 
-dom.onBlockBoundary = function(leftContainer, rightContainer, blockEl) {
+dom.onBlockBoundary = function(leftContainer, rightContainer, blockEls) {
 	if(!leftContainer || !rightContainer) return false
-	var bleft = dom.isChildOfTagName(leftContainer, blockEl) || dom.is(leftContainer, blockEl) && leftContainer || null;
-	var bright = dom.isChildOfTagName(rightContainer, blockEl) || dom.is(rightContainer, blockEl) && rightContainer || null;
+	var bleft = dom.isChildOfTagNames(leftContainer, blockEls) || dom.is(leftContainer, blockEls.join(', ')) && leftContainer || null;
+	var bright = dom.isChildOfTagNames(rightContainer, blockEls) || dom.is(rightContainer, blockEls.join(', ')) && rightContainer || null;
+	return (bleft !== bright);
+};
+
+dom.isOnBlockBoundary = function(leftContainer, rightContainer, container) {
+	if(!leftContainer || !rightContainer) return false
+	var bleft = dom.getBlockParent(leftContainer, container) || dom.isBlockElement(leftContainer, container) && leftContainer || null;
+	var bright = dom.getBlockParent(rightContainer, container) || dom.isBlockElement(rightContainer, container) && rightContainer || null;
 	return (bleft !== bright);
 };
 
@@ -716,7 +744,7 @@ dom.mergeContainers = function(node, mergeToNode) {
 };
 
 dom.mergeBlockWithSibling = function(range, block, next) {
-	var siblingBlock = next ? block['nextSibling'] : block['previousSibling'];
+	var siblingBlock = next ? $(block).next().get(0) : $(block).prev().get(0); // block['nextSibling'] : block['previousSibling'];
 	if(next)
 		dom.mergeContainers(siblingBlock, block);
 	else
