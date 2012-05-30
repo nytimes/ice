@@ -111,7 +111,8 @@ InlineChangeEditor.prototype = {
 	 */
 	initializeRange: function() {
 		var range = this.selection.createRange();
-		range.setStart(ice.dom.find(this.element, this.blockEl)[0], 0);
+		var first_block_element = ice.dom.find(this.element, ice.dom.BLOCK_ELEMENTS.join(','))[0];
+		range.setStart(first_block_element, 0);
 		range.collapse(true);
 		this.selection.addRange(range);
 		if(this.env.frame)
