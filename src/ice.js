@@ -35,7 +35,7 @@ defaults = {
 	// Switch for toggling track changes on/off - when `false` events will be ignored.
 	isTracking: true,
 	// NOT IMPLEMENTED - Selector for elements that will not get track changes
-	doNotTrack: 'span#test',
+	noTrack: '.ice-no-track',
 	// Selector for elements to avoid - move range before or after - similar handling to deletes 
 	avoid: '.ice-avoid'
 };
@@ -255,7 +255,7 @@ InlineChangeEditor.prototype = {
 				range.collapse(true);
 			}
 		}
-
+		
 		// If we are in a non-tracking/void element, move the range to the end/outside.
 		this._moveRangeToValidTrackingPos(range);
 
@@ -533,6 +533,22 @@ InlineChangeEditor.prototype = {
 			}
 		}
 	},
+	
+	/**
+	 * Returns the given `node` or the first parent node that matches against the list of no track elements.
+	 */
+	_getNoTrackElement: function(node) {
+		var noTrackSelector = this._getNoTrackSelector();
+		var parent = ice.dom.is(node, noTrackSelector) ? node : (ice.dom.parents(node, noTrackSelector)[0] || null);
+		return parent;
+	},
+	
+	/**
+	 * Returns a selector for not tracking changes
+	 */
+	_getNoTrackSelector: function() {
+		return '.ins[userid="'+this.currentUser.id+'"],' + this.noTrack;
+	},
 
 	/**
 	 * Returns the given `node` or the first parent node that matches against the list of void elements.
@@ -723,6 +739,20 @@ InlineChangeEditor.prototype = {
 			// Ignore empty space
 			if(elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
 
+			// search immediate childrens
+			if (elem.hasChildNodes()) {
+				for(var x=0; x<elem.childNodes.length; x++) {
+					var child = elem.childNodes[x];
+					if (this._getNoTrackElement(child)) {
+						ice.dom.remove(child);
+					}
+				}
+			}
+			// If the element is not to be track, delete the selection
+			if (this._getNoTrackElement(elem)) {
+				ice.dom.remove(elem);
+			}
+			
 			// If the element is something other than deletes and other non-tracking tags,
 			// then delete content.
 			if(!this._getVoidElement(elem)) {
@@ -816,6 +846,12 @@ InlineChangeEditor.prototype = {
 			range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeTextContent(range.endContainer).length || 0);
 			range.collapse();
 			return this._deleteFromRight(range);
+		}
+
+		// If we are deleting into no tracking container, remove content
+		if (this._getNoTrackElement(range.endContainer.parentElement)) {
+			range.deleteContents();
+			return false;
 		}
 
 		range.collapse();
@@ -928,6 +964,12 @@ InlineChangeEditor.prototype = {
 			range.setStart(range.startContainer, 0);
 			range.collapse(true);
 			return this._deleteFromLeft(range);
+		}
+		
+		// If we are deleting into a no tracking containiner, then remove the content
+		if (this._getNoTrackElement(range.startContainer.parentElement)) {
+			range.deleteContents();
+			return false;
 		}
 
 		var container = range.startContainer;
@@ -1361,3 +1403,4 @@ exports.ice = this.ice || {};
 exports.ice.InlineChangeEditor = InlineChangeEditor;
 
 }).call(this);
+
