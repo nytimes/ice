@@ -59,7 +59,6 @@ IceCopyPastePlugin.prototype = {
 		if (e.metaKey !== true && e.ctrlKey !== true) {
     		return;
     	}
-		
 		if(e.keyCode == 86) {
 			this.handlePaste();
 		}
@@ -389,6 +388,9 @@ IceCopyPastePlugin.prototype = {
 
 		// Strip out any attributes from the allowed set of tags that don't match what is in the `_attributesMap`
 		ice.dom.each(ice.dom.find(bodyel, this._tags), function(i, el) {
+			if (ice.dom.hasClass(el, 'skip-clean')) {
+				return true;
+			}
 			var tag = el.tagName.toLowerCase();
 			var attrMatches = self._attributesMap[tag];
 
@@ -400,8 +402,9 @@ IceCopyPastePlugin.prototype = {
 			if(el.hasAttributes()) {
 				var attributes = el.attributes;
 				for(var i = attributes.length - 1; i >= 0; i--) {
-					if(!ice.dom.inArray(attributes[i].name, attrMatches))
+					if(!ice.dom.inArray(attributes[i].name, attrMatches)) {
 						el.removeAttribute(attributes[i].name);
+					}
 				}
 			}
 		});
@@ -428,12 +431,10 @@ IceCopyPastePlugin.prototype = {
 		// Generic cleanup.
 		content = this._cleanPaste(content);
 
-		// Convert Words orsm "lists"..
-		content = this._convertWordPasteList(content);
-
 		// Remove class, lang and style attributes.
 		content = content.replace(/<(\w[^>]*) (lang)=([^ |>]*)([^>]*)/gi, "<$1$4");
-		content = content.replace(new RegExp('<(\\w[^>]*) style="([^"]*)"([^>]*)', 'gi'), "<$1$3");
+		// commenting it out for now but we might take out this whole method in the near future (with a planned regression test)
+//		content = content.replace(new RegExp('<(\\w[^>]*) style="([^"]*)"([^>]*)', 'gi'), "<$1$3");
 
 		return content;
 	},
@@ -468,102 +469,6 @@ IceCopyPastePlugin.prototype = {
 		});
 
 		return info;
-	},
-
-	_convertWordPasteList: function(content) {
-		var div = document.createElement('div');
-		var ul = null;
-		var prevMargin = null;
-		var indentLvl = {};
-		var li = null;
-		var newList	= true;
-
-		var listTypes = {
-			ul: {
-				circle: ['^o(\s|&nbsp;)+'],
-				disc: ['^' + String.fromCharCode(183) + '(\\s|&nbsp;)+'],
-				square: ['^' + String.fromCharCode(167) + '(\\s|&nbsp;)+'],
-				auto: ['^' + String.fromCharCode(8226) + '(\\s|&nbsp;)+']
-			},
-			ol: {
-				decimal: ['^\\d+\\.(\s|&nbsp;)+'],
-				'lower-roman': ['^[ivxlcdm]+\\.(\\s|&nbsp;)+'],
-				'upper-roman': ['^[IVXLCDM]+\\.(\\s|&nbsp;)+'],
-				'lower-alpha': ['^[a-z]+\\.(\\s|&nbsp;)+'],
-				'upper-alpha': ['^[A-Z]+\\.(\\s|&nbsp;)+']
-			}
-		};
-
-		ice.dom.setHtml(div, content);
-
-		var pElems = ice.dom.getTag('p', div);
-		var pln	= pElems.length;
-		for (var i = 0; i < pln; i++) {
-			var pEl		  = pElems[i];
-			var listTypeInfo = this._getListType(pEl, listTypes);
-			if (listTypeInfo !== null) {
-				var marginLeft = parseInt(ice.dom.getStyle(pEl, 'margin-left'));
-				var listType   = listTypeInfo.listType;
-				var listStyle  = listTypeInfo.listStyle;
-				ice.dom.setHtml(pEl, listTypeInfo.html);
-
-				if (!listType) {
-					listType = 'ol';
-				}
-
-				if (newList) {
-					// Start a new list.
-					ul = document.createElement(listType);
-					indentLvl = {};
-					ice.dom.attr(ul, '_icelistst', 'list-style-type:' + listStyle);
-
-					indentLvl[marginLeft] = ul;
-					ice.dom.insertBefore(pEl, ul);
-				} else {
-					// We determine start of sub lists by checking indentation.
-					// If previous margin and current margin is not the same
-					// then this is a sub-list or part of a parent list.
-					if (marginLeft !== prevMargin) {
-						if (ice.dom.isset(indentLvl[marginLeft]) === true) {
-							// Going back up.
-							ul = indentLvl[marginLeft];
-						} else if (marginLeft > prevMargin) {
-							// Sub list, create a new list.
-							ul = document.createElement(listType);
-							ice.dom.attr(ul, '_icelistst', 'list-style-type:' + listStyle);
-							li.appendChild(ul);
-
-							// Indent list.
-							indentLvl[marginLeft] = ul;
-						}
-					}
-				}//end if
-
-				// Create a new list item.
-				li = this._createListItemFromElement(pEl);
-				ul.appendChild(li);
-
-				prevMargin = marginLeft;
-				ice.dom.remove(pEl);
-				newList = false;
-			} else {
-				// Next list item will be the start of a new list.
-				newList = true;
-			}//end if
-		}//end for
-
-		content = ice.dom.getHtml(div);
-
-		return content;
-	},
-
-	_createListItemFromElement: function(elem) {
-		var li = document.createElement('li');
-		while (elem.firstChild) {
-			li.appendChild(elem.firstChild);
-		}
-
-		return li;
 	},
 
 	_cleanPaste: function(content) {
