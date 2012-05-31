@@ -35,14 +35,13 @@ IceEmdashPlugin.prototype = {
 				// Make sure that the start and end containers aren't in different blocks, or that the start isn't in a delete.
 				if(startBlock === endBlock && !this._ice.getIceNode(range.startContainer, 'deleteType')) {
 					// Get the last character and check to see if it is a dash.
-					var fragment = range.cloneContents();
-					var c = ice.dom.getNodeTextContent(fragment);
+					c = range.toHtml();
 					if(c === '-') {
 						// Extract the last character/dash and insert an emdash
 						range.extractContents();
 						range.collapse();
 						var mdash = this._ice.env.document.createTextNode('\u2014');
-						this._ice.insert(mdash, range);
+						this._ice._insertNode(mdash, range);
 						range = this._ice.getCurrentRange();
 						range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 						range.collapse(true);
@@ -62,3 +61,4 @@ ice.dom.noInclusionInherits(IceEmdashPlugin, ice.IcePlugin);
 exports._plugin.IceEmdashPlugin = IceEmdashPlugin;
 
 }).call(this.ice);
+
