@@ -139,17 +139,21 @@ InlineChangeEditor.prototype = {
 			body.appendChild(ice.dom.create('<' + this.blockEl + ' ><br/></' + this.blockEl + '>'));
 		}
 		this.element.innerHTML = body.innerHTML;
-
-		// Find and load all of the changes and users/styles, present in the element.
-		var ins = this._getIceNodeClass('insertType'), del = this._getIceNodeClass('deleteType');
-		ice.dom.each(ice.dom.find(this.element, '.'+ins+','+'.'+del), function(i, el) {
+		
+		// Grab class for each changeType
+		var changeTypeClasses = new Array();
+		for (var changeType in this.changeTypes) {
+			changeTypeClasses.push(this._getIceNodeClass(changeType));
+		}
+		
+		ice.dom.each(ice.dom.find(this.element, '.'+changeTypeClasses.join(', .')), function(i, el) {
 			var styleIndex = 0;
 			var ctnType = '';
 			var classList = el.className.split(' ');
 			for(var i = 0; i < classList.length; i++) {
 				var styleReg = new RegExp(self.stylePrefix + '-(\\d+)').exec(classList[i]);
 				if(styleReg) styleIndex = styleReg[1];
-				var ctnReg = new RegExp('('+ins+'|'+del+')').exec(classList[i]);
+				var ctnReg = new RegExp('('+changeTypeClasses.join('|')+')').exec(classList[i]);
 				if(ctnReg) ctnType = self._getChangeTypeFromAlias(ctnReg[1]);
 			}
 			var userid = ice.dom.attr(el, self.userIdAttribute);
@@ -485,11 +489,15 @@ InlineChangeEditor.prototype = {
 	/**
 	 * Add a new change tracking typeName with the given tag and alias.
 	 */
-	addChangeType: function(typeName, tag, alias) {
-		this.changeTypes[typeName] = {
+	addChangeType: function(typeName, tag, alias, action) {
+		var changeType = {
 			tag: tag,
 			alias: alias
 		};
+		
+		if (action) changeType.action = action;
+		
+		this.changeTypes[typeName] = changeType;
 	},
 
 	/**
