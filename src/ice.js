@@ -380,9 +380,9 @@ InlineChangeEditor.prototype = {
 			if(typeof body === 'string')
 				body = ice.dom.create('<div>' + body + '</div>');
 			else
-				body = ice.dom.cloneNode(body)[0];
+				body = ice.dom.cloneNode(body, false)[0];
 		} else {
-			body = ice.dom.cloneNode(this.element)[0];
+			body = ice.dom.cloneNode(this.element, false)[0];
 		}
 		var changes = ice.dom.find(body, classList);
 		ice.dom.each(changes, function(el, i) {
