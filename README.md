@@ -126,4 +126,4 @@ In the coming months we will be adding documentation, known issues to the tracke
 
 ## License
 
-[GPL](http://github.com/nytd/ice/blob/master/LICENSE)
+[GPL 2.0](https://github.com/NYTimes/ice/blob/master/LICENSE)
