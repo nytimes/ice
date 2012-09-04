@@ -18,7 +18,7 @@ Ice is a track changes implementation, built in javascript, for anything that is
 ***
 
 **_Contenteditable initialization_** - If you are comfortable with maintaining your own text editing utilities, then you can initialize ice on any block element:
-
+```javascript
      var tracker = new ice.InlineChangeEditor({
        // element to track - ice will make it contenteditable
        element: document.getElementById('mytextelement'),
@@ -29,9 +29,9 @@ Ice is a track changes implementation, built in javascript, for anything that is
      });
      // setup and start event handling for track changes
      tracker.startTracking();
-
+```
 Additional options:
-
+```javascript
      var tracker = new ice.InlineChangeEditor({
        element: document.getElementById('mytextelement'),
        handleEvents: true,
@@ -52,47 +52,47 @@ Additional options:
          }
        ]
      }).startTracking();
-
+```
 ***
 
 **_Useful utilities in the API:_**
      
 **acceptChange, rejectChange**
-
+```javascript
      // Accept/Reject the change at the current range/cursor position or at the given `optionalNode`
      tracker.acceptChange(optionalNode);
      tracker.rejectChange(optionalNode);
-
+```
 **acceptAll, rejectAll**
-
+```javascript
      // Accept/Reject all of the changes in the editable region.
      tracker.acceptAll();
      tracker.rejectAll();
-
+```
 **getCleanContent**
-
+```javascript
      // Returns a clean version, without tracking tags, of the content in the editable element or
      // out of the optional `body` param. After cleaning, the `optionalCallback` param is called
      // which should further modify and return the body.
      tracker.getCleanContent(optionalBody, optionalCallback);
-
+```
 **setCurrentUser**
-
+```javascript
      // Set the desired user to track. A user object has the following properties: { `id`, `name` }.
      tracker.setCurrentUser({id: 2, name: 'Miss T'});
-
+```
 **getChanges**
-
+```javascript
      // Get the internal list of change objects which are modeled from all of the change tracking
      // nodes in the DOM. This might be useful to add a more sophisticated change tracking UI/UX.
      // The list is key'ed with the unique change ids (`cid attribute`) and points to an object
      // with metadata for a change: [changeid] => {`type`, `time`, `userid`, `username`}
      var changes = tracker.getChanges();
-
+```
 ***
 
 **_Tinymce initialization_** - Add the ice plugin to your tinymce plugins directory and include the following in your tinymce init:
-
+```javascript
       tinymce.init({
         plugins: 'ice',
         theme_advanced_buttons1: 'ice_togglechanges,ice_toggleshowchanges,iceacceptall,icerejectall,iceaccept,icereject',
@@ -104,7 +104,7 @@ Additional options:
         },
         ...
       });
-
+```
 ***
 
 **_Wordpress initialization_**
