@@ -8,15 +8,17 @@ var exports = this;
  */
 var IceEmdashPlugin = function(ice_instance) {
 	this._ice = ice_instance;
-}
+};
 
 IceEmdashPlugin.prototype = {
 
 	keyDown: function(e) {
 		// Catch dashes.
 		if(ice.dom.isBrowser('mozilla')) {
-			if(e.keyCode === 109)
+			var version = parseInt(ice.dom.browser().version);
+			if ( (version > 14 && e.keyCode === 173) || (version <= 14 && e.keyCode === 109) ) {
 				return this.convertEmdash(e);
+			}
 		} else if(e.keyCode === 189) {
 			return this.convertEmdash(e);
 		}
@@ -41,11 +43,22 @@ IceEmdashPlugin.prototype = {
 						range.extractContents();
 						range.collapse();
 						var mdash = this._ice.env.document.createTextNode('\u2014');
-						this._ice._insertNode(mdash, range);
+						if (this._ice.isTracking) {
+							this._ice._insertNode(mdash, range);
+						} else {
+							range.insertNode(mdash);
+							/* TO be reverted once mozilla fixes FF 15 issue */
+							range.setStart(mdash, 1);
+							range.collapse(true);
+							/* FINISH revert */
+						}
+						/* TO be reverted once mozilla fixes FF 15 issue
 						range = this._ice.getCurrentRange();
 						range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 						range.collapse(true);
 						this._ice.env.selection.addRange(range);
+						*/
+						this._ice._preventKeyPress = true;
 						return false;
 					}
 				}
@@ -61,4 +74,3 @@ ice.dom.noInclusionInherits(IceEmdashPlugin, ice.IcePlugin);
 exports._plugin.IceEmdashPlugin = IceEmdashPlugin;
 
 }).call(this.ice);
-

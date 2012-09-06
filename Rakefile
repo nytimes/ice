@@ -2,6 +2,13 @@ require 'rubygems'
 require 'jammit'
 require 'fileutils'
 
+# 
+# USAGE:
+#   rake build
+# With version parameter:
+#   rake build[0.5.0]
+#
+
 # Think before you change - this directory is removed!!!
 BUILDDIR = "dist" 
 	
@@ -55,8 +62,11 @@ def confWP
 end
 
 desc "Build ice and mce plugins."
-task :build do
+task :build, [:version] do |t, args|
+	puts "Building version #{args.version} to #{BUILDDIR}/"
 	build
 	confMCE
 	confWP
+	# Zip it all up.
+	system "zip -r #{BUILDDIR}/ice_#{args.version}.zip #{BUILDDIR}"
 end

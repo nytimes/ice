@@ -182,6 +182,8 @@ IceCopyPastePlugin.prototype = {
 			html = ice.dom.getHtml(html);
 		}
 
+		html = this.beforePasteClean.call(this, html);
+
 		if(stripTags) {
 			// Strip out change tracking tags.
 			html = this._ice.getCleanContent(html);
@@ -516,4 +518,3 @@ ice.dom.noInclusionInherits(IceCopyPastePlugin, ice.IcePlugin);
 exports._plugin.IceCopyPastePlugin = IceCopyPastePlugin;
 
 }).call(this.ice);
-

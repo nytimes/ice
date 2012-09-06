@@ -37,7 +37,9 @@ defaults = {
 	// NOT IMPLEMENTED - Selector for elements that will not get track changes
 	noTrack: '.ice-no-track',
 	// Selector for elements to avoid - move range before or after - similar handling to deletes 
-	avoid: '.ice-avoid'
+	avoid: '.ice-avoid',
+	// Selector for cms block elements
+	cmsBlock: '.cms'
 };
 
 InlineChangeEditor = function(options) {
@@ -260,6 +262,12 @@ InlineChangeEditor.prototype = {
 			}
 		}
 		
+		// if we are inserting into no tracking container, just insert without tracking tags
+		// Disabling this for now.
+		/*if (this._getNoTrackElement(range.startContainer.parentElement)) {
+			return true;
+		}*/
+		
 		// If we are in a non-tracking/void element, move the range to the end/outside.
 		this._moveRangeToValidTrackingPos(range);
 
@@ -268,7 +276,7 @@ InlineChangeEditor.prototype = {
 		this._insertNode(node || document.createTextNode('\uFEFF'), range, !node);
 		this.pluginsManager.fireNodeInserted(node, range);
 		this.endBatchChange(changeid);
-		return true;
+		return false;
 	},
 
 	/**
@@ -366,8 +374,10 @@ InlineChangeEditor.prototype = {
 	 * change type tags are removed, leaving the html content in place. After 
 	 * cleaning, the optional `callback` is executed, which should further 
 	 * modify and return the element body.
+	 * 
+	 * prepare gets run before the body is cleaned by ice.
 	 */	
-	getCleanContent: function(body, callback) {
+	getCleanContent: function(body, callback, prepare) {
 		var classList = '';
 		var self = this;
 		ice.dom.each(this.changeTypes, function(type, i) {
@@ -384,6 +394,7 @@ InlineChangeEditor.prototype = {
 		} else {
 			body = ice.dom.cloneNode(this.element, false)[0];
 		}
+		body = prepare ? prepare.call(this, body) : body;
 		var changes = ice.dom.find(body, classList);
 		ice.dom.each(changes, function(el, i) {
 			ice.dom.replaceWith(this, ice.dom.contents(this));
@@ -718,6 +729,8 @@ InlineChangeEditor.prototype = {
 		else if(!inCurrentUserInsert) node = this.createIceNode('insertType', node);
 
 		range.insertNode(node);
+		range.setEnd(node, 1);
+		range.collapse();
 
 		if(insertingDummy) {
 			// Create a selection of the dummy character we inserted
@@ -816,7 +829,6 @@ InlineChangeEditor.prototype = {
 	},
 
 	_deleteFromRight: function(range) {
-	
 		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0] 
 				|| ice.dom.is(range.startContainer, this.blockEl) && range.startContainer 
 				|| null;
@@ -944,20 +956,36 @@ InlineChangeEditor.prototype = {
 		// Move range to position the cursor on the inside of any adjacent container that it is going
 		// to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
 		range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+		
+		// If the container we are deleting into is outside of our ice element, then we need to stop.
 		var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
 			movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
-		range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-
-		// If the container we are deleting into is outside of our ice element, then we need to stop.
-		if(failedToMove || !prevBlock && movedOutsideBlock) {
-			range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-			range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-			range.collapse(true)
+		if (failedToMove || !prevBlock && movedOutsideBlock) {
+			if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+			range.collapse(true);
 			return true;
+		}
+		
+		// Move the range forward 1 character to complete the cursor positioning in the adjacent container.
+		range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+		
+		// handle deletion of cms elements
+		if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+			if( ice.dom.is(prevBlock, this.cmsBlock)) {
+				range.deleteContents();
+				return false;
+			}
+		}
+		
+		// If we are deleting into, or in, a void container then move cursor to left of container
+		if (this._getVoidElement(range.startContainer)) {
+			range.setStart(range.startContainer, 0);
+			range.collapse(true);
+			return this._deleteFromLeft(range);
 		}
 	
 		// Deleting from beginning of block to end of previous block - merge the blocks
-		if(ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+		if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
 			// Since the range is moved by character, it may have passed through empty blocks.
 			// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
 			if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
@@ -965,13 +993,6 @@ InlineChangeEditor.prototype = {
 			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
 			ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
 			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
-		}
-		
-		// If we are deleting into, or in, a void container then move cursor to left of container
-		if(this._getVoidElement(range.startContainer)) {
-			range.setStart(range.startContainer, 0);
-			range.collapse(true);
-			return this._deleteFromLeft(range);
 		}
 		
 		// If we are deleting into a no tracking containiner, then remove the content
@@ -1330,7 +1351,7 @@ InlineChangeEditor.prototype = {
 				default:
 					// If we are in a deletion, move the range to the end/outside.
 					this._moveRangeToValidTrackingPos(range, range.startContainer);
-					return this.insert();
+					return this.insert(c);
 				break;
 			}
 		}
@@ -1411,4 +1432,3 @@ exports.ice = this.ice || {};
 exports.ice.InlineChangeEditor = InlineChangeEditor;
 
 }).call(this);
-
