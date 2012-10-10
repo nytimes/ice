@@ -8,14 +8,18 @@ defaults = {
 	userIdAttribute: 'data-userid',
 	userNameAttribute: 'data-username',
 	timeAttribute: 'data-time',
+	
 	// Prepended to `changeType.alias` for classname uniqueness, if needed
 	attrValuePrefix: '',
+	
 	// Block element tagname, which wrap text and other inline nodes in `this.element`
 	blockEl: 'p',
+	
 	// Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
 	// in ice node class attributes - cts1, cts2, cts3, ...
 	stylePrefix: 'cts',
 	currentUser: {id: null, name: null},
+	
 	// Default change types are insert and delete. Plugins or outside apps should extend this
 	// if they want to manage new change types. The changeType name is used as a primary
 	// reference for ice nodes; the `alias`, is dropped in the class attribute and is the
@@ -26,20 +30,23 @@ defaults = {
 		insertType: {tag: 'insert', alias: 'ins', action: 'Inserted'},
 		deleteType: {tag: 'delete', alias: 'del', action: 'Deleted'}
 	},
+	
 	// If `true`, setup event listeners on `this.element` and handle events - good option for a basic
 	// setup without a text editor. Otherwise, when set to `false`, events need to be manually passed 
 	// to `handleEvent`, which is good for a text editor with an event callback handler, like tinymce.
 	handleEvents: false,
+	
 	// Sets this.element with the contentEditable element
 	contentEditable: true,
+	
 	// Switch for toggling track changes on/off - when `false` events will be ignored.
 	isTracking: true,
+	
 	// NOT IMPLEMENTED - Selector for elements that will not get track changes
 	noTrack: '.ice-no-track',
+	
 	// Selector for elements to avoid - move range before or after - similar handling to deletes 
 	avoid: '.ice-avoid',
-	// Selector for cms block elements
-	cmsBlock: '.cms'
 };
 
 InlineChangeEditor = function(options) {
@@ -57,18 +64,24 @@ InlineChangeEditor.prototype = {
 	// Data structure for modelling changes in the element according to the following model:
 	//  [changeid] => {`type`, `time`, `userid`, `username`}
 	_changes: {},
+	
 	// Tracks all of the styles for users according to the following model:
 	//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
 	_userStyles: {},
 	_styles: {},
+	
 	// Incremented for each new user and appended to they style prefix, and dropped in the
 	// ice node class attribute.
 	_uniqueStyleIndex: 0,
+	
 	_browserType: null,
+	
 	// One change may create multiple ice nodes, so this keeps track of the current batch id.
 	_batchChangeid: null,
+	
 	// Incremented for each new change, dropped in the changeIdAttribute.
 	_uniqueIDIndex: 1,
+	
 	// Temporary bookmark tags for deletes, when delete placeholding is active.
 	_delBookmark: 'tempdel',
 	isPlaceHoldingDeletes: false,
@@ -141,9 +154,9 @@ InlineChangeEditor.prototype = {
 			body.appendChild(ice.dom.create('<' + this.blockEl + ' ><br/></' + this.blockEl + '>'));
 		}
 		this.element.innerHTML = body.innerHTML;
-		
+
 		// Grab class for each changeType
-		var changeTypeClasses = new Array();
+		var changeTypeClasses = [];
 		for (var changeType in this.changeTypes) {
 			changeTypeClasses.push(this._getIceNodeClass(changeType));
 		}
@@ -261,12 +274,6 @@ InlineChangeEditor.prototype = {
 				range.collapse(true);
 			}
 		}
-		
-		// if we are inserting into no tracking container, just insert without tracking tags
-		// Disabling this for now.
-		/*if (this._getNoTrackElement(range.startContainer.parentElement)) {
-			return true;
-		}*/
 		
 		// If we are in a non-tracking/void element, move the range to the end/outside.
 		this._moveRangeToValidTrackingPos(range);
@@ -390,9 +397,9 @@ InlineChangeEditor.prototype = {
 			if(typeof body === 'string')
 				body = ice.dom.create('<div>' + body + '</div>');
 			else
-				body = ice.dom.cloneNode(body, false)[0];
+				body = ice.dom.cloneNode(body)[0];
 		} else {
-			body = ice.dom.cloneNode(this.element, false)[0];
+			body = ice.dom.cloneNode(this.element)[0];
 		}
 		body = prepare ? prepare.call(this, body) : body;
 		var changes = ice.dom.find(body, classList);
@@ -845,19 +852,21 @@ InlineChangeEditor.prototype = {
 		if(!nextBlock && !ice.dom.isChildOf(range.endContainer, this.element)) {
 			range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
 			range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-			range.collapse()
+			range.collapse();
 			return true;
 		}
 
 		// Deleting from beginning of block to end of previous block - merge the blocks
-		if(ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEl) || isEmptyBlock) {
-			// Since the range is moved by character, it may have passed through empty blocks.
-			// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-			if(nextBlock !== ice.dom.parents(range.endContainer, this.blockEl)[0])
-				range.setEnd(nextBlock, 0);
-			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
-			ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
-			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEl)[0] || parentBlock, true);
+		if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEl) || isEmptyBlock) {
+			if (!this._getVoidElement(parentBlock)) {
+				// Since the range is moved by character, it may have passed through empty blocks.
+				// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+				if (nextBlock !== ice.dom.parents(range.endContainer, this.blockEl)[0])
+					range.setEnd(nextBlock, 0);
+				// The browsers like to auto-insert breaks into empty paragraphs - remove them.
+				ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
+				return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEl)[0] || parentBlock, true);
+			}
 		}
 		
 		// If we are deleting into, or in, a non-tracking/void container then move cursor to left of container
@@ -969,9 +978,9 @@ InlineChangeEditor.prototype = {
 		// Move the range forward 1 character to complete the cursor positioning in the adjacent container.
 		range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 		
-		// handle deletion of cms elements
+		// Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
 		if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
-			if( ice.dom.is(prevBlock, this.cmsBlock)) {
+			if (this._getVoidElement(prevBlock)) {
 				range.deleteContents();
 				return false;
 			}
