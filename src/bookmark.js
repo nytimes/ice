@@ -125,7 +125,7 @@ Bookmark.prototype = {
 			if (this.end.previousSibling) {
 				endPos = ice.dom.getLastChild(this.end.previousSibling);
 			} else {
-				endPos = ice.dom.getFirstChild(this.end.nextSibling);
+				endPos = ice.dom.getFirstChild(this.end.nextSibling || this.end);
 				endOffset = 0;
 			}
 		}
