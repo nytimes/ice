@@ -7,11 +7,7 @@ Selection = function(env) {
 	this.env = env;
 
 	this._initializeRangeLibrary();
-
-	if(this.env.frame)
-		this._selection = rangy.getIframeSelection(this.env.frame);
-	else
-		this._selection = rangy.getSelection();
+	this._getSelection();
 };
 
 Selection.prototype = {
@@ -20,9 +16,9 @@ Selection.prototype = {
 	 * Returns the selection object for the current browser.
 	 */
 	_getSelection: function() {
-		if(this._selection)
+		if (this._selection)
 			this._selection.refresh();
-		else if(this.env.frame)
+		else if (this.env.frame)
 			this._selection = rangy.getIframeSelection(this.env.frame);
 		else
 			this._selection = rangy.getSelection();
@@ -46,7 +42,8 @@ Selection.prototype = {
 		try {
 			return this._selection.getRangeAt(pos);
 		} catch(e) {
-			return this.createRange();
+			this._selection = null;
+			return this._getSelection().getRangeAt(0);
 		}
 	},
 
