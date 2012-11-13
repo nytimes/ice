@@ -46,7 +46,7 @@ defaults = {
 	noTrack: '.ice-no-track',
 	
 	// Selector for elements to avoid - move range before or after - similar handling to deletes 
-	avoid: '.ice-avoid',
+	avoid: '.ice-avoid'
 };
 
 InlineChangeEditor = function(options) {
@@ -96,7 +96,7 @@ InlineChangeEditor.prototype = {
 		// If we are handling events setup the delegate to handle various events on `this.element`.
 		if(this.handleEvents) {
 			var self = this;
-			ice.dom.bind(self.element, 'keyup keydown keypress mousedown mouseup', function(e) {
+			ice.dom.bind(self.element, 'keyup.ice keydown.ice keypress.ice mousedown.ice mouseup.ice', function(e) {
 				return self.handleEvent(e);
 			});
 		}
@@ -106,6 +106,22 @@ InlineChangeEditor.prototype = {
 		this.initializeRange();
 
 		this.pluginsManager.fireEnabled(this.element);
+		return this;
+	},
+
+	/**
+	 * Removes contenteditability and stops event handling.
+	 */
+	stopTracking: function() {
+		this.element.setAttribute('contentEditable', !this.contentEditable);
+
+		// If we are handling events setup the delegate to handle various events on `this.element`.
+		if(this.handleEvents) {
+			var self = this;
+			ice.dom.unbind(self.element, 'keyup.ice keydown.ice keypress.ice mousedown.ice mouseup.ice');
+		}
+
+		this.pluginsManager.fireDisabled(this.element);
 		return this;
 	},
 
@@ -760,7 +776,6 @@ InlineChangeEditor.prototype = {
 			betweenBlocks = new Array(),
 			eln = elements.length;
 
-		var eln = elements.length;
 		for (var i = 0; i < eln; i++) {
 			var elem = elements[i];
 

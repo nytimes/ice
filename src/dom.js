@@ -304,6 +304,10 @@ dom.bind = function(element, event, callback) {
 	return jQuery(element).bind(event, callback);
 };
 
+dom.unbind = function(element, event, callback) {
+	return jQuery(element).unbind(event, callback);
+};
+
 dom.attr = function (elements, key, val) {
 	if(val)
 		return jQuery(elements).attr(key, val);
