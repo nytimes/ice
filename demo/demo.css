@@ -64,6 +64,11 @@ a.mceButton16 img.mceIcon { width: 16px; height: 16px; padding: 2px;}
 .ins {
 	text-decoration: underline;
 }
+// A bug in webkit does not display insert elements containing spaces at the end of block elements. This forces Webkit to show all insert elements correctly. 
+.ins::after {
+	content: '.';
+	font-size: 0;
+}
 .cts-1 {
     color: green;
 }
