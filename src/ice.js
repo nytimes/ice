@@ -900,6 +900,15 @@ InlineChangeEditor.prototype = {
 			range.deleteContents();
 			return false;
 		}
+		
+		// If we are deleting into a container that is not contentEditable, delete the entire container instead
+		if (range.endContainer.parentElement.contentEditable==='false') {
+                	var ctNode = this.createIceNode('deleteType');
+                	range.endContainer.parentElement.parentElement.insertBefore(ctNode, range.endContainer.parentElement);
+                	ctNode.appendChild(range.endContainer.parentElement);
+                	range.collapse();
+                	return true;
+                }    
 
 		range.collapse();
 
@@ -1027,6 +1036,15 @@ InlineChangeEditor.prototype = {
 			range.deleteContents();
 			return false;
 		}
+		
+		// If we are deleting into a container that is not contentEditable, delete the entire container instead
+                if (range.startContainer.parentElement.contentEditable==='false') {
+			var ctNode = this.createIceNode('deleteType');
+			range.startContainer.parentElement.parentElement.insertBefore(ctNode, range.startContainer.parentElement);
+			ctNode.appendChild(range.startContainer.parentElement);
+			range.setEnd(ctNode, 0);
+			return true;
+                }    
 
 		var container = range.startContainer;
 
