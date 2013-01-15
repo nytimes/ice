@@ -868,9 +868,9 @@ InlineChangeEditor.prototype = {
 
 		// If the container we are deleting into is outside of our ice element, then we need to stop.
 		if(!nextBlock && !ice.dom.isChildOf(range.endContainer, this.element)) {
-			range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-			range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-			range.collapse();
+		//	range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
+		//	range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
+		//	range.collapse();
 			return true;
 		}
 
