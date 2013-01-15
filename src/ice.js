@@ -8,44 +8,44 @@ defaults = {
 	userIdAttribute: 'data-userid',
 	userNameAttribute: 'data-username',
 	timeAttribute: 'data-time',
-	
+
 	// Prepended to `changeType.alias` for classname uniqueness, if needed
 	attrValuePrefix: '',
-	
+
 	// Block element tagname, which wrap text and other inline nodes in `this.element`
 	blockEl: 'p',
-	
+
 	// Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
 	// in ice node class attributes - cts1, cts2, cts3, ...
 	stylePrefix: 'cts',
 	currentUser: {id: null, name: null},
-	
+
 	// Default change types are insert and delete. Plugins or outside apps should extend this
 	// if they want to manage new change types. The changeType name is used as a primary
 	// reference for ice nodes; the `alias`, is dropped in the class attribute and is the
-	// primary method of identifying ice nodes; and `tag` is used for construction only. 
+	// primary method of identifying ice nodes; and `tag` is used for construction only.
 	// Invoking `this.getCleanContent()` will remove all delete type nodes and remove the tags
 	// for the other types, leaving the html content in place.
 	changeTypes: {
 		insertType: {tag: 'insert', alias: 'ins', action: 'Inserted'},
 		deleteType: {tag: 'delete', alias: 'del', action: 'Deleted'}
 	},
-	
+
 	// If `true`, setup event listeners on `this.element` and handle events - good option for a basic
-	// setup without a text editor. Otherwise, when set to `false`, events need to be manually passed 
+	// setup without a text editor. Otherwise, when set to `false`, events need to be manually passed
 	// to `handleEvent`, which is good for a text editor with an event callback handler, like tinymce.
 	handleEvents: false,
-	
+
 	// Sets this.element with the contentEditable element
 	contentEditable: true,
-	
+
 	// Switch for toggling track changes on/off - when `false` events will be ignored.
 	isTracking: true,
-	
+
 	// NOT IMPLEMENTED - Selector for elements that will not get track changes
 	noTrack: '.ice-no-track',
-	
-	// Selector for elements to avoid - move range before or after - similar handling to deletes 
+
+	// Selector for elements to avoid - move range before or after - similar handling to deletes
 	avoid: '.ice-avoid'
 };
 
@@ -56,7 +56,7 @@ InlineChangeEditor = function(options) {
 	ice.dom.extend(true, this, defaults, options);
 
 	this.pluginsManager = new ice.IcePluginManager(this);
-	if(options.plugins) this.pluginsManager.usePlugins('ice-init', options.plugins);	
+	if(options.plugins) this.pluginsManager.usePlugins('ice-init', options.plugins);
 }
 
 InlineChangeEditor.prototype = {
@@ -64,28 +64,28 @@ InlineChangeEditor.prototype = {
 	// Data structure for modelling changes in the element according to the following model:
 	//  [changeid] => {`type`, `time`, `userid`, `username`}
 	_changes: {},
-	
+
 	// Tracks all of the styles for users according to the following model:
 	//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
 	_userStyles: {},
 	_styles: {},
-	
+
 	// Incremented for each new user and appended to they style prefix, and dropped in the
 	// ice node class attribute.
 	_uniqueStyleIndex: 0,
-	
+
 	_browserType: null,
-	
+
 	// One change may create multiple ice nodes, so this keeps track of the current batch id.
 	_batchChangeid: null,
-	
+
 	// Incremented for each new change, dropped in the changeIdAttribute.
 	_uniqueIDIndex: 1,
-	
+
 	// Temporary bookmark tags for deletes, when delete placeholding is active.
 	_delBookmark: 'tempdel',
 	isPlaceHoldingDeletes: false,
-	
+
 	/**
 	 * Turns on change tracking - sets up events, if needed, and initializes the environment,
 	 * range, and editor.
@@ -179,7 +179,7 @@ InlineChangeEditor.prototype = {
 		for (var changeType in this.changeTypes) {
 			changeTypeClasses.push(this._getIceNodeClass(changeType));
 		}
-		
+
 		ice.dom.each(ice.dom.find(this.element, '.'+changeTypeClasses.join(', .')), function(i, el) {
 			var styleIndex = 0;
 			var ctnType = '';
@@ -201,7 +201,7 @@ InlineChangeEditor.prototype = {
 			};
 		});
 	},
-	 
+
 	/**
 	 * Turn on change tracking and event handling.
 	 */
@@ -263,22 +263,25 @@ InlineChangeEditor.prototype = {
 
 		node.appendChild(childNode ? childNode : this.env.document.createTextNode(''));
 		this.addChange(this.changeTypes[changeType].alias, [node]);
-		
+
 		this.pluginsManager.fireNodeCreated(node, {'action': this.changeTypes[changeType].action});
 		return node;
 	},
 
 	/**
-	 * Inserts the given string/node into the given range with tracking tags, collapsing (deleting) 
-	 * the range first if needed. If range is undefined, then the range from the Selection object 
+	 * Inserts the given string/node into the given range with tracking tags, collapsing (deleting)
+	 * the range first if needed. If range is undefined, then the range from the Selection object
 	 * is used. If the range is in a parent delete node, then the range is positioned after the delete.
 	 */
 	insert: function(node, range) {
 		if(range) this.selection.addRange(range);
 		else range = this.getCurrentRange();
-		
-		if(typeof node === "string") 
+
+		if(typeof node === "string"){
+      if(node.trim() == "")
+        node = node.replace(/ /g, "\xa0");
 			node = document.createTextNode(node);
+    }
 
 		// If we have any nodes selected, then we want to delete them before inserting the new text.
 		if (!range.collapsed) {
@@ -293,7 +296,7 @@ InlineChangeEditor.prototype = {
 				range.collapse(true);
 			}
 		}
-		
+
 		// If we are in a non-tracking/void element, move the range to the end/outside.
 		this._moveRangeToValidTrackingPos(range);
 
@@ -306,9 +309,9 @@ InlineChangeEditor.prototype = {
 	},
 
 	/**
-	 * This command will drop placeholders in place of delete tags in the element 
+	 * This command will drop placeholders in place of delete tags in the element
 	 * body and store references in the `_deletes` array to the original delete nodes.
-	 * 
+	 *
 	 * A placeholder tag is of the following structure:
 	 *   <tempdel data-allocation="[NUM]" />
 	 * Where [NUM] is the referenced allocation in the `_deletes` array where the
@@ -328,11 +331,11 @@ InlineChangeEditor.prototype = {
 		});
 		return true;
 	},
-			
+
 	/**
-	 * Replaces all delete placeholders in the element body with the referenced 
+	 * Replaces all delete placeholders in the element body with the referenced
 	 * delete nodes in the `_deletes` array.
-	 * 
+	 *
 	 * A placeholder tag is of the following structure:
 	 *   <tempdel data-allocation="[NUM]" />
 	 * Where [NUM] is the referenced allocation in the `_deletes` array where the
@@ -349,10 +352,10 @@ InlineChangeEditor.prototype = {
 		this.isPlaceholdingDeletes = false;
 		return true;
 	},
-	
+
 	/**
 	 * Deletes the contents in the given range or the range from the Selection object. If the range
-	 * is not collapsed, then a selection delete is handled; otherwise, it deletes one character 
+	 * is not collapsed, then a selection delete is handled; otherwise, it deletes one character
 	 * to the left or right if the right parameter is false or true, respectively.
 	 *
 	 * @return true if deletion was handled.
@@ -370,7 +373,7 @@ InlineChangeEditor.prototype = {
 		} else {
 			if(right)
 				prevent = this._deleteFromRight(range);
-			else 
+			else
 				prevent = this._deleteFromLeft(range);
 		}
 		this.selection.addRange(range);
@@ -387,6 +390,19 @@ InlineChangeEditor.prototype = {
 	},
 
 	/**
+	 * Returns an array with the user ids who made the changes
+	 */
+  getChangeUserids: function() {
+    var result = [];
+    var keys = Object.keys(this._changes);
+
+    for(var key in keys)
+      result.push(this._changes[keys[key]].userid);
+
+    return result.sort().filter(function(el,i,a){if(i==a.indexOf(el))return 1;return 0});
+  },
+
+	/**
 	 * Returns the html contents for the tracked element.
 	 */
 	getElementContent: function() {
@@ -396,13 +412,13 @@ InlineChangeEditor.prototype = {
 	/**
 	 * Returns the html contents, without tracking tags, for `this.element` or
 	 * the optional `body` param which can be of either type string or node.
-	 * Delete tags, and their html content, are completely removed; all other 
-	 * change type tags are removed, leaving the html content in place. After 
-	 * cleaning, the optional `callback` is executed, which should further 
+	 * Delete tags, and their html content, are completely removed; all other
+	 * change type tags are removed, leaving the html content in place. After
+	 * cleaning, the optional `callback` is executed, which should further
 	 * modify and return the element body.
-	 * 
+	 *
 	 * prepare gets run before the body is cleaned by ice.
-	 */	
+	 */
 	getCleanContent: function(body, callback, prepare) {
 		var classList = '';
 		var self = this;
@@ -427,22 +443,22 @@ InlineChangeEditor.prototype = {
 		});
 		var deletes = ice.dom.find(body, '.' + this._getIceNodeClass('deleteType'));
 		ice.dom.remove(deletes);
-		
+
 		body = callback ? callback.call(this, body) : body;
 
 		return body.innerHTML;
 	},
 
 	/**
-	 * Accepts all changes in the element body - removes delete nodes, and removes outer 
+	 * Accepts all changes in the element body - removes delete nodes, and removes outer
 	 * insert tags keeping the inner content in place.
 	 */
 	acceptAll: function() {
 		this.element.innerHTML = this.getCleanContent();
 	},
-	
+
 	/**
-	 * Rejects all changes in the element body - removes insert nodes, and removes outer 
+	 * Rejects all changes in the element body - removes insert nodes, and removes outer
 	 * delete tags keeping the inner content in place.*
 	 */
 	rejectAll: function() {
@@ -454,21 +470,21 @@ InlineChangeEditor.prototype = {
 			ice.dom.replaceWith(el, ice.dom.contents(el));
 		});
 	},
-	
+
 	/**
 	 * Accepts the change at the given, or first tracking parent node of, `node`.  If
 	 * `node` is undefined then the startContainer of the current collapsed range will be used.
-	 * In the case of insert, inner content will be used to replace the containing tag; and in 
+	 * In the case of insert, inner content will be used to replace the containing tag; and in
 	 * the case of delete, the node will be removed.
 	 */
 	acceptChange: function(node) {
 		this.acceptRejectChange(node, true);
 	},
-	
+
 	/**
 	 * Rejects the change at the given, or first tracking parent node of, `node`.  If
 	 * `node` is undefined then the startContainer of the current collapsed range will be used.
-	 * In the case of delete, inner content will be used to replace the containing tag; and in 
+	 * In the case of delete, inner content will be used to replace the containing tag; and in
 	 * the case of insert, the node will be removed.
 	 */
 	rejectChange: function(node) {
@@ -486,15 +502,15 @@ InlineChangeEditor.prototype = {
 			if(!range.collapsed) return;
 			else node = range.startContainer;
 		}
-		
+
 		delSel = removeSel = '.' + this._getIceNodeClass('deleteType');
 		insSel = replaceSel = '.' + this._getIceNodeClass('insertType');
-		selector = delSel + ',' + insSel; 
+		selector = delSel + ',' + insSel;
 		trackNode = dom.getNode(node, selector);
 		// Some changes are done in batches so there may be other tracking
 		// nodes with the same `changeIdAttribute` batch number.
 		changes = dom.find(this.element, '[' + this.changeIdAttribute + '=' + dom.attr(trackNode, this.changeIdAttribute) + ']');
-		
+
 		if(!isAccept) {
 			removeSel = insSel;
 			replaceSel = delSel;
@@ -508,9 +524,9 @@ InlineChangeEditor.prototype = {
 			dom.remove(changes);
 		}
 	},
-	
+
 	/**
-	 * Returns true if the given `node`, or the current collapsed range is in a tracking 
+	 * Returns true if the given `node`, or the current collapsed range is in a tracking
 	 * node; otherwise, false.
 	 */
 	isInsideChange: function(node) {
@@ -522,7 +538,7 @@ InlineChangeEditor.prototype = {
 		}
 		return !!ice.dom.getNode(node, selector);
 	},
-	
+
 	/**
 	 * Add a new change tracking typeName with the given tag and alias.
 	 */
@@ -531,9 +547,9 @@ InlineChangeEditor.prototype = {
 			tag: tag,
 			alias: alias
 		};
-		
+
 		if (action) changeType.action = action;
-		
+
 		this.changeTypes[typeName] = changeType;
 	},
 
@@ -546,7 +562,7 @@ InlineChangeEditor.prototype = {
 	},
 
 	/**
-	 * Sets the given `range` to the first position, to the right, where it is outside of 
+	 * Sets the given `range` to the first position, to the right, where it is outside of
 	 * void elements.
 	 */
 	_moveRangeToValidTrackingPos: function(range) {
@@ -578,7 +594,7 @@ InlineChangeEditor.prototype = {
 			}
 		}
 	},
-	
+
 	/**
 	 * Returns the given `node` or the first parent node that matches against the list of no track elements.
 	 */
@@ -587,7 +603,7 @@ InlineChangeEditor.prototype = {
 		var parent = ice.dom.is(node, noTrackSelector) ? node : (ice.dom.parents(node, noTrackSelector)[0] || null);
 		return parent;
 	},
-	
+
 	/**
 	 * Returns a selector for not tracking changes
 	 */
@@ -607,9 +623,9 @@ InlineChangeEditor.prototype = {
 	 * Returns a combined selector for delete and void elements.
 	 */
 	_getVoidElSelector: function() {
-		return '.' + this._getIceNodeClass('deleteType') + ',' + this.avoid; 
+		return '.' + this._getIceNodeClass('deleteType') + ',' + this.avoid;
 	},
-  
+
 	/**
 	 * Returns true if node has a user id attribute that matches the current user id.
 	 */
@@ -630,7 +646,7 @@ InlineChangeEditor.prototype = {
 				}
 			}
 		}
-		
+
 		return ctnType;
 	},
 
@@ -661,7 +677,7 @@ InlineChangeEditor.prototype = {
 		} else {
 			this._styles[id] = true;
 			return id;
-		}		
+		}
 	},
 
 	addChange: function(ctnType, ctNodes) {
@@ -748,7 +764,7 @@ InlineChangeEditor.prototype = {
 	_insertNode: function(node, range, insertingDummy) {
 		var ctNode = this.getIceNode(range.startContainer, 'insertType');
 		var inCurrentUserInsert = this._currentUserIceNode(ctNode);
-                
+
 		// Do nothing, let this bubble-up to insertion handler.
 		if(insertingDummy && inCurrentUserInsert) return;
 		// If we aren't in an insert node which belongs to the current user, then create a new ins node
@@ -798,7 +814,7 @@ InlineChangeEditor.prototype = {
 			if (this._getNoTrackElement(elem)) {
 				ice.dom.remove(elem);
 			}
-			
+
 			// If the element is something other than deletes and other non-tracking tags,
 			// then delete content.
 			if(!this._getVoidElement(elem)) {
@@ -811,7 +827,7 @@ InlineChangeEditor.prototype = {
 					if(ice.dom.getNodeTextContent(block).length === 0) {
 						continue;
 					} else if(ice.dom.is(elem, this.blockEl)) {
-						// If we are deleting a block tag then wrap all inner html in a delete. Simplest, but 
+						// If we are deleting a block tag then wrap all inner html in a delete. Simplest, but
 						// not the best solution since it will wrap deletes and other void non-tracking nodes.
 						var ctNode = this.createIceNode('deleteType');
 						newEl = document.createElement(this.blockEl);
@@ -854,14 +870,14 @@ InlineChangeEditor.prototype = {
 	},
 
 	_deleteFromRight: function(range) {
-		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0] 
-				|| ice.dom.is(range.startContainer, this.blockEl) && range.startContainer 
+		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0]
+				|| ice.dom.is(range.startContainer, this.blockEl) && range.startContainer
 				|| null;
 		var nextBlock = parentBlock && parentBlock.nextSibling || null;
-		var isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) 
+		var isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl)
 				&& ice.dom.getNodeTextContent(range.startContainer) == '');
-		
-		// Move end of range to position it on the inside of any adjacent container that it 
+
+		// Move end of range to position it on the inside of any adjacent container that it
 		// is going to potentially delete into.   E.G.:  test|<em>text</em>  ->  test<em>|text</em>
 		range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
 		range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
@@ -886,7 +902,7 @@ InlineChangeEditor.prototype = {
 				return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEl)[0] || parentBlock, true);
 			}
 		}
-		
+
 		// If we are deleting into, or in, a non-tracking/void container then move cursor to left of container
 		if(this._getVoidElement(range.endContainer)) {
 			range.setEnd(range.endContainer, 0)
@@ -946,7 +962,7 @@ InlineChangeEditor.prototype = {
 
 		} else {
 			var textAddNode = this.getIceNode(range.startContainer, 'insertType');
-			// Create a new ct node 
+			// Create a new ct node
 			if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
 				this._addTextNodeTracking(range.startContainer, range, true);
 			} else {
@@ -979,127 +995,129 @@ InlineChangeEditor.prototype = {
 				|| null,
 			prevBlock = parentBlock && parentBlock.previousSibling || null,
 			isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) && ice.dom.getNodeTextContent(range.startContainer) == '');
-		
+
 		// Move range to position the cursor on the inside of any adjacent container that it is going
 		// to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
-		range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-		
-		// If the container we are deleting into is outside of our ice element, then we need to stop.
-		var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
-			movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
-		if (failedToMove || !prevBlock && movedOutsideBlock) {
-			if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-			range.collapse(true);
-			return true;
-		}
-		
-		// Move the range forward 1 character to complete the cursor positioning in the adjacent container.
-		range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-		
-		// Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
-		if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
-			if (this._getVoidElement(prevBlock)) {
-				range.deleteContents();
-				return false;
-			}
-		}
-		
-		// If we are deleting into, or in, a void container then move cursor to left of container
-		if (this._getVoidElement(range.startContainer)) {
-			range.setStart(range.startContainer, 0);
-			range.collapse(true);
-			return this._deleteFromLeft(range);
-		}
-	
-		// Deleting from beginning of block to end of previous block - merge the blocks
-		if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
-			// Since the range is moved by character, it may have passed through empty blocks.
-			// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-			if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
-				range.setStart(prevBlock, 0);
-			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
-			ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
-			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
-		}
-		
-		// If we are deleting into a no tracking containiner, then remove the content
-		if (this._getNoTrackElement(range.startContainer.parentElement)) {
-			range.deleteContents();
-			return false;
-		}
+    if(range.startOffset > 0 || prevBlock){
+		  range.moveStart(ice.dom.CHARACTER_UNIT, -1);
 
-		var container = range.startContainer;
+      // If the container we are deleting into is outside of our ice element, then we need to stop.
+      var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
+        movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
+      if (failedToMove || !prevBlock && movedOutsideBlock) {
+        if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+        range.collapse(true);
+        return true;
+      }
 
-		// First check if caret is at the start of a container.
-		if (range.startOffset === 0) {
-			// Check if need to merge containers.
-			var cRange = range.cloneRange();
-			cRange.moveStart(ice.dom.CHARACTER_UNIT, -1);
+      // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
+      range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 
-			var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
-			if (sParent) {
-				if (ice.dom.isChildOf(sParent, this.element) === false) {
-					return false;
-				}
+      // Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
+      if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+        if (this._getVoidElement(prevBlock)) {
+          range.deleteContents();
+          return false;
+        }
+      }
 
-				var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
+      // If we are deleting into, or in, a void container then move cursor to left of container
+      if (this._getVoidElement(range.startContainer)) {
+        range.setStart(range.startContainer, 0);
+        range.collapse(true);
+        return this._deleteFromLeft(range);
+      }
 
-				// If the start of the cloned range has moved to a new block
-				// parent then merge these nodes.
-				if (eParent !== sParent) {
-					ice.dom.mergeContainers(eParent, sParent);
+      // Deleting from beginning of block to end of previous block - merge the blocks
+      if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+        // Since the range is moved by character, it may have passed through empty blocks.
+        // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+        if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
+          range.setStart(prevBlock, 0);
+        // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+        ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
+        return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
+      }
 
-					range.setStart(cRange.startContainer, cRange.startContainer.data.length);
-					range.collapse(true);
+      // If we are deleting into a no tracking containiner, then remove the content
+      if (this._getNoTrackElement(range.startContainer.parentElement)) {
+        range.deleteContents();
+        return false;
+      }
 
-					// Two block containers merged.
-					return;
-				}
-			}//end if
+      var container = range.startContainer;
 
-			// Caret is at the start of a container so it needs to
-			// move to the previous container.
-			var previousContainer = range.getPreviousContainer(container);
+      // First check if caret is at the start of a container.
+      if (range.startOffset === 0) {
+        // Check if need to merge containers.
+        var cRange = range.cloneRange();
+        cRange.moveStart(ice.dom.CHARACTER_UNIT, -1);
 
-			// If range is at the beginning of the container and the
-			// previous container is out side of Ice then do nothing.
-			if(!ice.dom.isChildOf(previousContainer, this.element)) {
-				return false;
-			}
+        var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
+        if (sParent) {
+          if (ice.dom.isChildOf(sParent, this.element) === false) {
+            return false;
+          }
 
-			if (ice.dom.isStubElement(previousContainer)) {
-				range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-				ice.dom.addClass(previousContainer, this._getIceNodeClass('deleteType'));
-				ice.dom.attr(previousContainer, 'title', 'Content removed');
-				range.collapse(true);
-			} else {
-				var lastSelectable = range.getLastSelectableChild(previousContainer);
-				range.setStart(lastSelectable, lastSelectable.data.length);
-				this._addTextNodeTracking(lastSelectable, range);
-			}
-		} else {
-			var textNode = range.startContainer;
-			var textAddNode = this.getIceNode(textNode, 'insertType');
+          var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
 
-			// Create a new ct node if we aren't already in one by the same user.
-			if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
-				this._addTextNodeTracking(textNode, range);
-			} else {
-				range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-				range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-				range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-				range.deleteContents();
+          // If the start of the cloned range has moved to a new block
+          // parent then merge these nodes.
+          if (eParent !== sParent) {
+            ice.dom.mergeContainers(eParent, sParent);
 
-				// The textAddNode is a tracking node that may be empty now - clean it up.
-				if(textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
-					var newstart = this.env.document.createTextNode('');
-					ice.dom.insertBefore(textAddNode, newstart);
-					range.setStart(newstart, 0);
-					range.collapse(true);
-					ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
-				}
-			}
-		}
+            range.setStart(cRange.startContainer, cRange.startContainer.data.length);
+            range.collapse(true);
+
+            // Two block containers merged.
+            return;
+          }
+        }//end if
+
+        // Caret is at the start of a container so it needs to
+        // move to the previous container.
+        var previousContainer = range.getPreviousContainer(container);
+
+        // If range is at the beginning of the container and the
+        // previous container is out side of Ice then do nothing.
+        if(!ice.dom.isChildOf(previousContainer, this.element)) {
+          return false;
+        }
+
+        if (ice.dom.isStubElement(previousContainer)) {
+          range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+          ice.dom.addClass(previousContainer, this._getIceNodeClass('deleteType'));
+          ice.dom.attr(previousContainer, 'title', 'Content removed');
+          range.collapse(true);
+        } else {
+          var lastSelectable = range.getLastSelectableChild(previousContainer);
+          range.setStart(lastSelectable, lastSelectable.data.length);
+          this._addTextNodeTracking(lastSelectable, range);
+        }
+      } else {
+        var textNode = range.startContainer;
+        var textAddNode = this.getIceNode(textNode, 'insertType');
+
+        // Create a new ct node if we aren't already in one by the same user.
+        if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
+          this._addTextNodeTracking(textNode, range);
+        } else {
+          range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+          range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
+          range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
+          range.deleteContents();
+
+          // The textAddNode is a tracking node that may be empty now - clean it up.
+          if(textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
+            var newstart = this.env.document.createTextNode('');
+            ice.dom.insertBefore(textAddNode, newstart);
+            range.setStart(newstart, 0);
+            range.collapse(true);
+            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
+          }
+        }
+      }
+    }
 		return true;
 	},
 
@@ -1130,7 +1148,7 @@ InlineChangeEditor.prototype = {
 			// Null-out the node so we can create a new node for multi-user nesting/support
 			if(ctNode !== null && !this._currentUserIceNode(ctNode))
 				ctNode = null;
-			
+
 			if (ctNode) {
 				// Can add the removed char to previous sibling.
 				if (!del) {
@@ -1303,7 +1321,7 @@ InlineChangeEditor.prototype = {
 			ice.dom.preventDefault(e);
 			return false;
 		}
-		
+
 		var preventDefault = false;
 
 		if (this._handleSpecialKey(e) === false) {
