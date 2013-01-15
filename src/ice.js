@@ -50,6 +50,11 @@ defaults = {
 };
 
 InlineChangeEditor = function(options) {
+
+	// Data structure for modelling changes in the element according to the following model:
+	//  [changeid] => {`type`, `time`, `userid`, `username`}
+	this._changes = {};
+
 	options || (options = {});
 	if(!options.element) throw Error("`options.element` must be defined for ice construction.");
 
@@ -60,11 +65,6 @@ InlineChangeEditor = function(options) {
 }
 
 InlineChangeEditor.prototype = {
-
-	// Data structure for modelling changes in the element according to the following model:
-	//  [changeid] => {`type`, `time`, `userid`, `username`}
-	_changes: {},
-
 	// Tracks all of the styles for users according to the following model:
 	//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
 	_userStyles: {},
