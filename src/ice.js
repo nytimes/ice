@@ -996,9 +996,9 @@ InlineChangeEditor.prototype = {
 		// If the container we are deleting into is outside of our ice element, then we need to stop.
 		var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
 			movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
-		if (failedToMove || !prevBlock && movedOutsideBlock) {
+		if (failedToMove || !prevBlock && movedOutsideBlock || !prevBlock && isEmptyBlock) {
 			if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-			range.collapse(true);
+			range.collapse();
 			return true;
 		}
 		
