@@ -1013,8 +1013,8 @@ InlineChangeEditor.prototype = {
                 return true;
         },
 
+        // Backspace
         _deleteFromLeft: function(range) {
-
                 var parentBlock = ice.dom.getBlockParent(range.startContainer, this.element)
                                 || ice.dom.isBlockElement(range.startContainer)
                                 && range.startContainer
@@ -1022,7 +1022,6 @@ InlineChangeEditor.prototype = {
                         prevBlock = parentBlock && (parentBlock.previousSibling || ice.dom.getBlockParent(parentBlock, this.element)) || null,
                         isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false;
                         prevBlockIsEmpty = prevBlock ? ice.dom.getNodeTextContent(prevBlock) == '' : false;
-                        
                         
                 // Move range to position the cursor on the inside of any adjacent container that it is going
                 // to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
@@ -1049,19 +1048,17 @@ InlineChangeEditor.prototype = {
       }
 
       // If we are deleting into, or in, a void container then move cursor to left of container
-      if (this._getVoidElement(range.startContainer)) {
+      if (this._getVoidElement(range.startContainer) && !isEmptyBlock && !prevBlockIsEmpty) {
         range.setStart(range.startContainer, 0);
         range.collapse(true);
         return this._deleteFromLeft(range);
       }
-
       
       // Deleting from beginning of block to end of previous block - merge the blocks
       if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
           
       // merge if either the current block is empty, the previous block is empty or autoMerge is activated
       if(this.autoMerge || isEmptyBlock || prevBlockIsEmpty) {
-          
         // Since the range is moved by character, it may have passed through empty blocks.
         // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
         if(prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
