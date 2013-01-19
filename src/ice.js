@@ -49,7 +49,11 @@ defaults = {
         noTrack: '.ice-no-track',
 
         // Selector for elements to avoid - move range before or after - similar handling to deletes
-        avoid: '.ice-avoid'
+        avoid: '.ice-avoid',
+        
+        // Switch for whether paragraph breaks should be removed when the user is deleting over a 
+        // paragraph break while changes are tracked.
+        autoMerge: true,
 };
 
 InlineChangeEditor = function(options) {
@@ -845,8 +849,7 @@ InlineChangeEditor.prototype = {
                                 del.appendChild(elem);
                         }
                 }
-
-                if(b1 !== b2) {
+                if(this.autoMerge && b1 !== b2) {
                         while(betweenBlocks.length)
                                 ice.dom.mergeContainers(betweenBlocks.shift(), b1);
                         ice.dom.mergeContainers(b2, b1);
@@ -892,7 +895,8 @@ InlineChangeEditor.prototype = {
 //                        range.collapse();
                         return true;
                 }
-
+                
+                if(this.autoMerge) {
                 // Deleting from beginning of block to end of previous block - merge the blocks
                 if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
                         if (!this._getVoidElement(parentBlock)) {
@@ -905,7 +909,8 @@ InlineChangeEditor.prototype = {
                                 return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || parentBlock, true);
                         }
                 }
-
+                }
+                
                 // If we are deleting into, or in, a non-tracking/void container then move cursor to left of container
                 if(this._getVoidElement(range.endContainer)) {
                         range.setEnd(range.endContainer, 0)
@@ -1038,6 +1043,7 @@ InlineChangeEditor.prototype = {
         return this._deleteFromLeft(range);
       }
 
+      if(this.autoMerge) {
       // Deleting from beginning of block to end of previous block - merge the blocks
       if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
         // Since the range is moved by character, it may have passed through empty blocks.
@@ -1047,6 +1053,7 @@ InlineChangeEditor.prototype = {
         // The browsers like to auto-insert breaks into empty paragraphs - remove them.
         ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
         return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
+      }
       }
 
       // If we are deleting into a no tracking containiner, then remove the content
