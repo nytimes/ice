@@ -1072,6 +1072,7 @@ InlineChangeEditor.prototype = {
         for(var i=0;i<elements.length; i++) {
             ice.dom.remove(ice.dom.find(elements[i], 'br'));
         }
+        ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
         ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
         return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
       }
