@@ -917,6 +917,15 @@ InlineChangeEditor.prototype = {
                         return false;
                 }
 
+                                // If we are deleting into a container that is not contentEditable, delete the entire container instead
+                if (range.endContainer.parentElement.contentEditable==='false') {
+                        var ctNode = this.createIceNode('deleteType');
+                        range.endContainer.parentElement.parentElement.insertBefore(ctNode, range.endContainer.parentElement);
+                        ctNode.appendChild(range.endContainer.parentElement);
+                        range.collapse();
+                        return true;
+                }  
+                
                 range.collapse();
 
                 var container = range.startContainer;
@@ -995,21 +1004,19 @@ InlineChangeEditor.prototype = {
                                 || null,
                         prevBlock = parentBlock && parentBlock.previousSibling || null,
                         isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) && ice.dom.getNodeTextContent(range.startContainer) == '');
-
                 // Move range to position the cursor on the inside of any adjacent container that it is going
                 // to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
-    if(range.startOffset > 0 || prevBlock){
-                  range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+
+      range.moveStart(ice.dom.CHARACTER_UNIT, -1);
 
       // If the container we are deleting into is outside of our ice element, then we need to stop.
       var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
         movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
       if (failedToMove || !prevBlock && movedOutsideBlock || !prevBlock && isEmptyBlock) {
         if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-        range.collapse(true);
+        range.collapse();
         return true;
       }
-
       // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
       range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 
@@ -1045,6 +1052,16 @@ InlineChangeEditor.prototype = {
         return false;
       }
 
+                // If we are deleting into a sub container that is not contentEditable, delete the entire container instead
+                if (range.startContainer.parentElement.contentEditable==='false') {
+                        var ctNode = this.createIceNode('deleteType');
+                        range.startContainer.parentElement.parentElement.insertBefore(ctNode, range.startContainer.parentElement);
+                        ctNode.appendChild(range.startContainer.parentElement);
+                        range.setEnd(ctNode, 0);
+                        return true;
+                } 
+      
+      
       var container = range.startContainer;
 
       // First check if caret is at the start of a container.
@@ -1117,7 +1134,7 @@ InlineChangeEditor.prototype = {
           }
         }
       }
-    }
+    
                 return true;
         },
 
