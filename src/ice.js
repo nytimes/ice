@@ -900,15 +900,21 @@ InlineChangeEditor.prototype = {
                 // Deleting from beginning of block to end of previous block - merge the blocks
                 if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
 
+                console.log('here');    
                 // merge if either the current block is empty, the next block is empty or autoMerge is activated
                 if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
                         if (!this._getVoidElement(parentBlock)) {
                                 // Since the range is moved by character, it may have passed through empty blocks.
                                 // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-                                if(nextBlock !== ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0])
+                                if(nextBlock !== ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0]) {
                                         range.setEnd(nextBlock, 0);
+                                }
                                 // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+                                // This line is for Firefox
+                                ice.dom.remove(ice.dom.find(ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0], 'br'));
+                                // And this line is for Webkit
                                 ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
+                                ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
                                 return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || parentBlock, true);
                         }
                 }
