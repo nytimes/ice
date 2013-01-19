@@ -15,7 +15,7 @@ defaults = {
         // Block element tagname, which wrap text and other inline nodes in `this.element`
         blockEl: 'p',
  
-        // Other permitted block element tagnames
+        // All permitted block element tagnames
         blockEls: ['p', 'ol', 'ul', 'li', 'h2', 'blockquote'],
 
         // Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
@@ -148,7 +148,6 @@ InlineChangeEditor.prototype = {
          */
         initializeRange: function() {
                 var range = this.selection.createRange();
-            //    range.setStart(ice.dom.find(this.element, this.blockEl)[0], 0);
                 range.setStart(ice.dom.find(this.element, this.blockEls.join(', '))[0], 0);
                 range.collapse(true);
                 this.selection.addRange(range);
@@ -791,9 +790,7 @@ InlineChangeEditor.prototype = {
                 // Bookmark the range and get elements between.
                 var bookmark = new ice.Bookmark(this.env, range),
                         elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
-                        //b1 = ice.dom.parents(range.startContainer, this.blockEl)[0],
                         b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
-                        //b2 = ice.dom.parents(range.endContainer, this.blockEl)[0],
                         b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
                         betweenBlocks = new Array(),
                         eln = elements.length;
@@ -801,7 +798,6 @@ InlineChangeEditor.prototype = {
                 for (var i = 0; i < eln; i++) {
                         var elem = elements[i];
 
-                        //if(ice.dom.is(elem, this.blockEl))
                         if(ice.dom.is(elem, this.blockEls.join(', ')))
                                 betweenBlocks.push(elem);
 
@@ -833,7 +829,6 @@ InlineChangeEditor.prototype = {
                                         ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
                                         if(ice.dom.getNodeTextContent(block).length === 0) {
                                                 continue;
-                                        //} else if(ice.dom.is(elem, this.blockEl)) {
                                         } else if(ice.dom.is(elem, this.blockEls.join(', '))) {
                                                 // If we are deleting a block tag then wrap all inner html in a delete. Simplest, but
                                                 // not the best solution since it will wrap deletes and other void non-tracking nodes.
