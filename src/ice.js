@@ -899,8 +899,7 @@ InlineChangeEditor.prototype = {
                 
                 // Deleting from beginning of block to end of previous block - merge the blocks
                 if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
-
-                console.log('here');    
+ 
                 // merge if either the current block is empty, the next block is empty or autoMerge is activated
                 if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
                         if (!this._getVoidElement(parentBlock)) {
