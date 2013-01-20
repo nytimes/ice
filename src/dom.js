@@ -22,6 +22,7 @@ dom.DOCUMENT_FRAGMENT_NODE = 11;
 dom.NOTATION_NODE = 12;
 dom.CHARACTER_UNIT = 'character';
 dom.WORD_UNIT = 'word';
+dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
 
 dom.getKeyChar = function (e) {
 	return String.fromCharCode(e.which);
@@ -203,38 +204,7 @@ dom.getIframeDocument = function (iframe) {
 	return doc;
 };
 dom.isBlockElement = function (element) {
-	switch (element.nodeName.toLowerCase()) {
-	case 'p':
-	case 'div':
-	case 'pre':
-	case 'ul':
-	case 'ol':
-	case 'li':
-	case 'table':
-	case 'tbody':
-	case 'td':
-	case 'th':
-	case 'fieldset':
-	case 'form':
-	case 'blockquote':
-	case 'dl':
-	case 'dir':
-	case 'center':
-	case 'address':
-	case 'h1':
-	case 'h2':
-	case 'h3':
-	case 'h4':
-	case 'h5':
-	case 'h6':
-	//case 'img':
-		return true;
-		break;
-	default:
-		return false;
-		break;
-	}
-	return false;
+        return dom.BLOCK_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
 };
 dom.isStubElement = function (element) {
 	if (element) {
