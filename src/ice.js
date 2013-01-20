@@ -17,7 +17,7 @@
         blockEl: 'p',
 
         // All permitted block element tagnames
-        blockEls: ['p', 'ol', 'ul', 'li', 'h2', 'blockquote'],
+        blockEls: ['p', 'ol', 'ul', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'],
 
         // Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
         // in ice node class attributes - cts1, cts2, cts3, ...
@@ -570,7 +570,7 @@
         },
 
         /**
-         * Returns this `node` or the first parent tracking node with the given `changeType`.XX
+         * Returns this `node` or the first parent tracking node with the given `changeType`.
          */
         getIceNode: function (node, changeType) {
             var selector = '.' + this._getIceNodeClass(changeType);
@@ -1031,11 +1031,10 @@
 
         // Backspace
         _deleteFromLeft: function (range) {
-            var parentBlock = ice.dom.getBlockParent(range.startContainer, this.element) || ice.dom.isBlockElement(range.startContainer) && range.startContainer || null,
-                prevBlock = parentBlock && (parentBlock.previousSibling || ice.dom.getBlockParent(parentBlock, this.element)) || null,
-                isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false;
-            prevBlockIsEmpty = prevBlock ? ice.dom.getNodeTextContent(prevBlock) == '' : false;
-
+            var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
+                isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false,
+                prevBlock = parentBlock && ice.dom.getPrevContentNode(parentBlock),// || ice.dom.getBlockParent(parentBlock, this.element) || null,
+                prevBlockIsEmpty = prevBlock ? ice.dom.getNodeTextContent(prevBlock) == '' : false;
             // Move range to position the cursor on the inside of any adjacent container that it is going
             // to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
 
@@ -1073,7 +1072,7 @@
                 range.collapse(true);
                 return true;
             }
-
+            
             if (prevBlockIsEmpty && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
                 ice.dom.remove(prevBlock);
                 range.collapse();
@@ -1098,8 +1097,12 @@
                 ice.dom.remove(ice.dom.find(startContainer, 'br'));
                 ice.dom.remove(ice.dom.find(endContainer, 'br'));
                 return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
+            } else if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+                var lastSelectable = range.getLastSelectableChild(prevBlock);
+                range.setStart(lastSelectable, lastSelectable.data.length);
+                range.collapse(true);
+                return true;
             }
-            //  }
 
             // If we are deleting into a no tracking containiner, then remove the content
             if (this._getNoTrackElement(range.startContainer.parentElement)) {

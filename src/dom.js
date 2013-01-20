@@ -22,7 +22,8 @@ dom.DOCUMENT_FRAGMENT_NODE = 11;
 dom.NOTATION_NODE = 12;
 dom.CHARACTER_UNIT = 'character';
 dom.WORD_UNIT = 'word';
-dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
+dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
+dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
 
 dom.getKeyChar = function (e) {
 	return String.fromCharCode(e.which);
@@ -378,6 +379,29 @@ dom.getPrevNode = function (node) {
 		return dom.getLastChild(node.parentNode);
 	}
 	return null;
+};
+dom.canContainTextElement = function (element) {
+        return dom.TEXT_CONTAINER_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
+};
+dom.getNextContentNode = function (node) {
+        if (dom.canContainTextElement(node.parentNode)) {
+                return dom.getNextNode(node);
+        } else if (node.nextElementSibling) {
+                return node.nextElementSibling; 
+        }
+        return null;
+};
+dom.getPrevContentNode = function (node) {
+        if (dom.canContainTextElement(node.parentNode)) {
+                return dom.getPrevNode(node);
+                
+        } else if (node.previousElementSibling) {
+                return node.previousElementSibling; 
+        } else if (node.parentNode.previousElementSibling) {
+                return node.parentNode.previousElementSibling; 
+        }
+        
+        return null;
 };
 dom.getFirstChild = function (node) {
 	if (node.firstChild) {
