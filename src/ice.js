@@ -771,7 +771,7 @@
         _insertNode: function (node, range, insertingDummy) {
 
             var startContainer = range.startContainer;
-            var parentBlock = ice.dom.getBlockParent(range.startContainer, this.element) || ice.dom.isBlockElement(range.startContainer) && range.startContainer || null; //ice.dom.getBlockParent(startContainer, this.element);
+            var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null; //ice.dom.getBlockParent(startContainer, this.element);
 
             if (ice.dom.getNodeTextContent(parentBlock) == '') {
                 ice.dom.empty(parentBlock);
@@ -884,10 +884,10 @@
             range.collapse(true);
         },
 
-        _deleteFromRight: function (range) {
-            var parentBlock = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || ice.dom.is(range.startContainer, this.blockEls.join(', ')) && range.startContainer || null,
-                nextBlock = parentBlock && parentBlock.nextSibling || null,
+        _deleteFromRight: function (range) {          
+            var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
                 isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false,
+                nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock),
                 nextBlockIsEmpty = nextBlock ? ice.dom.getNodeTextContent(nextBlock) == '' : false;
 
             // Move end of range to position it on the inside of any adjacent container that it
@@ -1068,7 +1068,8 @@
 
             if (isEmptyBlock && prevBlock) {
                 ice.dom.remove(parentBlock);
-                range.setStart(prevBlock, prevBlock.childNodes.length);
+                var lastSelectable = range.getLastSelectableChild(prevBlock);
+                range.setStart(lastSelectable, lastSelectable.data.length);
                 range.collapse(true);
                 return true;
             }
