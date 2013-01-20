@@ -561,7 +561,7 @@ InlineChangeEditor.prototype = {
         },
 
         /**
-         * Returns this `node` or the first parent tracking node with the given `changeType`.
+         * Returns this `node` or the first parent tracking node with the given `changeType`.XX
          */
         getIceNode: function(node, changeType) {
                 var selector = '.' + this._getIceNodeClass(changeType);
@@ -769,6 +769,19 @@ InlineChangeEditor.prototype = {
         },
 
         _insertNode: function(node, range, insertingDummy) {
+
+                var startContainer = range.startContainer;
+                var parentBlock = ice.dom.getBlockParent(range.startContainer, this.element)
+                                || ice.dom.isBlockElement(range.startContainer)
+                                && range.startContainer
+                                || null;//ice.dom.getBlockParent(startContainer, this.element);
+                
+                if (ice.dom.getNodeTextContent(parentBlock) == '') {
+                    ice.dom.empty(parentBlock);
+                    ice.dom.append(parentBlock, '<br>');
+                    range.setStart(parentBlock, 0);
+                }
+                    
                 var ctNode = this.getIceNode(range.startContainer, 'insertType');
                 var inCurrentUserInsert = this._currentUserIceNode(ctNode);
 
@@ -895,13 +908,26 @@ InlineChangeEditor.prototype = {
 //                        range.collapse();
                         return true;
                 }
-                
+     
+                if (isEmptyBlock && nextBlock) {
+                    ice.dom.remove(parentBlock);
+                    range.setStart(nextBlock, 0);
+                    range.collapse();
+                    return true;
+                }
+      
+                if (nextBlockIsEmpty && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+                    ice.dom.remove(nextBlock);
+                    range.collapse(true);
+                    return true;
+                }
+     
                 
                 // Deleting from beginning of block to end of previous block - merge the blocks
-                if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
- 
+               // if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
+                if (this.autoMerge && ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
                 // merge if either the current block is empty, the next block is empty or autoMerge is activated
-                if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
+                //if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
                         if (!this._getVoidElement(parentBlock)) {
                                 // Since the range is moved by character, it may have passed through empty blocks.
                                 // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
@@ -916,7 +942,7 @@ InlineChangeEditor.prototype = {
                                 ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
                                 return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || parentBlock, true);
                         }
-                }
+                //}
                }
                 
                 
@@ -1054,11 +1080,25 @@ InlineChangeEditor.prototype = {
         return this._deleteFromLeft(range);
       }
       
+      if (isEmptyBlock && prevBlock) {
+          ice.dom.remove(parentBlock);
+          range.setStart(prevBlock, prevBlock.childNodes.length);
+          range.collapse(true);
+          return true;
+      }
+      
+      if (prevBlockIsEmpty && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+          ice.dom.remove(prevBlock);
+          range.collapse();
+          return true;
+      }
+      
       // Deleting from beginning of block to end of previous block - merge the blocks
-      if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
+     // if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
           
       // merge if either the current block is empty, the previous block is empty or autoMerge is activated
-      if(this.autoMerge || isEmptyBlock || prevBlockIsEmpty) {
+     // if(this.autoMerge || isEmptyBlock || prevBlockIsEmpty) {
+    if(this.autoMerge && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
         // Since the range is moved by character, it may have passed through empty blocks.
         // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
         if(prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
@@ -1067,13 +1107,16 @@ InlineChangeEditor.prototype = {
         // The browsers like to auto-insert breaks into empty paragraphs - remove them.
         var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
         for(var i=0;i<elements.length; i++) {
-            ice.dom.remove(ice.dom.find(elements[i], 'br'));
+            ice.dom.remove(elements[i]);
         }
-        ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
-        ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
+
+        var startContainer = range.startContainer;
+         var endContainer = range.endContainer;
+        ice.dom.remove(ice.dom.find(startContainer, 'br'));
+        ice.dom.remove(ice.dom.find(endContainer, 'br'));
         return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
       }
-      }
+    //  }
 
       // If we are deleting into a no tracking containiner, then remove the content
       if (this._getNoTrackElement(range.startContainer.parentElement)) {
