@@ -897,9 +897,6 @@
 
             // If the container we are deleting into is outside of our ice element, then we need to stop.
             if (!nextBlock && !ice.dom.isChildOf(range.endContainer, this.element)) {
-                //                        range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-                //                        range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-                //                        range.collapse();
                 return true;
             }
 
@@ -918,7 +915,6 @@
 
 
             // Deleting from beginning of block to end of previous block - merge the blocks
-            // if (ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls) || isEmptyBlock) {
             if (this.autoMerge && ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
                 // merge if either the current block is empty, the next block is empty or autoMerge is activated
                 //if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
@@ -1085,10 +1081,6 @@
             }
 
             // Deleting from beginning of block to end of previous block - merge the blocks
-            // if(ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element) || isEmptyBlock) {
-
-            // merge if either the current block is empty, the previous block is empty or autoMerge is activated
-            // if(this.autoMerge || isEmptyBlock || prevBlockIsEmpty) {
             if (this.autoMerge && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
                 // Since the range is moved by character, it may have passed through empty blocks.
                 // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
