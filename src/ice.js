@@ -812,8 +812,13 @@
             for (var i = 0; i < eln; i++) {
                 var elem = elements[i];
 
-                if (ice.dom.is(elem, this.blockEls.join(', '))) betweenBlocks.push(elem);
-
+                if (ice.dom.is(elem, this.blockEls.join(', '))) {
+                    betweenBlocks.push(elem);
+                } else if (!ice.dom.canContainTextElement(elem.parentElement)) {
+                    // Ignore text node contents in containers that are not supposed to contain text.
+                    continue;
+                }
+ 
                 // Ignore empty space
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
 
