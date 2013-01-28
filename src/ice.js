@@ -279,7 +279,7 @@ InlineChangeEditor.prototype = {
 
 		if(typeof node === "string"){
       if(node.trim() == "")
-        node = node.replace(/ /g, "\xa0");
+        node = node.replace(/  /g, "\xa0 ");
 			node = document.createTextNode(node);
     }
 
