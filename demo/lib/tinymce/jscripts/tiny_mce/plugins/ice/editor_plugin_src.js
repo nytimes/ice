@@ -19,6 +19,7 @@
 		contentEditable: true,
 		css: 'css/ice.css',
 		manualInit: false,
+		scriptVersion: new Date().getTime(),
 		afterInit: function() {},
 		afterClean: function(body) { return body; },
 		beforePasteClean: function(body) { return body; },
@@ -42,8 +43,8 @@
 
 				// Add insert and delete tag/attribute rules.
 				// Important: keep `id` in attributes list in case `insertTag` is a `span` - tinymce uses temporary spans with ids.
-				ed.serializer.addRules(self.insertTag + '[id|class|username|userid|cid|title]');
-				ed.serializer.addRules(self.deleteTag + '[id|class|username|userid|cid|title]');
+				ed.serializer.addRules(self.insertTag + '[id|class|title|'+self.changeIdAttribute + '|' + self.userIdAttribute + '|' + self.userNameAttribute + '|' + self.timeAttribute + ']');
+				ed.serializer.addRules(self.deleteTag + '[id|class|title|'+self.changeIdAttribute + '|' + self.userIdAttribute + '|' + self.userNameAttribute + '|' + self.timeAttribute + ']');
 				// Temporary tags to act as placeholders for deletes.
 				ed.serializer.addRules('tempdel[data-allocation]');
 
@@ -65,7 +66,7 @@
 				script.type = 'text/javascript';
 				if (script.readyState) script.onreadystatechange = function() { startIce(); };
 				else script.onload = startIce;
-				script.src = url + '/js/ice.min.js';
+				script.src = url + '/js/ice.min.js?version='+self.scriptVersion;
 				document.getElementsByTagName('head')[0].appendChild(script);
 
 				// Setting the Show/Hide Changes button to active
@@ -86,7 +87,10 @@
 						element: ed.getBody(),
 						isTracking: self.isTracking,
 						contentEditable: self.contentEditable,
-						attrNamePrefix: self.attrPrefix,
+						changeIdAttribute: self.changeIdAttribute,
+						userIdAttribute: self.userIdAttribute,
+						userNameAttribute: self.userNameAttribute,
+						timeAttribute: self.timeAttribute,
 						currentUser: {
 							id: self.user.id,
 							name: self.user.name
@@ -110,11 +114,11 @@
 							deleteType: {tag: self.deleteTag, alias: self.deleteClass}
 						}
 					}).startTracking();
+					ed.onEvent.add(function(ed, e) {
+						return changeEditor.handleEvent(e);
+					});
+					setTimeout(function() { self.afterInit.call(self); }, 10);
 				}, 500);
-				ed.onEvent.add(function(ed, e) {
-					return changeEditor.handleEvent(e);
-				});
-				setTimeout(function() { self.afterInit.call(self); }, 10);
 			});
 			
 			/**
@@ -134,7 +138,7 @@
 			 * @return clean body, void of change tracking tags.
 			 */
 			ed.addCommand('icecleanbody', function(el) {
-				var body = changeEditor.getCleanContent(el || ed.getContent(), self.afterClean);
+				var body = changeEditor.getCleanContent(el || ed.getContent(), self.afterClean, self.beforeClean);
 				return body;
 			});
 			
@@ -263,10 +267,9 @@
 			/**
 			 * Calls the ice smart quotes plugin to convert regular quotes to smart quotes.
 			 */
-			ed.addCommand('ice_smartquotes', function() {
-				var body = ed.getBody();
-				changeEditor.pluginsManager.plugins['IceSmartQuotesPlugin'].convert(body);
-				ed.windowManager.alert('Regular quotes have been converted into smart quotes.');
+			ed.addCommand('ice_smartquotes', function(quiet) {
+				changeEditor.pluginsManager.plugins['IceSmartQuotesPlugin'].convert(ed.getBody());
+				if (!quiet) ed.windowManager.alert('Regular quotes have been converted into smart quotes.');
 			});
 			
 			/**
@@ -314,17 +317,33 @@
 			});
 			
 			/**
+			 * Makes a manual call to the paste handler - this feature is only useful when `isTracking`
+			 * is false; otherwise, ice will automatically handle paste events.
+			 */
+			ed.addCommand('ice_handlepaste', function(html) {
+				return changeEditor.pluginsManager.plugins['IceCopyPastePlugin'].handlePaste();
+			});
+			
+			/**
+			 * Makes a manual call to the emdash handler - this feature is only useful when `isTracking`
+			 * is false and the emdash plugin is not on; otherwise, ice will handle emdash conversion.
+			 */
+			ed.addCommand('ice_handleemdash', function(html) {
+				return changeEditor.pluginsManager.plugins['IceEmdashPlugin'].convertEmdash() ? 1 : 0;
+			});
+			
+			/**
 			 * Register Buttons
 			 */
 			ed.addButton('iceaccept', {
 				title : 'Accept Change',
-				image : url + '/img/ice-accept-change.png',
+				image : url + '/img/accept.gif',
 				cmd : 'iceaccept'
 			});
 
 			ed.addButton('icereject', {
 				title : 'Reject Change',
-				image : url + '/img/ice-reject-change.png',
+				image : url + '/img/reject.gif',
 				cmd : 'icereject'
 			});
 	
@@ -341,7 +360,7 @@
 			});
 			
 			ed.addButton('ice_toggleshowchanges', {
-				title : 'Show Track Changes',
+				title : 'Show/Hide Track Changes',
 				image : url + '/img/ice-showchanges.png',
 				cmd : 'ice_toggleshowchanges'
 			});
@@ -362,13 +381,13 @@
 				ed.plugins.contextmenu.onContextMenu.add(function(th, menu, node) {
 					if(isInsideChangeTag(node)) {
 						menu.add({
-							title: "<img src='"+url+"/img/ice-accept-change.png' style='vertical-align: middle;margin-left: -22px;margin-right: 5px;'>Accept Change", 
-							icon: '', 
+							title: "Accept Change", 
+							icon: 'accept', 
 							cmd: 'iceaccept'
 						});
 						menu.add({
-							title: "<img src='"+url+"/img/ice-reject-change.png' style='vertical-align: middle;margin-left: -22px;margin-right: 5px;'>Reject Change", 
-							icon: '', 
+							title: "Reject Change", 
+							icon: 'reject', 
 							cmd: 'icereject'
 						});
 					}
