@@ -1,12 +1,9 @@
 $(document).ready(function() {
 
-	// Setup a hidden element where tests can append elements
-	$('body').append('<div id="hiddenEl"></div>');
-	
 	// Setup a general function for ice construction
 	window.getIce = function(el) {
 		el.attr('contentEditable', true);
-		$('#hiddenEl').append(el);
+		$('#qunit-fixture').append(el);
 		return new ice.InlineChangeEditor({
 			element: el[0],
 			isTracking: true,
@@ -25,6 +22,7 @@ $(document).ready(function() {
 				{ name: 'IceCopyPastePlugin', settings: { preserve: 'p,a[href],strong[*],em[id|class]' }}
 			]
 		}).startTracking();
-	}
+	};
+
 
 });

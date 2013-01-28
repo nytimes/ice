@@ -592,7 +592,7 @@ InlineChangeEditor.prototype = {
 	 * Returns a selector for not tracking changes
 	 */
 	_getNoTrackSelector: function() {
-		return '.ins[userid="'+this.currentUser.id+'"],' + this.noTrack;
+		return this.noTrack;
 	},
 
 	/**
@@ -787,15 +787,15 @@ InlineChangeEditor.prototype = {
 
 			// search immediate childrens
 			if (elem.hasChildNodes()) {
-				for(var x=0; x<elem.childNodes.length; x++) {
+				for (var x=0; x<elem.childNodes.length; x++) {
 					var child = elem.childNodes[x];
-					if (this._getNoTrackElement(child)) {
+					if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
 						ice.dom.remove(child);
 					}
 				}
 			}
 			// If the element is not to be track, delete the selection
-			if (this._getNoTrackElement(elem)) {
+			if (this._getNoTrackElement(elem)  || this._currentUserIceNode(elem)) {
 				ice.dom.remove(elem);
 			}
 			
@@ -1018,10 +1018,10 @@ InlineChangeEditor.prototype = {
 			if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
 				range.setStart(prevBlock, 0);
 			// The browsers like to auto-insert breaks into empty paragraphs - remove them.
-			ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
+			ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
 			return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
 		}
-		
+
 		// If we are deleting into a no tracking containiner, then remove the content
 		if (this._getNoTrackElement(range.startContainer.parentElement)) {
 			range.deleteContents();
@@ -1055,7 +1055,7 @@ InlineChangeEditor.prototype = {
 					// Two block containers merged.
 					return;
 				}
-			}//end if
+			}
 
 			// Caret is at the start of a container so it needs to
 			// move to the previous container.

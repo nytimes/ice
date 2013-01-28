@@ -319,8 +319,9 @@ $(document).ready(function() {
 		
 		// Delete left through empty block.
 		range.setStart(el.find('p:eq(3)')[0], 0);
-		range.moveStart('character', 2)
+		range.moveStart('character', 2);
 		range.collapse(true);
+		debugger;
 		changeEditor.deleteContents(false, range);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);

@@ -6,6 +6,10 @@ Ice is a track changes implementation, built in javascript, for anything that is
 
 [Check it out!](http://NYTimes.github.com/ice/demo/)
 
+## Download
+
+[v0.4.2](http://NYTimes.github.com/ice/demo/)
+
 ## Features
 
 - Track multi-user inserts and deletes with the option to turn on and off tracking or highlighting.
@@ -115,14 +119,9 @@ Additional options:
 
 ## Limitations/Dependencies
 
-- ice depends on jQuery. We will be working to remove this dependency at some point.
 - ice needs to be initialized after the DOM ready event fires.
 - ice was originally created for the simple markup behind nytimes.com articles (`p`, `a`, `em`, `strong`). As such, it requires that all text editing takes place in a common root block element, and that there are no other blocks found in the editor. Any type of inline elements are ok, inside of the common root blocks. 
-- Unfortunately, we haven't been able to test this across all browsers and versions. We know that it tests well in modern Firefox (5+) and Webkit browsers, and "seems to work" in IE7+. We intend to do more testing and get a better idea about what ice can support across browsers, shortly.
-
-## Please Help
-
-In the coming months we will be adding documentation, known issues to the tracker, more unit testing, more plugins, and more features. This is a big task and we would love some help.
+- Unfortunately, we haven't been able to test this across all browsers and versions. We know that it tests well in modern Firefox (5+) and Webkit browsers, and "seems to work" in IE7+. We intend to do more testing and get a better idea about what ice can support across browsers.
 
 ## License
 
