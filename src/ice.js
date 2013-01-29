@@ -624,7 +624,7 @@
          * Returns a selector for not tracking changes
          */
         _getNoTrackSelector: function () {
-            return '.ins[userid="' + this.currentUser.id + '"],' + this.noTrack;
+            return this.noTrack;
         },
 
         /**
@@ -822,17 +822,17 @@
                 // Ignore empty space
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
 
-                // search immediate childrens
+                // search immediate children
                 if (elem.hasChildNodes()) {
                     for (var x = 0; x < elem.childNodes.length; x++) {
                         var child = elem.childNodes[x];
-                        if (this._getNoTrackElement(child)) {
+                        if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
                             ice.dom.remove(child);
                         }
                     }
                 }
-                // If the element is not to be track, delete the selection
-                if (this._getNoTrackElement(elem)) {
+                // If the element is not to be track or created by the current user, delete the selection
+                if (this._getNoTrackElement(elem) || this._currentUserIceNode(child)) {
                     ice.dom.remove(elem);
                 }
 
@@ -1027,7 +1027,7 @@
                         ice.dom.remove(textAddNode);
                     }
                 }
-            } //end if
+            }
 
             // Make sure we leave collapsed
             range.collapse(true);
