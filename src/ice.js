@@ -769,20 +769,13 @@
         },
 
         _insertNode: function (node, range, insertingDummy) {
-            console.log(range.startContainer.parentNode);
             if (!ice.dom.isBlockElement(range.startContainer) && !ice.dom.canContainTextElement(ice.dom.getBlockParent(range.startContainer, this.element))) {
-                console.log('moving range');
                 range.setStart(range.startContainer.previousSibling, 0);
                 
             }
             var startContainer = range.startContainer;
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null;
-            console.log(startContainer.parentNode);
-            
-            console.log(startContainer);
-            console.log(ice.dom.getNodeTextContent(parentBlock));
             if (ice.dom.getNodeTextContent(parentBlock) == '') {
-                console.log('there');
                 ice.dom.empty(parentBlock);
                 ice.dom.append(parentBlock, '<br>');
                 range.setStart(parentBlock, 0);
