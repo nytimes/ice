@@ -819,7 +819,7 @@
                     // Ignore text node contents in containers that are not supposed to contain text.
                     continue;
                 }
-                
+                console.log(elem);
                 // Ignore empty space
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
 
@@ -827,13 +827,15 @@
                 if (elem.hasChildNodes()) {
                     for (var x = 0; x < elem.childNodes.length; x++) {
                         var child = elem.childNodes[x];
+                        
                         if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
                             ice.dom.remove(child);
                         }
                     }
                 }
                 // If the element is not to be track or created by the current user, delete the selection
-                if (this._getNoTrackElement(elem) || this._currentUserIceNode(child)) {
+                if (this._getNoTrackElement(elem) || this._currentUserIceNode(elem) || elem.nodeType === ice.dom.TEXT_NODE && this._currentUserIceNode(elem.parentNode)) {
+                    console.log('cu');
                     ice.dom.remove(elem);
                 }
 
