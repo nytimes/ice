@@ -296,7 +296,7 @@
             else range = this.getCurrentRange();
 
             if (typeof node === "string") {
-                if (node.trim() == "") node = node.replace(/ /g, "\xa0");
+                if (node.trim() == "") node = node.replace(/ /g, "\u205f"); //http://www.fileformat.info/info/unicode/char/205F/index.htm
                 node = document.createTextNode(node);
             }
 
