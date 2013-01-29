@@ -819,7 +819,6 @@
                     // Ignore text node contents in containers that are not supposed to contain text.
                     continue;
                 }
-                console.log(elem);
                 // Ignore empty space
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
 
@@ -835,7 +834,6 @@
                 }
                 // If the element is not to be track or created by the current user, delete the selection
                 if (this._getNoTrackElement(elem) || this._currentUserIceNode(elem) || elem.nodeType === ice.dom.TEXT_NODE && this._currentUserIceNode(elem.parentNode)) {
-                    console.log('cu');
                     ice.dom.remove(elem);
                 }
 
