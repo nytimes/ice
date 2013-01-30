@@ -65,7 +65,7 @@
 
         // Switch for whether paragraph breaks should be removed when the user is deleting over a 
         // paragraph break while changes are tracked.
-        autoMerge: false,
+        mergeBlocks: true,
     };
 
     InlineChangeEditor = function (options) {
@@ -864,7 +864,7 @@
                     del.appendChild(elem);
                 }
             }
-            if (this.autoMerge && b1 !== b2) {
+            if (this.mergeBlocks && b1 !== b2) {
                 while (betweenBlocks.length)
                 ice.dom.mergeContainers(betweenBlocks.shift(), b1);
                 ice.dom.mergeContainers(b2, b1);
@@ -921,9 +921,9 @@
 
 
             // Deleting from beginning of block to end of previous block - merge the blocks
-            if (this.autoMerge && ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
-                // merge if either the current block is empty, the next block is empty or autoMerge is activated
-                //if(this.autoMerge || isEmptyBlock || nextBlockIsEmpty) {
+            if (this.mergeBlocks && ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
+                // merge if either the current block is empty, the next block is empty or mergeBlocks is activated
+                //if(this.mergeBlocks || isEmptyBlock || nextBlockIsEmpty) {
                 if (!this._getVoidElement(parentBlock)) {
                     // Since the range is moved by character, it may have passed through empty blocks.
                     // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
@@ -1087,7 +1087,7 @@
             }
 
             // Deleting from beginning of block to end of previous block - merge the blocks
-            if (this.autoMerge && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+            if (this.mergeBlocks && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
                 // Since the range is moved by character, it may have passed through empty blocks.
                 // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
                 if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
