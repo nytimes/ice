@@ -832,8 +832,15 @@
                         }
                     }
                 }
+                var iceClassList = '';
+                var self = this;
+                ice.dom.each(this.changeTypes, function (type, i) {
+                    if (type != 'deleteType') {
+                        iceClassList += '.' + self._getIceNodeClass(type)+',';
+                    }
+                });
                 // If the element is not to be track or created by the current user, delete the selection
-                if (this._getNoTrackElement(elem) || this._currentUserIceNode(elem) || elem.nodeType === ice.dom.TEXT_NODE && this._currentUserIceNode(elem.parentNode)) {
+                if (this._getNoTrackElement(elem) || this._currentUserIceNode(ice.dom.findNodeParent(elem, iceClassList, this.element))) {
                     ice.dom.remove(elem);
                 }
 

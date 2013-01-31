@@ -709,7 +709,21 @@ dom.getBlockParent = function(node, container) {
 	}
 	return null;
 };
+dom.findNodeParent = function(node, selector, container) {
+        if(node) {
+                while(node.parentNode) {                       
+                        if(node === container) {
+                                return null;
+                        }
 
+                        if(dom.is(node, selector) === true) {
+                                return node;
+                        }
+                        node = node.parentNode;
+                }
+        }
+        return null;
+};
 dom.onBlockBoundary = function(leftContainer, rightContainer, blockEls) {
 	if(!leftContainer || !rightContainer) return false
 	var bleft = dom.isChildOfTagNames(leftContainer, blockEls) || dom.is(leftContainer, blockEls.join(', ')) && leftContainer || null;
