@@ -832,15 +832,8 @@
                         }
                     }
                 }
-                var iceClassList = '';
-                var self = this;
-                ice.dom.each(this.changeTypes, function (type, i) {
-                    if (type != 'deleteType') {
-                        iceClassList += '.' + self._getIceNodeClass(type)+',';
-                    }
-                });
                 // If the element is not to be track or created by the current user, delete the selection
-                if (this._getNoTrackElement(elem) || this._currentUserIceNode(ice.dom.findNodeParent(elem, iceClassList, this.element))) {
+                if (this._getNoTrackElement(elem) || this._currentUserIceNode(ice.dom.findNodeParent(elem, '.' + this._getIceNodeClass('insertType'), this.element))) {
                     ice.dom.remove(elem);
                 }
 
