@@ -810,7 +810,8 @@
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
                 betweenBlocks = new Array(),
                 eln = elements.length;
-
+           // range.setStartBefore(bookmark.start);
+           // range.collapse(true);
             for (var i = 0; i < eln; i++) {
                 var elem = elements[i];
                 if (ice.dom.is(elem, this.blockEls.join(', '))) {
@@ -876,18 +877,18 @@
                 ice.dom.insertBefore(bookmark.start, startEl);
                 this.selection.addRange(range);
                 bookmark.selectBookmark();
-                range = this.getCurrentRange();
+                //range = this.getCurrentRange(); // I am not sure why this line was put here it creates problems if the last node of a selection is going to be deleted in webkit. Works good without.
                 range.setStart(startEl, 0);
             } else {
                 bookmark.selectBookmark();
-                range = this.getCurrentRange();
+                //range = this.getCurrentRange(); // I am not sure why this line was put here it creates problems if the last node of a selection is going to be deleted in webkit. Works good without.
                 // Move start of range to position it on the inside of any adjacent container, if exists.
                 // E.G.:  <em>text</em>|test  ->  <em>text|</em>test
                 range.moveStart(ice.dom.CHARACTER_UNIT, -1);
                 range.moveStart(ice.dom.CHARACTER_UNIT, 1);
             }
 
-            range.collapse(true);
+            range.collapse();
         },
 
         _deleteFromRight: function (range) {          
