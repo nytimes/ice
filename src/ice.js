@@ -944,74 +944,9 @@
                 }
 
                 // If the caret was placed directly before a stub element or an element that is not editable, enclose the element with a delete ice node.
-
                if (ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
-                    var textAddNode = this.getIceNode(nextContainer, 'insertType');
-                    
-                    if (textAddNode && this._currentUserIceNode(textAddNode)) {
-                        nextContainer.parentNode.removeChild(nextContainer);
-                        
-                        if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
-                            var newstart = this.env.document.createTextNode('');
-                            ice.dom.insertBefore(textAddNode, newstart);
-                            range.setStart(newstart, 0);
-                            range.collapse(true);
-                            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
-                        }
-                        
-                        return true;
-                        
-                    }
-                    else if (this.getIceNode(nextContainer, 'deleteType')) {
-                        // Move the range to the left until there is valid sibling.
-                                var found = false;
-                                var nextSibling = ice.dom.getNextContentNode(nextContainer);
-                                while (!found) {
-                                    ctNode = this.getIceNode(nextSibling, 'deleteType');
-                                    if (!ctNode) {
-                                        found = true;
-                                    } else {
-                                        nextSibling = nextSibling.nextSibling;
-                                    }
-                                }
-
-                                if (nextSibling) {
-                                    range.setStart(nextSibling, 0);
-                                    range.collapse(true);
-                                }
-
-                                return this._deleteFromRight(range);
-                    }
-                    if (nextContainer.previousSibling && nextContainer.previousSibling.nodeType===ice.dom.TEXT_NODE && nextContainer.previousSibling.length ===0) {
-                        nextContainer.parentNode.removeChild(nextContainer.previousSibling);
-                    }
-                     if (nextContainer.nextSibling && nextContainer.nextSibling.nodeType===ice.dom.TEXT_NODE && nextContainer.nextSibling.length ===0) {
-                          nextContainer.parentNode.removeChild(nextContainer.nextSibling);
-                    }
-                    if (this.getIceNode(nextContainer.previousSibling, 'deleteType')) {
-                        var ctNode = this.getIceNode(nextContainer.previousSibling, 'deleteType');
-                        ctNode.appendChild(nextContainer);    
-                    }
-                    else if (prevContainer.nextSibling && this.getIceNode(prevContainer.nextSibling, 'deleteType')) {
-                        var ctNode = this.getIceNode(prevContainer.nextSibling, 'deleteType');
-                        ctNode.insertBefore(nextContainer, ctNode.firstChild);    
-                    }
-                    else {
-                        var ctNode = this.createIceNode('deleteType');
-                        prevContainer.parentElement.insertBefore(ctNode, nextContainer);
-                        ctNode.appendChild(nextContainer);
-                    }
-//                    range.setEnd(ctNode, 0);                  
-                    range.collapse();
-                    return true;
+                    return this._addNodeTracking(nextContainer,range,true,false);
                }
-                /*                if (ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
-                    var ctNode = this.createIceNode('deleteType');
-                    nextContainer.parentElement.insertBefore(ctNode, nextContainer);
-                    ctNode.appendChild(nextContainer);
-                    range.collapse();
-                    return true;
-                } */
             }
             // If we are deleting into, or in, a non-tracking/void container then move cursor to right of container
             if (this._getVoidElement(range.endContainer)) {
@@ -1128,65 +1063,7 @@
                 
                 // If the caret was placed directly after a stub element or an element that is not editable, enclose the element with a delete ice node.
                 if (ice.dom.isStubElement(prevContainer) || !prevContainer.isContentEditable) {
-                    var textAddNode = this.getIceNode(prevContainer, 'insertType');
-                    
-                    if (textAddNode && this._currentUserIceNode(textAddNode)) {
-                        prevContainer.parentNode.removeChild(prevContainer);
-                        
-                        if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
-                            var newstart = this.env.document.createTextNode('');
-                            ice.dom.insertBefore(textAddNode, newstart);
-                            range.setStart(newstart, 0);
-                            range.collapse(true);
-                            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
-                        }
-                        
-                        return true;
-                        
-                    }
-                    else if (this.getIceNode(prevContainer, 'deleteType')) {
-                        // Move the range to the right until there is valid sibling.
-                                var found = false;
-                                var previousSibling = ice.dom.getPrevContentNode(prevContainer);
-                                while (!found) {
-                                    ctNode = this.getIceNode(previousSibling, 'deleteType');
-                                    if (!ctNode) {
-                                        found = true;
-                                    } else {
-                                        previousSibling = previousSibling.previousSibling;
-                                    }
-                                }
-
-                                if (previousSibling) {
-                                    previousSibling = range.getLastSelectableChild(previousSibling);
-                                    range.setStart(previousSibling, previousSibling.nodeValue.length);
-                                    range.collapse(true);
-                                }
-
-                                return this._deleteFromLeft(range);
-                    }
-                    if (prevContainer.previousSibling && prevContainer.previousSibling.nodeType===ice.dom.TEXT_NODE && prevContainer.previousSibling.length ===0) {
-                        prevContainer.parentNode.removeChild(prevContainer.previousSibling);
-                    }
-                     if (prevContainer.nextSibling && prevContainer.nextSibling.nodeType===ice.dom.TEXT_NODE && prevContainer.nextSibling.length ===0) {
-                          prevContainer.parentNode.removeChild(prevContainer.nextSibling);
-                    }
-                    if (this.getIceNode(prevContainer.previousSibling, 'deleteType')) {
-                        var ctNode = this.getIceNode(prevContainer.previousSibling, 'deleteType');
-                        ctNode.appendChild(prevContainer);    
-                    }
-                    else if (prevContainer.nextSibling && this.getIceNode(prevContainer.nextSibling, 'deleteType')) {
-                        var ctNode = this.getIceNode(prevContainer.nextSibling, 'deleteType');
-                        ctNode.insertBefore(prevContainer, ctNode.firstChild);    
-                    }
-                    else {
-                        var ctNode = this.createIceNode('deleteType');
-                        prevContainer.parentElement.insertBefore(ctNode, prevContainer);
-                        ctNode.appendChild(prevContainer);
-                    }
-                    range.setEnd(ctNode, 0);                   
-                    
-                    return true;
+                    return this._addNodeTracking(prevContainer,range,true,true);
                 } 
             }
 
@@ -1282,7 +1159,107 @@
 
                 return true;
             },
+            // To track other things than text nodes, only deletion implemented
+            _addNodeTracking: function (contentNode, range, del, moveLeft) {
+                    var contentAddNode = this.getIceNode(contentNode, 'insertType');
+                    if (del) {
+                    if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
+                        contentNode.parentNode.removeChild(contentNode);
+                        
+                        // Remove a potential empty tracking container
+                        if (contentAddNode !== null && (!ice.dom.hasTextOrStubContent(contentAddNode))) {
+                            var newstart = this.env.document.createTextNode('');
+                            ice.dom.insertBefore(contentAddNode, newstart);
+                            range.setStart(newstart, 0);
+                            range.collapse(true);
+                            ice.dom.replaceWith(contentAddNode, ice.dom.contents(contentAddNode));
+                        }
+                        
+                        return true;
+                        
+                    }
+                    else if (this.getIceNode(contentNode, 'deleteType')) {
+                        
+                                var found = false;
+                                if (moveLeft) {
+                                    // Move the range to the left until there is valid sibling.
+                                var previousSibling = ice.dom.getPrevContentNode(contentNode);
+                                while (!found) {
+                                    ctNode = this.getIceNode(previousSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        previousSibling = previousSibling.previousSibling;
+                                    }
+                                }
 
+                                if (previousSibling) {
+                                    previousSibling = range.getLastSelectableChild(previousSibling);
+                                    range.setStart(previousSibling, previousSibling.nodeValue.length);
+                                    range.collapse(true);
+                                }
+
+                                return this._deleteFromLeft(range);
+                                } else {
+                                    // Move the range to the right until there is valid sibling.
+                                 
+                                var nextSibling = ice.dom.getNextContentNode(nextContainer);
+                                while (!found) {
+                                    ctNode = this.getIceNode(nextSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        nextSibling = nextSibling.nextSibling;
+                                    }
+                                }
+
+                                if (nextSibling) {
+                                    range.setStart(nextSibling, 0);
+                                    range.collapse(true);
+                                }
+
+                                return this._deleteFromRight(range);
+                                }
+                                    
+                    }
+                    // Webkit likes to insert empty text nodes next to elements. We remove them here.
+                    if (contentNode.previousSibling && contentNode.previousSibling.nodeType===ice.dom.TEXT_NODE && contentNode.previousSibling.length ===0) {
+                        contentNode.parentNode.removeChild(contentNode.previousSibling);
+                    }
+                     if (contentNode.nextSibling && contentNode.nextSibling.nodeType===ice.dom.TEXT_NODE && contentNode.nextSibling.length ===0) {
+                          contentNode.parentNode.removeChild(contentNode.nextSibling);
+                    }
+                    var prevDelNode = this.getIceNode(contentNode.previousSibling, 'deleteType');
+                    var nextDelNode = this.getIceNode(contentNode.nextSibling, 'deleteType');;
+                    if (prevDelNode && this._currentUserIceNode(prevDelNode)) {
+                        var ctNode = prevDelNode;
+                        ctNode.appendChild(contentNode);
+                        if (nextDelNode && this._currentUserIceNode(nextDelNode)) {
+                            var nextDelContents = ice.dom.extractContents(nextDelNode);
+                            ice.dom.append(ctNode, nextDelContents);
+                            nextDelNode.parentNode.removeChild(nextDelNode);
+                        }
+                    }
+                    else if (nextDelNode && this._currentUserIceNode(nextDelNode)) {
+                        var ctNode = nextDelNode;
+                        ctNode.insertBefore(contentNode, ctNode.firstChild);    
+                    }
+                    else {
+                        var ctNode = this.createIceNode('deleteType');
+                        contentNode.parentElement.insertBefore(ctNode, contentNode);
+                        ctNode.appendChild(contentNode);
+                    }
+                    if (moveLeft) {
+                        range.setEnd(ctNode, 0);                   
+                    } else {
+                        range.collapse();
+                    }
+                    return true;
+                    }
+            },
+                
+                
+                
             _addTextNodeTracking: function (textNode, range, del) {
 
                 if ((!del && range.startOffset === 0) || this.getIceNode(textNode, 'deleteType') !== null) {
