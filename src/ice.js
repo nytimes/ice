@@ -903,9 +903,11 @@
 
             // A bug in webkit moves the caret out of text nodes, so we put it back in.    
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
+                //console.log(range);return true;
                 if (ice.dom.isBlockElement(commonAncestor)) {
                     if (commonAncestor.childNodes.length > initialOffset) {
-                        var nextContainer = commonAncestor.childNodes[initialOffset];
+                        var nextContainer = document.createTextNode('');
+                        commonAncestor.insertBefore(nextContainer, commonAncestor.childNodes[initialOffset]);
                     } else {
                         var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
                         range.setStart(nextContainer, 0)
@@ -1072,8 +1074,6 @@
             // text1 <img>| text2 -> text1 |<img> text2
             range.moveStart(ice.dom.CHARACTER_UNIT, -1);
             range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-
-
 
             // If we are deleting into, or in, a void container then move cursor to left of container
             if (this._getVoidElement(range.startContainer) && !prevBlockIsEmpty) {
