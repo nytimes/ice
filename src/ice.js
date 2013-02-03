@@ -1235,7 +1235,7 @@
                         var ctNode = prevDelNode;
                         ctNode.appendChild(contentNode);
                         if (nextDelNode && this._currentUserIceNode(nextDelNode)) {
-                            var nextDelContents = ice.dom.extractContents(nextDelNode);
+                            var nextDelContents = ice.dom.extractContent(nextDelNode);
                             ice.dom.append(ctNode, nextDelContents);
                             nextDelNode.parentNode.removeChild(nextDelNode);
                         }
