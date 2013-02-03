@@ -826,8 +826,8 @@
                 if (elem.hasChildNodes()) {
                     for (var x = 0; x < elem.childNodes.length; x++) {
                         var child = elem.childNodes[x];
-
-                        if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
+                        var childAddNode = this.getIceNode(child, 'insertType');
+                        if (this._getNoTrackElement(child) || childAddNode && this._currentUserIceNode(childAddNode)) {
                             ice.dom.remove(child);
                         }
                     }
@@ -854,13 +854,11 @@
                         if (!ice.dom.hasTextOrStubContent(block)) {
                             continue;
                         } else if (ice.dom.is(elem, this.blockEls.join(', '))) {
-                            // If we are deleting a block tag then wrap all inner html in a delete. Simplest, but
-                            // not the best solution since it will wrap deletes and other void non-tracking nodes.
-                            var ctNode = this.createIceNode('deleteType');
-                            newEl = document.createElement(this.blockEl);
-                            ctNode.innerHTML = elem.innerHTML;
-                            elem.innerHTML = '';
-                            elem.appendChild(ctNode);
+                            var cloneRange = range.cloneRange();
+                            for (j=0;j<elem.childNodes.length;j++) {
+                                var child = elem.childNodes[j];
+                                this._addNodeTracking(child, cloneRange, true, true);
+                            }
                             continue;
                         }
 
