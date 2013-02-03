@@ -825,9 +825,6 @@
                 // Ignore empty space nodes
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem).length === 0) continue;
 
-
-
-
                 if (!this._getVoidElement(elem)) {
                     // If the element is not a text or stub node, go deeper and check the children.
                     if (elem.nodeType !== ice.dom.TEXT_NODE) {
@@ -841,14 +838,17 @@
                             ice.dom.remove(elem);
                         }
 
-
                         for (j = 0; j < elem.childNodes.length; j++) {
                             var child = elem.childNodes[j];
                             elements.push(child);
                         }
                         continue;
                     }
+                    var parentBlock = ice.dom.getBlockParent(elem);
                     this._addNodeTracking(elem, false, true, true);
+                    if (ice.dom.hasNoTextOrStubContent(parentBlock)) {
+                        ice.dom.remove(parentBlock);
+                    }
                 }
             }
             if (this.mergeBlocks && b1 !== b2) {
