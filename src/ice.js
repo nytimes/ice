@@ -775,7 +775,7 @@
             }
             var startContainer = range.startContainer;
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null;
-            if (!ice.dom.hasTextOrStubContent(parentBlock)) {
+            if (ice.dom.hasNoTextOrStubContent(parentBlock)) {
                 ice.dom.empty(parentBlock);
                 ice.dom.append(parentBlock, '<br>');
                 range.setStart(parentBlock, 0);
@@ -808,64 +808,47 @@
                 elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
                 b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
-                betweenBlocks = new Array(),
-                eln = elements.length;
+                betweenBlocks = new Array();
 
-            for (var i = 0; i < eln; i++) {
+            for (var i = 0; i < elements.length; i++) {
                 var elem = elements[i];
-                if (ice.dom.is(elem, this.blockEls.join(', '))) {
+                if (ice.dom.isBlockElement(elem)) {
                     betweenBlocks.push(elem);
-                } else if (!ice.dom.canContainTextElement(ice.dom.getBlockParent(elem, this.element))) {
-                    // Ignore text node contents in containers that are not supposed to contain text.
-                    continue;
+                    if (!ice.dom.canContainTextElement(elem)) {
+                        // Ignore containers that are not supposed to contain text. Check children instead.
+                        for (k = 0; k < elem.childNodes.length; k++) {
+                            elements.push(elem.childNodes[k]);
+                        }
+                        continue;
+                    }
                 }
                 // Ignore empty space nodes
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem).length === 0) continue;
 
-                // search immediate children
-                if (elem.hasChildNodes()) {
-                    for (var x = 0; x < elem.childNodes.length; x++) {
-                        var child = elem.childNodes[x];
-                        var childAddNode = this.getIceNode(child, 'insertType');
-                        if (this._getNoTrackElement(child) || childAddNode && this._currentUserIceNode(childAddNode)) {
-                            ice.dom.remove(child);
-                        }
-                    }
-                }
-                // If the element is not to be track or created by the current user, delete the selection
-                if (this._getNoTrackElement(elem) || this._currentUserIceNode(ice.dom.findNodeParent(elem, '.' + this._getIceNodeClass('insertType'), this.element))) {
-                    ice.dom.remove(elem);
-                }
 
-                // If the element is something other than deletes and other non-tracking tags,
-                // then delete content.
+
+
                 if (!this._getVoidElement(elem)) {
+                    // If the element is not a text or stub node, go deeper and check the children.
                     if (elem.nodeType !== ice.dom.TEXT_NODE) {
                         // Browsers like to insert breaks into empty paragraphs - remove them
-                        ice.dom.remove(ice.dom.find(elem, 'br'));
-                        // Make sure there is more then deleted text content before deleting
+
                         if (ice.dom.isStubElement(elem)) {
-                            this._addNodeTracking(elem, range, true, true);
+                            this._addNodeTracking(elem, false, true, true);
                             continue;
                         }
-
-                        var block = ice.dom.cloneNode(elem);
-                        ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
-                        if (!ice.dom.hasTextOrStubContent(block)) {
-                            continue;
-                        } else if (ice.dom.is(elem, this.blockEls.join(', '))) {
-                            var cloneRange = range.cloneRange();
-                            for (j=0;j<elem.childNodes.length;j++) {
-                                var child = elem.childNodes[j];
-                                this._addNodeTracking(child, cloneRange, true, true);
-                            }
-                            continue;
+                        if (ice.dom.hasNoTextOrStubContent(elem)) {
+                            ice.dom.remove(elem);
                         }
 
+
+                        for (j = 0; j < elem.childNodes.length; j++) {
+                            var child = elem.childNodes[j];
+                            elements.push(child);
+                        }
+                        continue;
                     }
-                    var del = this.createIceNode('deleteType');
-                    ice.dom.insertBefore(elem, del);
-                    del.appendChild(elem);
+                    this._addNodeTracking(elem, false, true, true);
                 }
             }
             if (this.mergeBlocks && b1 !== b2) {
@@ -897,9 +880,9 @@
         // Delete
         _deleteFromRight: function (range) {
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
-                isEmptyBlock = parentBlock ? (!ice.dom.hasTextOrStubContent(parentBlock)) : false,
+                isEmptyBlock = parentBlock ? (ice.dom.hasNoTextOrStubContent(parentBlock)) : false,
                 nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
-                nextBlockIsEmpty = nextBlock ? (!ice.dom.hasTextOrStubContent(nextBlock)) : false,
+                nextBlockIsEmpty = nextBlock ? (ice.dom.hasNoTextOrStubContent(nextBlock)) : false,
                 initialContainer = range.endContainer,
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer;
@@ -1021,7 +1004,7 @@
                 range.deleteContents();
 
                 // The textAddNode is a tracking node that may be empty now - clean it up.
-                if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
+                if (textAddNode !== null && (ice.dom.hasNoTextOrStubContent(textAddNode))) {
                     var prevSibling = textAddNode.previousSibling;
                     if (!prevSibling || prevSibling.nodeType !== ice.dom.TEXT_NODE) {
                         prevSibling = this.env.document.createTextNode('');
@@ -1038,14 +1021,12 @@
         // Backspace
         _deleteFromLeft: function (range) {
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
-                isEmptyBlock = parentBlock ? (!ice.dom.hasTextOrStubContent(parentBlock)) : false,
+                isEmptyBlock = parentBlock ? ice.dom.hasNoTextOrStubContent(parentBlock) : false,
                 prevBlock = parentBlock && ice.dom.getPrevContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
-                prevBlockIsEmpty = prevBlock ? (!ice.dom.hasTextOrStubContent(prevBlock)) : false,
+                prevBlockIsEmpty = prevBlock ? ice.dom.hasNoTextOrStubContent(prevBlock) : false,
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
-
-
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -1150,7 +1131,7 @@
                 range.deleteContents();
 
                 // The textAddNode is a tracking node that may be empty now - clean it up. 
-                if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
+                if (textAddNode !== null && (ice.dom.hasNoTextOrStubContent(textAddNode))) {
                     var newstart = this.env.document.createTextNode('');
                     ice.dom.insertBefore(textAddNode, newstart);
                     range.setStart(newstart, 0);
@@ -1163,23 +1144,26 @@
         },
         // To track other things than text nodes, only deletion implemented
         _addNodeTracking: function (contentNode, range, del, moveLeft) {
+
             var contentAddNode = this.getIceNode(contentNode, 'insertType');
             if (del) {
                 if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
                     contentNode.parentNode.removeChild(contentNode);
 
                     // Remove a potential empty tracking container
-                    if (contentAddNode !== null && (!ice.dom.hasTextOrStubContent(contentAddNode))) {
+                    if (contentAddNode !== null && (ice.dom.hasNoTextOrStubContent(contentAddNode))) {
                         var newstart = this.env.document.createTextNode('');
                         ice.dom.insertBefore(contentAddNode, newstart);
-                        range.setStart(newstart, 0);
-                        range.collapse(true);
+                        if (range) {
+                            range.setStart(newstart, 0);
+                            range.collapse(true);
+                        }
                         ice.dom.replaceWith(contentAddNode, ice.dom.contents(contentAddNode));
                     }
 
                     return true;
 
-                } else if (this.getIceNode(contentNode, 'deleteType')) {
+                } else if (range && this.getIceNode(contentNode, 'deleteType')) {
 
                     var found = false;
                     if (moveLeft) {
@@ -1248,10 +1232,12 @@
                     contentNode.parentElement.insertBefore(ctNode, contentNode);
                     ctNode.appendChild(contentNode);
                 }
-                if (moveLeft) {
-                    range.setEnd(ctNode, 0);
-                } else {
-                    range.collapse();
+                if (range) {
+                    if (moveLeft) {
+                        range.setEnd(ctNode, 0);
+                    } else {
+                        range.collapse();
+                    }
                 }
                 return true;
             }

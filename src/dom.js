@@ -23,10 +23,14 @@
     dom.NOTATION_NODE = 12;
     dom.CHARACTER_UNIT = 'character';
     dom.WORD_UNIT = 'word';
-    dom.STUB_ELEMENTS = ['img', 'br', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
+    dom.BREAK_ELEMENT = 'br';
+    dom.CONTENT_STUB_ELEMENTS = ['img', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
     dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', ];
     dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', ];
 
+    dom.STUB_ELEMENTS = dom.CONTENT_STUB_ELEMENTS.slice();
+    dom.STUB_ELEMENTS.push(dom.BREAK_ELEMENT);
+    
     dom.getKeyChar = function (e) {
         return String.fromCharCode(e.which);
     };
@@ -190,10 +194,10 @@
     dom.getNodeTextContent = function (node) {
         return jQuery(node).text();
     };
-    dom.hasTextOrStubContent = function (node) {
-        if (dom.getNodeTextContent(node).length > 0) return true;
-        if (jQuery(node).find(dom.STUB_ELEMENTS.join(', ')).length > 0) return true;
-        return false;
+    dom.hasNoTextOrStubContent = function (node) {
+        if (dom.getNodeTextContent(node).length > 0) return false;
+        if (jQuery(node).find(dom.CONTENT_STUB_ELEMENTS.join(', ')).length > 0) return false;
+        return true;
     };
     dom.getNodeCharacterLength = function (node) {
         return dom.getNodeTextContent(node).length + jQuery(node).find(dom.STUB_ELEMENTS.join(', ')).length;
