@@ -810,7 +810,7 @@
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
                 betweenBlocks = new Array(),
                 eln = elements.length;
-            
+
             for (var i = 0; i < eln; i++) {
                 var elem = elements[i];
                 if (ice.dom.is(elem, this.blockEls.join(', '))) {
@@ -841,15 +841,14 @@
                 // then delete content.
                 if (!this._getVoidElement(elem)) {
                     if (elem.nodeType !== ice.dom.TEXT_NODE) {
-                        console.log('quck');
                         // Browsers like to insert breaks into empty paragraphs - remove them
                         ice.dom.remove(ice.dom.find(elem, 'br'));
                         // Make sure there is more then deleted text content before deleting
                         if (ice.dom.isStubElement(elem)) {
-                            this._addNodeTracking(elem,range,true,true);
+                            this._addNodeTracking(elem, range, true, true);
                             continue;
                         }
-                        
+
                         var block = ice.dom.cloneNode(elem);
                         ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
                         if (!ice.dom.hasTextOrStubContent(block)) {
@@ -864,7 +863,7 @@
                             elem.appendChild(ctNode);
                             continue;
                         }
-                        
+
                     }
                     var del = this.createIceNode('deleteType');
                     ice.dom.insertBefore(elem, del);
