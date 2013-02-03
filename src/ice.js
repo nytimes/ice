@@ -810,8 +810,7 @@
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
                 betweenBlocks = new Array(),
                 eln = elements.length;
-            // range.setStartBefore(bookmark.start);
-            // range.collapse(true);
+            
             for (var i = 0; i < eln; i++) {
                 var elem = elements[i];
                 if (ice.dom.is(elem, this.blockEls.join(', '))) {
@@ -820,7 +819,7 @@
                     // Ignore text node contents in containers that are not supposed to contain text.
                     continue;
                 }
-                // Ignore empty space
+                // Ignore empty space nodes
                 if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem).length === 0) continue;
 
                 // search immediate children
@@ -842,9 +841,15 @@
                 // then delete content.
                 if (!this._getVoidElement(elem)) {
                     if (elem.nodeType !== ice.dom.TEXT_NODE) {
+                        console.log('quck');
                         // Browsers like to insert breaks into empty paragraphs - remove them
                         ice.dom.remove(ice.dom.find(elem, 'br'));
                         // Make sure there is more then deleted text content before deleting
+                        if (ice.dom.isStubElement(elem)) {
+                            this._addNodeTracking(elem,range,true,true);
+                            continue;
+                        }
+                        
                         var block = ice.dom.cloneNode(elem);
                         ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
                         if (!ice.dom.hasTextOrStubContent(block)) {
@@ -859,6 +864,7 @@
                             elem.appendChild(ctNode);
                             continue;
                         }
+                        
                     }
                     var del = this.createIceNode('deleteType');
                     ice.dom.insertBefore(elem, del);
@@ -903,7 +909,6 @@
 
             // A bug in webkit moves the caret out of text nodes, so we put it back in.    
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
-                //console.log(range);return true;
                 if (ice.dom.isBlockElement(commonAncestor)) {
                     if (commonAncestor.childNodes.length > initialOffset) {
                         var nextContainer = document.createTextNode('');
