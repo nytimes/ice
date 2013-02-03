@@ -602,7 +602,7 @@
                 voidEl = this._getVoidElement(range.endContainer);
                 if (voidEl) {
                     range.setEnd(range.endContainer, 0);
-                    range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeTextContent(range.endContainer).length);
+                    range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
                     range.collapse();
                 } else {
                     range.setStart(range.endContainer, 0);
@@ -771,11 +771,11 @@
         _insertNode: function (node, range, insertingDummy) {
             if (!ice.dom.isBlockElement(range.startContainer) && !ice.dom.canContainTextElement(ice.dom.getBlockParent(range.startContainer, this.element))) {
                 range.setStart(range.startContainer.previousSibling, 0);
-                
+
             }
             var startContainer = range.startContainer;
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null;
-            if (ice.dom.getNodeTextContent(parentBlock) == '') {
+            if (!ice.dom.hasTextOrStubContent(parentBlock)) {
                 ice.dom.empty(parentBlock);
                 ice.dom.append(parentBlock, '<br>');
                 range.setStart(parentBlock, 0);
@@ -810,8 +810,8 @@
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
                 betweenBlocks = new Array(),
                 eln = elements.length;
-           // range.setStartBefore(bookmark.start);
-           // range.collapse(true);
+            // range.setStartBefore(bookmark.start);
+            // range.collapse(true);
             for (var i = 0; i < eln; i++) {
                 var elem = elements[i];
                 if (ice.dom.is(elem, this.blockEls.join(', '))) {
@@ -821,13 +821,13 @@
                     continue;
                 }
                 // Ignore empty space
-                if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem) === '') continue;
+                if (elem.nodeType === ice.dom.TEXT_NODE && ice.dom.getNodeTextContent(elem).length === 0) continue;
 
                 // search immediate children
                 if (elem.hasChildNodes()) {
                     for (var x = 0; x < elem.childNodes.length; x++) {
                         var child = elem.childNodes[x];
-                        
+
                         if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
                             ice.dom.remove(child);
                         }
@@ -847,7 +847,7 @@
                         // Make sure there is more then deleted text content before deleting
                         var block = ice.dom.cloneNode(elem);
                         ice.dom.remove(ice.dom.find(block, this._getVoidElSelector()));
-                        if (ice.dom.getNodeTextContent(block).length === 0) {
+                        if (!ice.dom.hasTextOrStubContent(block)) {
                             continue;
                         } else if (ice.dom.is(elem, this.blockEls.join(', '))) {
                             // If we are deleting a block tag then wrap all inner html in a delete. Simplest, but
@@ -890,136 +890,199 @@
 
             range.collapse();
         },
-
-        _deleteFromRight: function (range) {          
+ 
+         // Delete
+        _deleteFromRight: function (range) {
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
-                isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false,
-                nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock),
-                nextBlockIsEmpty = nextBlock ? ice.dom.getNodeTextContent(nextBlock) == '' : false;
+                isEmptyBlock = parentBlock ? (!ice.dom.hasTextOrStubContent(parentBlock)) : false,
+                nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
+                nextBlockIsEmpty = nextBlock ? (!ice.dom.hasTextOrStubContent(nextBlock)) : false,
+                initialContainer = range.endContainer,
+                initialOffset = range.endOffset,
+                commonAncestor = range.commonAncestorContainer;
+                
+            // A bug in webkit moves the caret out of text nodes, so we put it back in.    
+            if(commonAncestor.nodeType!==ice.dom.TEXT_NODE) {
+                if (ice.dom.isBlockElement(commonAncestor)) {
+                    if (commonAncestor.childNodes.length > initialOffset) {
+                        var nextContainer = commonAncestor.childNodes[initialOffset];
+                    } else {
+                         var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
+                        range.setStart(nextContainer,0)
+                        return true;
+                    }
+                } else {
+                    var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
+                }
+                  range.setStart(nextContainer,0);
+                    return this._deleteFromRight(range);
 
-            // Move end of range to position it on the inside of any adjacent container that it
-            // is going to potentially delete into.   E.G.:  test|<em>text</em>  ->  test<em>|text</em>
+            };
+                
+            // Move range to position the cursor on the inside of any adjacent container that it is going
+            // to potentially delete into or after a stub element.  E.G.:  test|<em>text</em>  ->  test<em>|text</em> or
+            // text1 |<img> text2 -> text1 <img>| text2
             range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
             range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
 
-            // If the container we are deleting into is outside of our ice element, then we need to stop.
-            if (!nextBlock && !ice.dom.isChildOf(range.endContainer, this.element)) {
-                return true;
-            }
+           
+            
+            
+            // Handle cases of the caret is at the end of a container or placed directly in a block element
+            if (initialOffset === initialContainer.data.length) {
+                
+                var nextContainer = ice.dom.getNextNode(initialContainer, this.element);
 
-            if (isEmptyBlock && nextBlock) {
-                ice.dom.remove(parentBlock);
-                range.setStart(nextBlock, 0);
-                range.collapse();
-                return true;
-            }
-
-            if (nextBlockIsEmpty && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
-                ice.dom.remove(nextBlock);
-                range.collapse(true);
-                return true;
-            }
-
-
-            // Deleting from beginning of block to end of previous block - merge the blocks
-            if (this.mergeBlocks && ice.dom.onBlockBoundary(range.endContainer, range.startContainer, this.blockEls)) {
-                // merge if either the current block is empty, the next block is empty or mergeBlocks is activated
-                //if(this.mergeBlocks || isEmptyBlock || nextBlockIsEmpty) {
-                if (!this._getVoidElement(parentBlock)) {
-                    // Since the range is moved by character, it may have passed through empty blocks.
-                    // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-                    if (nextBlock !== ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0]) {
-                        range.setEnd(nextBlock, 0);
-                    }
-                    // The browsers like to auto-insert breaks into empty paragraphs - remove them.
-                    // This line is for Firefox
-                    ice.dom.remove(ice.dom.find(ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0], 'br'));
-                    // And this line is for Webkit
-                    ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
-                    ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
-                    return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0] || parentBlock, true);
+                // If the next container is outside of ICE then do nothing.
+                if (!nextContainer) {
+                    return false;
                 }
-                //}
+                
+                // If the next container is non-editable, look at the parent element instead. 
+                if (!nextContainer.isContentEditable) {
+                    nextContainer = nextContainer.parentElement;
+                }
+
+                // If the caret was placed directly before a stub element or an element that is not editable, enclose the element with a delete ice node.
+
+               if (ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
+                    var textAddNode = this.getIceNode(nextContainer, 'insertType');
+                    
+                    if (textAddNode && this._currentUserIceNode(textAddNode)) {
+                        nextContainer.parentNode.removeChild(nextContainer);
+                        
+                        if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
+                            var newstart = this.env.document.createTextNode('');
+                            ice.dom.insertBefore(textAddNode, newstart);
+                            range.setStart(newstart, 0);
+                            range.collapse(true);
+                            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
+                        }
+                        
+                        return true;
+                        
+                    }
+                    else if (this.getIceNode(nextContainer, 'deleteType')) {
+                        // Move the range to the left until there is valid sibling.
+                                var found = false;
+                                var nextSibling = ice.dom.getNextContentNode(nextContainer);
+                                while (!found) {
+                                    ctNode = this.getIceNode(nextSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        nextSibling = nextSibling.nextSibling;
+                                    }
+                                }
+
+                                if (nextSibling) {
+                                    range.setStart(nextSibling, 0);
+                                    range.collapse(true);
+                                }
+
+                                return this._deleteFromRight(range);
+                    }
+                    if (nextContainer.previousSibling && nextContainer.previousSibling.nodeType===ice.dom.TEXT_NODE && nextContainer.previousSibling.length ===0) {
+                        nextContainer.parentNode.removeChild(nextContainer.previousSibling);
+                    }
+                     if (nextContainer.nextSibling && nextContainer.nextSibling.nodeType===ice.dom.TEXT_NODE && nextContainer.nextSibling.length ===0) {
+                          nextContainer.parentNode.removeChild(nextContainer.nextSibling);
+                    }
+                    if (this.getIceNode(nextContainer.previousSibling, 'deleteType')) {
+                        var ctNode = this.getIceNode(nextContainer.previousSibling, 'deleteType');
+                        ctNode.appendChild(nextContainer);    
+                    }
+                    else if (prevContainer.nextSibling && this.getIceNode(prevContainer.nextSibling, 'deleteType')) {
+                        var ctNode = this.getIceNode(prevContainer.nextSibling, 'deleteType');
+                        ctNode.insertBefore(nextContainer, ctNode.firstChild);    
+                    }
+                    else {
+                        var ctNode = this.createIceNode('deleteType');
+                        prevContainer.parentElement.insertBefore(ctNode, nextContainer);
+                        ctNode.appendChild(nextContainer);
+                    }
+//                    range.setEnd(ctNode, 0);                  
+                    range.collapse();
+                    return true;
+               }
+                /*                if (ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
+                    var ctNode = this.createIceNode('deleteType');
+                    nextContainer.parentElement.insertBefore(ctNode, nextContainer);
+                    ctNode.appendChild(nextContainer);
+                    range.collapse();
+                    return true;
+                } */
             }
-
-
-            // If we are deleting into, or in, a non-tracking/void container then move cursor to left of container
+            // If we are deleting into, or in, a non-tracking/void container then move cursor to right of container
             if (this._getVoidElement(range.endContainer)) {
                 range.setEnd(range.endContainer, 0)
-                range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeTextContent(range.endContainer).length || 0);
+                range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer) || 0);
                 range.collapse();
                 return this._deleteFromRight(range);
             }
-
-            // If we are deleting into no tracking container, remove content
+           
+            // If we are deleting into a no tracking containiner, then remove the content
             if (this._getNoTrackElement(range.endContainer.parentElement)) {
                 range.deleteContents();
                 return false;
             }
-
-            // If we are deleting into a container that is not contentEditable, delete the entire container instead
-            if (range.endContainer.parentElement.contentEditable === 'false') {
-                var ctNode = this.createIceNode('deleteType');
-                range.endContainer.parentElement.parentElement.insertBefore(ctNode, range.endContainer.parentElement);
-                ctNode.appendChild(range.endContainer.parentElement);
-                range.collapse();
+            
+            // If the current block is empty, and there is a next block, remove the current block and put the caret at the start of the next block.
+            if (isEmptyBlock && nextBlock) {
+                ice.dom.remove(parentBlock);
+                range.setStart(nextBlock, 0);
+                range.collapse(true);
                 return true;
             }
+ 
+            // Handles cases in which the caret is at the end of the line
+            if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
 
-            range.collapse();
-
-            var container = range.startContainer;
-
-            // Remove content from the right of caret (i.e. delete key).
-            // First check if caret is at the end of a container.
-            if (range.startContainer.data && range.endOffset === container.data.length) {
-                // Check if need to merge containers.
-                var cRange = range.cloneRange();
-                cRange.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-                var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
-                if (eParent) {
-                    if (ice.dom.isChildOf(eParent, this.element) === false) {
-                        return;
-                    }
-
-                    var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
-
-                    // If the start of the cloned range has moved to a new block
-                    // parent then merge these nodes.
-                    if (eParent !== sParent) {
-                        ice.dom.mergeContainers(eParent, sParent);
-                        range.setStart(cRange.startContainer, cRange.startContainer.data.length);
-                        range.collapse(true);
-                        return;
-                    }
+                // If the next block is empty, remove the next block. 
+                if (nextBlockIsEmpty) {
+                    ice.dom.remove(nextBlock);
+                    range.collapse();
+                    return true;
                 }
 
-                // Caret is at the end of a container so it needs to
-                // move to the next container.
-                var nextContainer = range.getNextContainer(container);
+                // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
+                if (this.mergeBlocks) {
+                    // Since the range is moved by character, it may have passed through empty blocks.
+                    // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+                    if (nextBlock !== ice.dom.getBlockParent(range.endContainer, this.element)) {
+                        range.setEnd(nextBlock, 0);
+                    }
+                    // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+                    var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
+                    for (var i = 0; i < elements.length; i++) {
+                        ice.dom.remove(elements[i]);
+                    }
 
-                // If range is at the end of the container and the
-                // next container is out side of Ice then do nothing.
-                if (ice.dom.isChildOf(nextContainer, this.element) === false) {
-                    return false;
+                    var startContainer = range.startContainer;
+                    var endContainer = range.endContainer;
+                    ice.dom.remove(ice.dom.find(startContainer, 'br'));
+                    ice.dom.remove(ice.dom.find(endContainer, 'br'));
+                    return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);      
+                } else {
+                    // if mergeBlocks is not enabled, just place the caret at the start of the next block.
+                    range.setStart(nextBlock, 0);
+                    range.collapse(true);
+                    return true;
                 }
+            }
 
-                var firstSelectable = range.getFirstSelectableChild(nextContainer);
-                range.setStart(firstSelectable, 0);
+                var textNode = range.endContainer;
+                var textAddNode = this.getIceNode(textNode, 'insertType');
 
-                this._addTextNodeTracking(firstSelectable, range);
-
-            } else {
-                var textAddNode = this.getIceNode(range.startContainer, 'insertType');
                 // Create a new ct node
                 if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
-                    this._addTextNodeTracking(range.startContainer, range, true);
+                    this._addTextNodeTracking(textNode, range, true);
                 } else {
                     range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
                     range.deleteContents();
 
                     // The textAddNode is a tracking node that may be empty now - clean it up.
-                    if (textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode)) === true) {
+                    if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
                         var prevSibling = textAddNode.previousSibling;
                         if (!prevSibling || prevSibling.nodeType !== ice.dom.TEXT_NODE) {
                             prevSibling = this.env.document.createTextNode('');
@@ -1029,87 +1092,117 @@
                         ice.dom.remove(textAddNode);
                     }
                 }
-            }
 
-            // Make sure we leave collapsed
-            range.collapse(true);
-            return true;
-        },
+                return true;
+            },
 
         // Backspace
         _deleteFromLeft: function (range) {
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
-                isEmptyBlock = parentBlock ? ice.dom.getNodeTextContent(parentBlock) == '' : false,
-                prevBlock = parentBlock && ice.dom.getPrevContentNode(parentBlock),// || ice.dom.getBlockParent(parentBlock, this.element) || null,
-                prevBlockIsEmpty = prevBlock ? ice.dom.getNodeTextContent(prevBlock) == '' : false;
-            // Move range to position the cursor on the inside of any adjacent container that it is going
-            // to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
+                isEmptyBlock = parentBlock ? (!ice.dom.hasTextOrStubContent(parentBlock)) : false,
+                prevBlock = parentBlock && ice.dom.getPrevContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
+                prevBlockIsEmpty = prevBlock ? (!ice.dom.hasTextOrStubContent(prevBlock)) : false,
+                initialContainer = range.startContainer,
+                initialOffset = range.startOffset,
+                commonAncestor = range.commonAncestorContainer;
+                
 
-            range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+            // Handle cases of the caret is at the start of a container or outside a text node
+           if (initialOffset === 0 || commonAncestor.nodeType!==ice.dom.TEXT_NODE) {
 
-            // If the container we are deleting into is outside of our ice element, then we need to stop.
-            var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
-                movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
-            if (failedToMove || !prevBlock && movedOutsideBlock || !prevBlock && isEmptyBlock) {
-                if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-                range.collapse();
-                return true;
-            }
-            // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
-            range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+                if (initialOffset === 0) {
+                    var prevContainer = ice.dom.getPrevNode(initialContainer, this.element);
+                } else {    
+                    var prevContainer = commonAncestor.childNodes[initialOffset - 1];
+                }
 
-            // Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
-            if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEls) || isEmptyBlock) {
-                if (this._getVoidElement(prevBlock)) {
-                    range.deleteContents();
+                // If the previous container is outside of ICE then do nothing.
+                if (!prevContainer) {
                     return false;
                 }
+                
+                // If the previous container is non-editable, look at the parent element instead. 
+                if (!prevContainer.isContentEditable) {
+                    prevContainer = prevContainer.parentElement;
+                }
+                
+                // If the caret was placed directly after a stub element or an element that is not editable, enclose the element with a delete ice node.
+                if (ice.dom.isStubElement(prevContainer) || !prevContainer.isContentEditable) {
+                    var textAddNode = this.getIceNode(prevContainer, 'insertType');
+                    
+                    if (textAddNode && this._currentUserIceNode(textAddNode)) {
+                        prevContainer.parentNode.removeChild(prevContainer);
+                        
+                        if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
+                            var newstart = this.env.document.createTextNode('');
+                            ice.dom.insertBefore(textAddNode, newstart);
+                            range.setStart(newstart, 0);
+                            range.collapse(true);
+                            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
+                        }
+                        
+                        return true;
+                        
+                    }
+                    else if (this.getIceNode(prevContainer, 'deleteType')) {
+                        // Move the range to the right until there is valid sibling.
+                                var found = false;
+                                var previousSibling = ice.dom.getPrevContentNode(prevContainer);
+                                while (!found) {
+                                    ctNode = this.getIceNode(previousSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        previousSibling = previousSibling.previousSibling;
+                                    }
+                                }
+
+                                if (previousSibling) {
+                                    previousSibling = range.getLastSelectableChild(previousSibling);
+                                    range.setStart(previousSibling, previousSibling.nodeValue.length);
+                                    range.collapse(true);
+                                }
+
+                                return this._deleteFromLeft(range);
+                    }
+                    if (prevContainer.previousSibling && prevContainer.previousSibling.nodeType===ice.dom.TEXT_NODE && prevContainer.previousSibling.length ===0) {
+                        prevContainer.parentNode.removeChild(prevContainer.previousSibling);
+                    }
+                     if (prevContainer.nextSibling && prevContainer.nextSibling.nodeType===ice.dom.TEXT_NODE && prevContainer.nextSibling.length ===0) {
+                          prevContainer.parentNode.removeChild(prevContainer.nextSibling);
+                    }
+                    if (this.getIceNode(prevContainer.previousSibling, 'deleteType')) {
+                        var ctNode = this.getIceNode(prevContainer.previousSibling, 'deleteType');
+                        ctNode.appendChild(prevContainer);    
+                    }
+                    else if (prevContainer.nextSibling && this.getIceNode(prevContainer.nextSibling, 'deleteType')) {
+                        var ctNode = this.getIceNode(prevContainer.nextSibling, 'deleteType');
+                        ctNode.insertBefore(prevContainer, ctNode.firstChild);    
+                    }
+                    else {
+                        var ctNode = this.createIceNode('deleteType');
+                        prevContainer.parentElement.insertBefore(ctNode, prevContainer);
+                        ctNode.appendChild(prevContainer);
+                    }
+                    range.setEnd(ctNode, 0);                   
+                    
+                    return true;
+                } 
             }
 
+            // Move range to position the cursor on the inside of any adjacent container that it is going
+            // to potentially delete into or before a stub element.  E.G.: <em>text</em>| test  ->  <em>text|</em> test or
+            // text1 <img>| text2 -> text1 |<img> text2
+            range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+            range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+
+
+
             // If we are deleting into, or in, a void container then move cursor to left of container
-            if (this._getVoidElement(range.startContainer) && !isEmptyBlock && !prevBlockIsEmpty) {
+            if (this._getVoidElement(range.startContainer) && !prevBlockIsEmpty) {
                 range.setStart(range.startContainer, 0);
                 range.collapse(true);
                 return this._deleteFromLeft(range);
-            }
-
-            if (isEmptyBlock && prevBlock) {
-                ice.dom.remove(parentBlock);
-                var lastSelectable = range.getLastSelectableChild(prevBlock);
-                range.setStart(lastSelectable, lastSelectable.data.length);
-                range.collapse(true);
-                return true;
-            }
-            
-            if (prevBlockIsEmpty && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
-                ice.dom.remove(prevBlock);
-                range.collapse();
-                return true;
-            }
-
-            // Deleting from beginning of block to end of previous block - merge the blocks
-            if (this.mergeBlocks && ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
-                // Since the range is moved by character, it may have passed through empty blocks.
-                // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-                if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
-                    range.setStart(prevBlock, prevBlock.childNodes.length);
-                }
-                // The browsers like to auto-insert breaks into empty paragraphs - remove them.
-                var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
-                for (var i = 0; i < elements.length; i++) {
-                    ice.dom.remove(elements[i]);
-                }
-
-                var startContainer = range.startContainer;
-                var endContainer = range.endContainer;
-                ice.dom.remove(ice.dom.find(startContainer, 'br'));
-                ice.dom.remove(ice.dom.find(endContainer, 'br'));
-                return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
-            } else if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
-                var lastSelectable = range.getLastSelectableChild(prevBlock);
-                range.setStart(lastSelectable, lastSelectable.data.length);
-                range.collapse(true);
-                return true;
             }
 
             // If we are deleting into a no tracking containiner, then remove the content
@@ -1117,70 +1210,57 @@
                 range.deleteContents();
                 return false;
             }
-
-            // If we are deleting into a sub container that is not contentEditable, delete the entire container instead
-            if (range.startContainer.parentElement.contentEditable === 'false') {
-                var ctNode = this.createIceNode('deleteType');
-                range.startContainer.parentElement.parentElement.insertBefore(ctNode, range.startContainer.parentElement);
-                ctNode.appendChild(range.startContainer.parentElement);
-                range.setEnd(ctNode, 0);
+            
+            // If the current block is empty, and there is a previous block, remove the current block and put the caret at the end of previous block.
+            if (isEmptyBlock && prevBlock) {
+                ice.dom.remove(parentBlock);
+                var lastSelectable = range.getLastSelectableChild(prevBlock);
+                range.setStart(lastSelectable, lastSelectable.data.length);
+                range.collapse(true);
                 return true;
             }
 
+            // Handles cases in which the caret is at the start of the line
+            if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
 
-            var container = range.startContainer;
-
-            // First check if caret is at the start of a container.
-            if (range.startOffset === 0) {
-                // Check if need to merge containers.
-                var cRange = range.cloneRange();
-                cRange.moveStart(ice.dom.CHARACTER_UNIT, -1);
-
-                var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
-                if (sParent) {
-                    if (ice.dom.isChildOf(sParent, this.element) === false) {
-                        return false;
-                    }
-
-                    var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
-
-                    // If the start of the cloned range has moved to a new block
-                    // parent then merge these nodes.
-                    if (eParent !== sParent) {
-                        ice.dom.mergeContainers(eParent, sParent);
-
-                        range.setStart(cRange.startContainer, cRange.startContainer.data.length);
-                        range.collapse(true);
-
-                        // Two block containers merged.
-                        return;
-                    }
-                } //end if
-
-                // Caret is at the start of a container so it needs to
-                // move to the previous container.
-                var previousContainer = range.getPreviousContainer(container);
-
-                // If range is at the beginning of the container and the
-                // previous container is out side of Ice then do nothing.
-                if (!ice.dom.isChildOf(previousContainer, this.element)) {
-                    return false;
+                // If the previous block is empty, remove the previous block. 
+                if (prevBlockIsEmpty) {
+                    ice.dom.remove(prevBlock);
+                    range.collapse();
+                    return true;
                 }
 
-                if (ice.dom.isStubElement(previousContainer)) {
-                    range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-                    ice.dom.addClass(previousContainer, this._getIceNodeClass('deleteType'));
-                    ice.dom.attr(previousContainer, 'title', 'Content removed');
-                    range.collapse(true);
+                // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
+                if (this.mergeBlocks) {
+                    // Since the range is moved by character, it may have passed through empty blocks.
+                    // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+                    if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
+                        range.setStart(prevBlock, prevBlock.childNodes.length);
+                    }
+                    // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+                    var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
+                    for (var i = 0; i < elements.length; i++) {
+                        ice.dom.remove(elements[i]);
+                    }
+
+                    var startContainer = range.startContainer;
+                    var endContainer = range.endContainer;
+                    ice.dom.remove(ice.dom.find(startContainer, 'br'));
+                    ice.dom.remove(ice.dom.find(endContainer, 'br'));
+                    return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);      
                 } else {
-                    var lastSelectable = range.getLastSelectableChild(previousContainer);
+                    // if mergeBlocks is not enabled, just place the caret at the end of the previous block.
+                    var lastSelectable = range.getLastSelectableChild(prevBlock);
                     range.setStart(lastSelectable, lastSelectable.data.length);
-                    this._addTextNodeTracking(lastSelectable, range);
+                    range.collapse(true);
+                    return true;
                 }
-            } else {
+            }
+
+
                 var textNode = range.startContainer;
                 var textAddNode = this.getIceNode(textNode, 'insertType');
-
+                
                 // Create a new ct node if we aren't already in one by the same user.
                 if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
                     this._addTextNodeTracking(textNode, range);
@@ -1190,8 +1270,8 @@
                     range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
                     range.deleteContents();
 
-                    // The textAddNode is a tracking node that may be empty now - clean it up.
-                    if (textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
+                    // The textAddNode is a tracking node that may be empty now - clean it up. 
+                    if (textAddNode !== null && (!ice.dom.hasTextOrStubContent(textAddNode))) {
                         var newstart = this.env.document.createTextNode('');
                         ice.dom.insertBefore(textAddNode, newstart);
                         range.setStart(newstart, 0);
@@ -1199,361 +1279,360 @@
                         ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
                     }
                 }
-            }
 
-            return true;
-        },
+                return true;
+            },
 
-        _addTextNodeTracking: function (textNode, range, del) {
+            _addTextNodeTracking: function (textNode, range, del) {
 
-            if ((!del && range.startOffset === 0) || this.getIceNode(textNode, 'deleteType') !== null) {
-                return;
-            }
-
-            var beforeText = '';
-            var removedChar = '';
-            var afterText = '';
-
-            if (!del) {
-                beforeText = textNode.nodeValue.substring(0, (range.startOffset - 1));
-                removedChar = textNode.nodeValue.substr((range.startOffset - 1), 1);
-                afterText = textNode.nodeValue.substring(range.startOffset);
-            } else {
-                beforeText = textNode.nodeValue.substring(0, range.endOffset);
-                removedChar = textNode.nodeValue.substr(range.endOffset, 1);
-                afterText = textNode.nodeValue.substring((range.endOffset + 1));
-            }
-
-            if ((range.startOffset === 1 && !del) || (del && range.startOffset === 0)) {
-                // Check if we can merge to an existing previous CTNode.
-                var ctNode = this.getIceNode(textNode.previousSibling, 'deleteType');
-
-                // Null-out the node so we can create a new node for multi-user nesting/support
-                if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
-
-                if (ctNode) {
-                    // Can add the removed char to previous sibling.
-                    if (!del) {
-                        if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
-                            ctNode.lastChild.nodeValue += removedChar;
-                            range.setStart(ctNode.lastChild, (ctNode.lastChild.nodeValue.length - 1));
-                        } else {
-                            var charNode = this.env.document.createTextNode(removedChar);
-                            ctNode.appendChild(charNode);
-                            range.setStart(charNode, 0);
-                        }
-
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        if (textNode.nodeValue.length === 0) {
-                            // Move the range to the right until there is valid sibling.
-                            var found = false;
-                            var previousSibling = textNode.previousSibling;
-                            while (!found) {
-                                ctNode = this.getIceNode(previousSibling, 'deleteType');
-                                if (!ctNode) {
-                                    found = true;
-                                } else {
-                                    previousSibling = previousSibling.previousSibling;
-                                }
-                            }
-
-                            if (previousSibling) {
-                                previousSibling = range.getLastSelectableChild(previousSibling);
-                                range.setStart(previousSibling, previousSibling.nodeValue.length);
-                                range.collapse(true);
-                            }
-                        } else {
-                            range.collapse(true);
-                        }
-                    } else {
-                        if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
-                            ctNode.lastChild.nodeValue += removedChar;
-                        } else {
-                            var charNode = this.env.document.createTextNode(removedChar);
-                            ctNode.appendChild(charNode);
-                        }
-
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        if (textNode.nodeValue.length === 0) {
-                            // Move the range to the right until there is valid sibling.
-                            var found = false;
-                            var nextSibling = textNode.nextSibling;
-                            while (!found) {
-                                ctNode = this.getIceNode(nextSibling, 'deleteType');
-                                if (!ctNode) {
-                                    found = true;
-                                } else {
-                                    nextSibling = nextSibling.nextSibling;
-                                }
-                            }
-
-                            if (nextSibling) {
-                                range.setStart(nextSibling, 0);
-                                range.collapse(true);
-                            }
-                        } else {
-                            range.setStart(textNode, 0);
-                            range.collapse(true);
-                        }
-                    }
+                if ((!del && range.startOffset === 0) || this.getIceNode(textNode, 'deleteType') !== null) {
                     return;
                 }
-            }
 
-            if (range.startOffset === textNode.nodeValue.length) {
-                // Range is at the end of the text node. Check if next sibling
-                // is a CTNode that we can join to.
-                var ctNode = this.getIceNode(textNode.nextSibling, 'deleteType');
+                var beforeText = '';
+                var removedChar = '';
+                var afterText = '';
 
-                // Null-out the node so we can create a new node for multi-user nesting/support
-                if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
+                if (!del) {
+                    beforeText = textNode.nodeValue.substring(0, (range.startOffset - 1));
+                    removedChar = textNode.nodeValue.substr((range.startOffset - 1), 1);
+                    afterText = textNode.nodeValue.substring(range.startOffset);
+                } else {
+                    beforeText = textNode.nodeValue.substring(0, range.endOffset);
+                    removedChar = textNode.nodeValue.substr(range.endOffset, 1);
+                    afterText = textNode.nodeValue.substring((range.endOffset + 1));
+                }
 
-                if (ctNode) {
-                    if (ctNode.firstChild && ctNode.firstChild.nodeType === ice.dom.TEXT_NODE) {
-                        ctNode.firstChild.nodeValue = removedChar + ctNode.firstChild.nodeValue;
-                    } else {
-                        var charNode = this.env.document.createTextNode(removedChar);
-                        ice.dom.insertBefore(ctNode.firstChild, charNode);
+                if ((range.startOffset === 1 && !del) || (del && range.startOffset === 0)) {
+                    // Check if we can merge to an existing previous CTNode.
+                    var ctNode = this.getIceNode(textNode.previousSibling, 'deleteType');
+
+                    // Null-out the node so we can create a new node for multi-user nesting/support
+                    if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
+
+                    if (ctNode) {
+                        // Can add the removed char to previous sibling.
+                        if (!del) {
+                            if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
+                                ctNode.lastChild.nodeValue += removedChar;
+                                range.setStart(ctNode.lastChild, (ctNode.lastChild.nodeValue.length - 1));
+                            } else {
+                                var charNode = this.env.document.createTextNode(removedChar);
+                                ctNode.appendChild(charNode);
+                                range.setStart(charNode, 0);
+                            }
+
+                            // Update textNode.
+                            textNode.nodeValue = beforeText + afterText;
+                            // Update textNode.
+                            textNode.nodeValue = beforeText + afterText;
+                            if (textNode.nodeValue.length === 0) {
+                                // Move the range to the right until there is valid sibling.
+                                var found = false;
+                                var previousSibling = textNode.previousSibling;
+                                while (!found) {
+                                    ctNode = this.getIceNode(previousSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        previousSibling = previousSibling.previousSibling;
+                                    }
+                                }
+
+                                if (previousSibling) {
+                                    previousSibling = range.getLastSelectableChild(previousSibling);
+                                    range.setStart(previousSibling, previousSibling.nodeValue.length);
+                                    range.collapse(true);
+                                }
+                            } else {
+                                range.collapse(true);
+                            }
+                        } else {
+                            if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
+                                ctNode.lastChild.nodeValue += removedChar;
+                            } else {
+                                var charNode = this.env.document.createTextNode(removedChar);
+                                ctNode.appendChild(charNode);
+                            }
+
+                            // Update textNode.
+                            textNode.nodeValue = beforeText + afterText;
+                            if (textNode.nodeValue.length === 0) {
+                                // Move the range to the right until there is valid sibling.
+                                var found = false;
+                                var nextSibling = textNode.nextSibling;
+                                while (!found) {
+                                    ctNode = this.getIceNode(nextSibling, 'deleteType');
+                                    if (!ctNode) {
+                                        found = true;
+                                    } else {
+                                        nextSibling = nextSibling.nextSibling;
+                                    }
+                                }
+
+                                if (nextSibling) {
+                                    range.setStart(nextSibling, 0);
+                                    range.collapse(true);
+                                }
+                            } else {
+                                range.setStart(textNode, 0);
+                                range.collapse(true);
+                            }
+                        }
+                        return;
                     }
+                }
 
-                    // Update textNode.
-                    textNode.nodeValue = beforeText;
+                if (range.startOffset === textNode.nodeValue.length) {
+                    // Range is at the end of the text node. Check if next sibling
+                    // is a CTNode that we can join to.
+                    var ctNode = this.getIceNode(textNode.nextSibling, 'deleteType');
+
+                    // Null-out the node so we can create a new node for multi-user nesting/support
+                    if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
+
+                    if (ctNode) {
+                        if (ctNode.firstChild && ctNode.firstChild.nodeType === ice.dom.TEXT_NODE) {
+                            ctNode.firstChild.nodeValue = removedChar + ctNode.firstChild.nodeValue;
+                        } else {
+                            var charNode = this.env.document.createTextNode(removedChar);
+                            ice.dom.insertBefore(ctNode.firstChild, charNode);
+                        }
+
+                        // Update textNode.
+                        textNode.nodeValue = beforeText;
+                        range.setStart(textNode, textNode.nodeValue.length);
+                        range.setEnd(textNode, textNode.nodeValue.length);
+                        return;
+                    }
+                }
+
+                var ctNode = this.createIceNode('deleteType');
+                var newNode = null;
+                if (del !== true) {
+                    newNode = textNode.splitText(range.startOffset - 1);
+                    newNode.nodeValue = newNode.nodeValue.substring(1);
+
+                    ice.dom.insertAfter(textNode, newNode);
+                    ctNode.firstChild.nodeValue = removedChar;
+                    ice.dom.insertAfter(textNode, ctNode);
                     range.setStart(textNode, textNode.nodeValue.length);
                     range.setEnd(textNode, textNode.nodeValue.length);
-                    return;
-                }
-            }
+                } else {
+                    newNode = textNode.splitText(range.endOffset);
+                    newNode.nodeValue = newNode.nodeValue.substring(1);
 
-            var ctNode = this.createIceNode('deleteType');
-            var newNode = null;
-            if (del !== true) {
-                newNode = textNode.splitText(range.startOffset - 1);
-                newNode.nodeValue = newNode.nodeValue.substring(1);
-
-                ice.dom.insertAfter(textNode, newNode);
-                ctNode.firstChild.nodeValue = removedChar;
-                ice.dom.insertAfter(textNode, ctNode);
-                range.setStart(textNode, textNode.nodeValue.length);
-                range.setEnd(textNode, textNode.nodeValue.length);
-            } else {
-                newNode = textNode.splitText(range.endOffset);
-                newNode.nodeValue = newNode.nodeValue.substring(1);
-
-                ice.dom.insertAfter(textNode, newNode);
-                ctNode.firstChild.nodeValue = removedChar;
-                ice.dom.insertAfter(textNode, ctNode);
-                range.setStart(newNode, 0);
-                range.setEnd(newNode, 0);
-            }
-
-        },
-
-        /**
-         * Handles arrow, delete key events, and others.
-         *
-         * @param {event} e The event object.
-         * return {void|boolean} Returns false if default event needs to be blocked.
-         */
-        _handleAncillaryKey: function (e) {
-            var key = e.keyCode;
-            var preventDefault = true;
-            var shiftKey = e.shiftKey;
-
-            switch (key) {
-                case ice.dom.DOM_VK_DELETE:
-                    preventDefault = this.deleteContents();
-                    this.pluginsManager.fireKeyPressed(e);
-                    break;
-
-                case 46:
-                    // Key 46 is the DELETE key.
-                    preventDefault = this.deleteContents(true);
-                    this.pluginsManager.fireKeyPressed(e);
-                    break;
-
-                case ice.dom.DOM_VK_DOWN:
-                case ice.dom.DOM_VK_UP:
-                case ice.dom.DOM_VK_LEFT:
-                case ice.dom.DOM_VK_RIGHT:
-                    this.pluginsManager.fireCaretPositioned();
-                    preventDefault = false;
-                    break;
-
-                default:
-                    // Ignore key.
-                    preventDefault = false;
-                    break;
-            } //end switch
-
-            if (preventDefault === true) {
-                ice.dom.preventDefault(e);
-                return false;
-            }
-            return true;
-
-        },
-
-        keyDown: function (e) {
-            if (!this.pluginsManager.fireKeyDown(e)) {
-                ice.dom.preventDefault(e);
-                return false;
-            }
-
-            var preventDefault = false;
-
-            if (this._handleSpecialKey(e) === false) {
-                if (ice.dom.isBrowser('msie') !== true) {
-                    this._preventKeyPress = true;
+                    ice.dom.insertAfter(textNode, newNode);
+                    ctNode.firstChild.nodeValue = removedChar;
+                    ice.dom.insertAfter(textNode, ctNode);
+                    range.setStart(newNode, 0);
+                    range.setEnd(newNode, 0);
                 }
 
-                return false;
-            } else if ((e.ctrlKey === true || e.metaKey === true) && (ice.dom.isBrowser('msie') === true || ice.dom.isBrowser('chrome') === true)) {
-                // IE does not fire keyPress event if ctrl is also pressed.
-                // E.g. CTRL + B (Bold) will not fire keyPress so this.plugins
-                // needs to be notified here for IE.
-                if (!this.pluginsManager.fireKeyPressed(e)) {
+            },
+
+            /**
+             * Handles arrow, delete key events, and others.
+             *
+             * @param {event} e The event object.
+             * return {void|boolean} Returns false if default event needs to be blocked.
+             */
+            _handleAncillaryKey: function (e) {
+                var key = e.keyCode;
+                var preventDefault = true;
+                var shiftKey = e.shiftKey;
+
+                switch (key) {
+                    case ice.dom.DOM_VK_DELETE:
+                        preventDefault = this.deleteContents();
+                        this.pluginsManager.fireKeyPressed(e);
+                        break;
+
+                    case 46:
+                        // Key 46 is the DELETE key.
+                        preventDefault = this.deleteContents(true);
+                        this.pluginsManager.fireKeyPressed(e);
+                        break;
+
+                    case ice.dom.DOM_VK_DOWN:
+                    case ice.dom.DOM_VK_UP:
+                    case ice.dom.DOM_VK_LEFT:
+                    case ice.dom.DOM_VK_RIGHT:
+                        this.pluginsManager.fireCaretPositioned();
+                        preventDefault = false;
+                        break;
+
+                    default:
+                        // Ignore key.
+                        preventDefault = false;
+                        break;
+                } //end switch
+
+                if (preventDefault === true) {
+                    ice.dom.preventDefault(e);
                     return false;
                 }
-            }
+                return true;
 
-            switch (e.keyCode) {
-                case 27:
-                    // ESC
-                    break;
-                default:
-                    // If not Firefox then check if event is special arrow key etc.
-                    // Firefox will handle this in keyPress event.
-                    if (/Firefox/.test(navigator.userAgent) !== true) {
-                        preventDefault = !(this._handleAncillaryKey(e));
+            },
+
+            keyDown: function (e) {
+                if (!this.pluginsManager.fireKeyDown(e)) {
+                    ice.dom.preventDefault(e);
+                    return false;
+                }
+
+                var preventDefault = false;
+
+                if (this._handleSpecialKey(e) === false) {
+                    if (ice.dom.isBrowser('msie') !== true) {
+                        this._preventKeyPress = true;
                     }
-                    break;
-            }
 
-            if (preventDefault) {
-                ice.dom.preventDefault(e);
-                return false;
-            }
+                    return false;
+                } else if ((e.ctrlKey === true || e.metaKey === true) && (ice.dom.isBrowser('msie') === true || ice.dom.isBrowser('chrome') === true)) {
+                    // IE does not fire keyPress event if ctrl is also pressed.
+                    // E.g. CTRL + B (Bold) will not fire keyPress so this.plugins
+                    // needs to be notified here for IE.
+                    if (!this.pluginsManager.fireKeyPressed(e)) {
+                        return false;
+                    }
+                }
 
-            return true;
-        },
-
-        keyPress: function (e) {
-            if (this._preventKeyPress === true) {
-                this._preventKeyPress = false;
-                return;
-            }
-
-            if (!this.pluginsManager.fireKeyPressed(e)) return false;
-
-            var c = null;
-            if (e.which == null) {
-                // IE.
-                c = String.fromCharCode(e.keyCode);
-            } else if (e.which > 0) {
-                c = String.fromCharCode(e.which);
-            }
-
-            // Inside a br - most likely in a placeholder of a new block - delete before handling.
-            var range = this.getCurrentRange();
-            var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
-            if (br) {
-                range.moveToNextEl(br)
-                br.parentNode.removeChild(br);
-            }
-
-            // Ice will ignore the keyPress event if CMD or CTRL key is also pressed
-            if (c !== null && e.ctrlKey !== true && e.metaKey !== true) {
                 switch (e.keyCode) {
-                    case ice.dom.DOM_VK_DELETE:
-                        // Handle delete key for Firefox.
-                        return this._handleAncillaryKey(e);
-                    case ice.dom.DOM_VK_ENTER:
-                        return this._handleEnter();
+                    case 27:
+                        // ESC
+                        break;
                     default:
-                        // If we are in a deletion, move the range to the end/outside.
-                        this._moveRangeToValidTrackingPos(range, range.startContainer);
-                        return this.insert(c);
+                        // If not Firefox then check if event is special arrow key etc.
+                        // Firefox will handle this in keyPress event.
+                        if (/Firefox/.test(navigator.userAgent) !== true) {
+                            preventDefault = !(this._handleAncillaryKey(e));
+                        }
                         break;
                 }
-            }
 
-            return this._handleAncillaryKey(e);
-        },
+                if (preventDefault) {
+                    ice.dom.preventDefault(e);
+                    return false;
+                }
 
-        _handleEnter: function () {
-            var range = this.getCurrentRange();
-            if (!range.collapsed) this.deleteContents();
-            return true;
-        },
+                return true;
+            },
 
-        _handleSpecialKey: function (e) {
-            var keyCode = e.which;
-            if (keyCode === null) {
-                // IE.
-                keyCode = e.keyCode;
-            }
+            keyPress: function (e) {
+                if (this._preventKeyPress === true) {
+                    this._preventKeyPress = false;
+                    return;
+                }
 
-            var preventDefault = false;
-            switch (keyCode) {
-                case 65:
-                    // Check for CTRL/CMD + A (select all).
-                    if (e.ctrlKey === true || e.metaKey === true) {
-                        preventDefault = true;
-                        var range = this.getCurrentRange();
+                if (!this.pluginsManager.fireKeyPressed(e)) return false;
 
-                        if (ice.dom.isBrowser('msie') === true) {
-                            var selStart = this.env.document.createTextNode('');
-                            var selEnd = this.env.document.createTextNode('');
+                var c = null;
+                if (e.which == null) {
+                    // IE.
+                    c = String.fromCharCode(e.keyCode);
+                } else if (e.which > 0) {
+                    c = String.fromCharCode(e.which);
+                }
 
-                            if (this.element.firstChild) {
-                                ice.dom.insertBefore(this.element.firstChild, selStart);
+                // Inside a br - most likely in a placeholder of a new block - delete before handling.
+                var range = this.getCurrentRange();
+                var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
+                if (br) {
+                    range.moveToNextEl(br)
+                    br.parentNode.removeChild(br);
+                }
+
+                // Ice will ignore the keyPress event if CMD or CTRL key is also pressed
+                if (c !== null && e.ctrlKey !== true && e.metaKey !== true) {
+                    switch (e.keyCode) {
+                        case ice.dom.DOM_VK_DELETE:
+                            // Handle delete key for Firefox.
+                            return this._handleAncillaryKey(e);
+                        case ice.dom.DOM_VK_ENTER:
+                            return this._handleEnter();
+                        default:
+                            // If we are in a deletion, move the range to the end/outside.
+                            this._moveRangeToValidTrackingPos(range, range.startContainer);
+                            return this.insert(c);
+                            break;
+                    }
+                }
+
+                return this._handleAncillaryKey(e);
+            },
+
+            _handleEnter: function () {
+                var range = this.getCurrentRange();
+                if (!range.collapsed) this.deleteContents();
+                return true;
+            },
+
+            _handleSpecialKey: function (e) {
+                var keyCode = e.which;
+                if (keyCode === null) {
+                    // IE.
+                    keyCode = e.keyCode;
+                }
+
+                var preventDefault = false;
+                switch (keyCode) {
+                    case 65:
+                        // Check for CTRL/CMD + A (select all).
+                        if (e.ctrlKey === true || e.metaKey === true) {
+                            preventDefault = true;
+                            var range = this.getCurrentRange();
+
+                            if (ice.dom.isBrowser('msie') === true) {
+                                var selStart = this.env.document.createTextNode('');
+                                var selEnd = this.env.document.createTextNode('');
+
+                                if (this.element.firstChild) {
+                                    ice.dom.insertBefore(this.element.firstChild, selStart);
+                                } else {
+                                    this.element.appendChild(selStart);
+                                }
+
+                                this.element.appendChild(selEnd);
+
+                                range.setStart(selStart, 0);
+                                range.setEnd(selEnd, 0);
                             } else {
-                                this.element.appendChild(selStart);
-                            }
+                                range.setStart(range.getFirstSelectableChild(this.element), 0);
+                                var lastSelectable = range.getLastSelectableChild(this.element);
+                                range.setEnd(lastSelectable, lastSelectable.length);
+                            } //end if
 
-                            this.element.appendChild(selEnd);
-
-                            range.setStart(selStart, 0);
-                            range.setEnd(selEnd, 0);
-                        } else {
-                            range.setStart(range.getFirstSelectableChild(this.element), 0);
-                            var lastSelectable = range.getLastSelectableChild(this.element);
-                            range.setEnd(lastSelectable, lastSelectable.length);
+                            this.selection.addRange(range);
                         } //end if
+                        break;
 
-                        this.selection.addRange(range);
-                    } //end if
-                    break;
+                    default:
+                        // Not a special key.
+                        break;
+                } //end switch
 
-                default:
-                    // Not a special key.
-                    break;
-            } //end switch
+                if (preventDefault === true) {
+                    ice.dom.preventDefault(e);
+                    return false;
+                }
 
-            if (preventDefault === true) {
-                ice.dom.preventDefault(e);
-                return false;
+                return true;
+            },
+
+            mouseUp: function (e, target) {
+                if (!this.pluginsManager.fireClicked(e)) return false;
+                this.pluginsManager.fireSelectionChanged(this.getCurrentRange());
+            },
+
+            mouseDown: function (e, target) {
+                if (!this.pluginsManager.fireMouseDown(e)) return false;
+                this.pluginsManager.fireCaretUpdated();
             }
+        };
 
-            return true;
-        },
+        exports.ice = this.ice || {};
+        exports.ice.InlineChangeEditor = InlineChangeEditor;
 
-        mouseUp: function (e, target) {
-            if (!this.pluginsManager.fireClicked(e)) return false;
-            this.pluginsManager.fireSelectionChanged(this.getCurrentRange());
-        },
-
-        mouseDown: function (e, target) {
-            if (!this.pluginsManager.fireMouseDown(e)) return false;
-            this.pluginsManager.fireCaretUpdated();
-        }
-    };
-
-    exports.ice = this.ice || {};
-    exports.ice.InlineChangeEditor = InlineChangeEditor;
-
-}).call(this);
+    }).call(this);

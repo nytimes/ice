@@ -22,6 +22,7 @@ dom.DOCUMENT_FRAGMENT_NODE = 11;
 dom.NOTATION_NODE = 12;
 dom.CHARACTER_UNIT = 'character';
 dom.WORD_UNIT = 'word';
+dom.STUB_ELEMENTS = ['img', 'br', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
 dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
 dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',];
 
@@ -187,6 +188,16 @@ dom.getSiblings = function (element, dir, elementNodesOnly, stopElem) {
 dom.getNodeTextContent = function (node) {
 	return jQuery(node).text();
 };
+dom.hasTextOrStubContent = function (node) {
+        if (dom.getNodeTextContent(node).length > 0)
+                return true;
+        if (jQuery(node).find(dom.STUB_ELEMENTS.join(', ')).length > 0)
+                return true;
+        return false;
+};
+dom.getNodeCharacterLength = function (node) {
+        return dom.getNodeTextContent(node).length + jQuery(node).find(dom.STUB_ELEMENTS.join(', ')).length;
+};
 dom.setNodeTextContent = function (node, txt) {
 	return jQuery(node).text(txt);
 };
@@ -208,28 +219,7 @@ dom.isBlockElement = function (element) {
         return dom.BLOCK_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
 };
 dom.isStubElement = function (element) {
-	if (element) {
-		switch (element.nodeName.toLowerCase()) {
-		case 'img':
-		case 'br':
-		case 'hr':
-		case 'iframe':
-		case 'param':
-		case 'link':
-		case 'meta':
-		case 'input':
-		case 'frame':
-		case 'col':
-		case 'base':
-		case 'area':
-			return true;
-			break;
-		default:
-			return false;
-			break;
-		}
-	}
-	return false;
+	return dom.STUB_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
 };
 dom.isChildOf = function (el, parent) {
 	try {
@@ -364,36 +354,105 @@ dom.getCommonAncestor = function (a, b) {
 	}
 	return null;
 };
-dom.getNextNode = function (node) {
-	if (node.nextSibling) {
-		return node.nextSibling;
-	} else if (node.parentNode) {
-		return dom.getFirstChild(node.parentNode);
-	}
-	return null;
-};
-dom.getPrevNode = function (node) {
-	if (node.previousSibling) {
-		return node.previousSibling;
-	} else if (node.parentNode) {
-		return dom.getLastChild(node.parentNode);
-	}
-	return null;
-};
-dom.canContainTextElement = function (element) {
-        return dom.TEXT_CONTAINER_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
-};
-dom.getNextContentNode = function (node) {
-        if (dom.canContainTextElement(node.parentNode)) {
-                return dom.getNextNode(node);
-        } else if (node.nextElementSibling) {
-                return node.nextElementSibling; 
+dom.getNextNode = function(node, container) {
+        if(node) {
+                while(node.parentNode) {                        
+                        if(node === container) {
+                                return null;
+                        }
+
+                        if(node.nextSibling) {
+                                // if next sibling is an empty text node, look further
+                                if (node.nextSibling.nodeType === dom.TEXT_NODE && node.nextSibling.length  === 0) {
+                                        node = node.nextSibling;
+                                        continue;
+                                }
+                                
+                                return dom.getFirstChild(node.nextSibling);
+                        }
+                        node = node.parentNode;
+                }
         }
         return null;
-};
-dom.getPrevContentNode = function (node) {
+}
+dom.getNextContentNode = function(node, container) {
+        if(node) {
+                while(node.parentNode) {                        
+                        if(node === container) {
+                                return null;
+                        }
+
+                        if(node.nextSibling && dom.canContainTextElement(node.parentNode)) {
+                                // if next sibling is an empty text node, look further
+                                if (node.nextSibling.nodeType === dom.TEXT_NODE && node.nextSibling.length  === 0) {
+                                        node = node.nextSibling;
+                                        continue;
+                                }
+                                
+                                return node.nextSibling;
+                        } else if(node.nextElementSibling) {
+                            return node.nextElementSibling;
+                        }
+                        
+                        node = node.parentNode;
+                }
+        }
+        return null;
+}
+
+
+dom.getPrevNode = function(node, container) {
+        if(node) {
+                while(node.parentNode) {                        
+                        if(node === container) {
+                                return null;
+                        }
+
+                        if(node.previousSibling) {
+                                // if previous sibling is an empty text node, look further
+                                if (node.previousSibling.nodeType === dom.TEXT_NODE && node.previousSibling.length  === 0) {
+                                        node = node.previousSibling;
+                                        continue;
+                                }
+                                
+                                return dom.getLastChild(node.previousSibling);
+                        }
+                        node = node.parentNode;
+                }
+        }
+        return null;
+}
+dom.getPrevContentNode = function(node, container) {
+        if(node) {
+                while(node.parentNode) {                        
+                        if(node === container) {
+                                return null;
+                        }
+
+                        if(node.previousSibling && dom.canContainTextElement(node.parentNode)) {
+                                // if previous sibling is an empty text node, look further
+                                if (node.previousSibling.nodeType === dom.TEXT_NODE && node.previousSibling.length  === 0) {
+                                        node = node.previousSibling;
+                                        continue;
+                                }
+                                
+                                return node.previousSibling;
+                        } else if(node.previousElementSibling) {
+                            return node.previousElementSibling;
+                        }
+                        
+                        node = node.parentNode;
+                }
+        }
+        return null;
+}
+
+dom.canContainTextElement = function (element) {
+        return dom.TEXT_CONTAINER_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
+};/*
+dom.getPrevContentNode = function (node, container) {
         if (dom.canContainTextElement(node.parentNode)) {
-                return dom.getPrevNode(node);
+                return dom.getPrevNode(node, container);
                 
         } else if (node.previousElementSibling) {
                 return node.previousElementSibling; 
@@ -402,7 +461,7 @@ dom.getPrevContentNode = function (node) {
         }
         
         return null;
-};
+};*/
 dom.getFirstChild = function (node) {
 	if (node.firstChild) {
 		if (node.firstChild.nodeType === dom.ELEMENT_NODE) {
