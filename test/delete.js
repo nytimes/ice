@@ -554,5 +554,23 @@ $(document).ready(function() {
 				&& el.find('.del:eq(2)').text() === ' small'
 				&& el.find('.del:eq(3)').text() === ' test',
 			'Deleted a selection with nested inner nodes.');
+
+
+		// <div><p>|text</p><p>text <span class="del cts-1" userid="4" cid="1">same user delete</span> text</p><p>text|</p></div>
+		//         |                                                                                                  |
+		//         A                                                                                                  B
+		// Delete the selection from A to B and expect that all inner paragraph
+		// nodes are deleted and the same user delete is preserved.
+		el = jQuery('<div><p>text</p><p>text <span class="del cts-1" userid="4" cid="1">same user delete</span> text</p><p>text</p></div>');
+		changeEditor = getIce(el);
+
+		range.setStart(el.find('p')[0], 0);
+		range.setEnd(el.find('p:eq(2)')[0].childNodes[0], 0);
+		range.moveEnd('character', 4);
+
+		changeEditor.deleteContents(true, range);
+
+		equal(el.find('.del').length, 4);
+		equal(el.text(), 'texttext same user delete texttext');
 	});
 });

@@ -789,7 +789,8 @@ InlineChangeEditor.prototype = {
 			if (elem.hasChildNodes()) {
 				for (var x=0; x<elem.childNodes.length; x++) {
 					var child = elem.childNodes[x];
-					if (this._getNoTrackElement(child) || this._currentUserIceNode(child)) {
+					var childAddNode = this.getIceNode(child, 'insertType');
+					if (this._getNoTrackElement(child) || childAddNode && this._currentUserIceNode(childAddNode)) {
 						ice.dom.remove(child);
 					}
 				}
