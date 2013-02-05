@@ -235,9 +235,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 
-		ok(el.find('.del').length === 4
-				&& el.find('em').find('.del:eq(0)').text() === ' lefti'
-				&& el.find('em').find('.del:eq(1)').text() === 'st', 
+		ok(el.find('.del').length === 3
+				&& el.find('em').find('.del:eq(0)').text() === ' leftist',
 			'Deleted left through same user delete.');
 		
 		// Setup for deleting right, through same user delete
@@ -285,8 +284,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 
 		ok(el.find('p').length === 1
-				&& el.find('.del:eq(0)').text() === '1'
-				&& el.find('.del:eq(1)').text() === 'pa',
+				&& el.find('.del:eq(0)').text() === '1pa',
 			'Deleted left through blocks.');
 
 		// Setup for deleting right, through blocks
@@ -306,9 +304,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		
 		ok(el.find('p').length === 1
-				&& el.find('.del').length === 2
-				&& el.find('.del:eq(0)').text() === ' 1'
-				&& el.find('.del:eq(1)').text() === 'pa',
+				&& el.find('.del').length === 1
+				&& el.find('.del:eq(0)').text() === ' 1pa',
 			'Deleted right through blocks.');
 
 		// Setup for deleting left, through empty blocks
@@ -409,8 +406,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		
 		ok(el.find('.del:eq(0)').text() === 't delete1'
-				&& el.find('.del:eq(1)').text() === 'delete2 '
-				&& el.find('.del:eq(2)').text() === 't',
+				&& el.find('.del:eq(1)').text() === 'delete2 t',
 			'Delete left through adjacent, same-user deletes.');
 
 		// Setup for deleting right through adjacent, same-user deletes
@@ -419,7 +415,7 @@ $(document).ready(function() {
 			'</div>');
 		changeEditor = getIce(el);
 		
-		// Delete left through adjacent, same-user deletes
+		// Delete right through adjacent, same-user deletes
 		range.setStart(el.find('p:eq(0)')[0], 0);
 		range.moveStart('character', 3)
 		range.collapse(true);
@@ -427,8 +423,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
-		
-		ok(el.find('.del:eq(2)').text() === 'delete2 t' && el.find('.del:eq(0)').text() === 't ',
+		console.log(el);
+		ok(el.find('.del:eq(1)').text() === 'delete2 t' && el.find('.del:eq(0)').text() === 't delete1',
 			'Deleted right through adjacent, same-user deletes.');
 
 	
@@ -560,7 +556,7 @@ $(document).ready(function() {
 		//         |                                                                                                  |
 		//         A                                                                                                  B
 		// Delete the selection from A to B and expect that all inner paragraph
-		// nodes are deleted and the same user delete is preserved.
+		// nodes are deleted and the existing user delete is merged with new delete nodes.
 		el = jQuery('<div><p>text</p><p>text <span class="del cts-1" userid="4" cid="1">same user delete</span> text</p><p>text</p></div>');
 		changeEditor = getIce(el);
 
@@ -570,7 +566,7 @@ $(document).ready(function() {
 
 		changeEditor.deleteContents(true, range);
 
-		equal(el.find('.del').length, 4);
+		equal(el.find('.del').length, 3);
 		equal(el.text(), 'texttext same user delete texttext');
 	});
 });

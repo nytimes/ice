@@ -916,9 +916,11 @@
 
 
             // Handle cases of the caret is at the end of a container or placed directly in a block element
-            if (initialOffset === initialContainer.data.length) {
+            if (initialOffset === initialContainer.data.length && (!ice.dom.hasNoTextOrStubContent(initialContainer))) {
 
                 var nextContainer = ice.dom.getNextNode(initialContainer, this.element);
+
+
 
                 // If the next container is outside of ICE then do nothing.
                 if (!nextContainer) {
@@ -931,10 +933,12 @@
                 }
 
                 // If the caret was placed directly before a stub element or an element that is not editable, enclose the element with a delete ice node.
-                if (ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
+                if (ice.dom.isChildOf(nextContainer, parentBlock) && ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
                     return this._addNodeTracking(nextContainer, range, true, false);
                 }
+
             }
+
             // If we are deleting into, or in, a non-tracking/void container then move cursor to right of container
             if (this._getVoidElement(range.endContainer)) {
                 range.setEnd(range.endContainer, 0)
@@ -957,13 +961,14 @@
                 return true;
             }
 
-            // Handles cases in which the caret is at the end of the line
+            // Handles cases in which the caret is at the end of the block
             if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
 
                 // If the next block is empty, remove the next block. 
                 if (nextBlockIsEmpty) {
+
                     ice.dom.remove(nextBlock);
-                    range.collapse();
+                    range.collapse(true);
                     return true;
                 }
 
@@ -993,29 +998,11 @@
                 }
             }
 
-            var textNode = range.endContainer;
-            var textAddNode = this.getIceNode(textNode, 'insertType');
+            var entireTextNode = range.endContainer;
+            var deletedCharacter = entireTextNode.splitText(range.endOffset);
+            var remainingTextNode = deletedCharacter.splitText(1);
 
-            // Create a new ct node
-            if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
-                this._addTextNodeTracking(textNode, range, true);
-            } else {
-                range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-                range.deleteContents();
-
-                // The textAddNode is a tracking node that may be empty now - clean it up.
-                if (textAddNode !== null && (ice.dom.hasNoTextOrStubContent(textAddNode))) {
-                    var prevSibling = textAddNode.previousSibling;
-                    if (!prevSibling || prevSibling.nodeType !== ice.dom.TEXT_NODE) {
-                        prevSibling = this.env.document.createTextNode('');
-                        ice.dom.insertBefore(textAddNode, prevSibling);
-                    }
-                    range.setStart(prevSibling, prevSibling.data.length);
-                    ice.dom.remove(textAddNode);
-                }
-            }
-
-            return true;
+            return this._addNodeTracking(deletedCharacter, range, true, false);
         },
 
         // Backspace
@@ -1027,6 +1014,7 @@
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
+
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -1047,9 +1035,10 @@
                 }
 
                 // If the caret was placed directly after a stub element or an element that is not editable, enclose the element with a delete ice node.
-                if (ice.dom.isStubElement(prevContainer) || !prevContainer.isContentEditable) {
+                if (ice.dom.isStubElement(prevContainer) && ice.dom.isChildOf(prevContainer, parentBlock) || !prevContainer.isContentEditable) {
                     return this._addNodeTracking(prevContainer, range, true, true);
                 }
+
             }
 
             // Move range to position the cursor on the inside of any adjacent container that it is going
@@ -1059,7 +1048,7 @@
             range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 
             // If we are deleting into, or in, a void container then move cursor to left of container
-            if (this._getVoidElement(range.startContainer) && !prevBlockIsEmpty) {
+            if (this._getVoidElement(range.startContainer)) {
                 range.setStart(range.startContainer, 0);
                 range.collapse(true);
                 return this._deleteFromLeft(range);
@@ -1075,7 +1064,11 @@
             if (isEmptyBlock && prevBlock) {
                 ice.dom.remove(parentBlock);
                 var lastSelectable = range.getLastSelectableChild(prevBlock);
-                range.setStart(lastSelectable, lastSelectable.data.length);
+                if (lastSelectable) {
+                    range.setStart(lastSelectable, lastSelectable.data.length);
+                } else {
+                    range.setStart(prevBlock, 0);
+                }
                 range.collapse(true);
                 return true;
             }
@@ -1117,35 +1110,19 @@
                 }
             }
 
+            var entireTextNode = range.startContainer;
+            var deletedCharacter = entireTextNode.splitText(range.startOffset - 1);
+            var remainingTextNode = deletedCharacter.splitText(1);
 
-            var textNode = range.startContainer;
-            var textAddNode = this.getIceNode(textNode, 'insertType');
+            return this._addNodeTracking(deletedCharacter, range, true, true);
 
-            // Create a new ct node if we aren't already in one by the same user.
-            if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
-                this._addTextNodeTracking(textNode, range);
-            } else {
-                range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-                range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-                range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-                range.deleteContents();
-
-                // The textAddNode is a tracking node that may be empty now - clean it up. 
-                if (textAddNode !== null && (ice.dom.hasNoTextOrStubContent(textAddNode))) {
-                    var newstart = this.env.document.createTextNode('');
-                    ice.dom.insertBefore(textAddNode, newstart);
-                    range.setStart(newstart, 0);
-                    range.collapse(true);
-                    ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
-                }
-            }
-
-            return true;
         },
-        // To track other things than text nodes, only deletion implemented
+        // To track text and other nodes, only deletion implemented
         _addNodeTracking: function (contentNode, range, del, moveLeft) {
-
             var contentAddNode = this.getIceNode(contentNode, 'insertType');
+            if (range) {
+                range.selectNode(contentNode);
+            }
             if (del) {
                 if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
                     contentNode.parentNode.removeChild(contentNode);
@@ -1188,7 +1165,7 @@
                     } else {
                         // Move the range to the right until there is valid sibling.
 
-                        var nextSibling = ice.dom.getNextContentNode(nextContainer);
+                        var nextSibling = ice.dom.getNextContentNode(contentNode);
                         while (!found) {
                             ctNode = this.getIceNode(nextSibling, 'deleteType');
                             if (!ctNode) {
