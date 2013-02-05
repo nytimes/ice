@@ -383,7 +383,7 @@
                     return null;
                 }
 
-                if (node.nextSibling && dom.canContainTextElement(node.parentNode)) {
+                if (node.nextSibling && dom.canContainTextElement(dom.getBlockParent(node))) {
                     // if next sibling is an empty text node, look further
                     if (node.nextSibling.nodeType === dom.TEXT_NODE && node.nextSibling.length === 0) {
                         node = node.nextSibling;
@@ -429,14 +429,14 @@
                 if (node === container) {
                     return null;
                 }
-
-                if (node.previousSibling && dom.canContainTextElement(node.parentNode)) {
+                if (node.previousSibling && dom.canContainTextElement(dom.getBlockParent(node))) {
+                    
                     // if previous sibling is an empty text node, look further
                     if (node.previousSibling.nodeType === dom.TEXT_NODE && node.previousSibling.length === 0) {
                         node = node.previousSibling;
+                        
                         continue;
                     }
-
                     return node.previousSibling;
                 } else if (node.previousElementSibling) {
                     return node.previousElementSibling;

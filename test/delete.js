@@ -276,7 +276,7 @@ $(document).ready(function() {
 		
 		// Delete left through block.
 		range.setStart(el.find('p:eq(1)')[0], 0);
-		range.moveStart('character', 2)
+		range.moveStart('character', 2);
 		range.collapse(true);
 		changeEditor.deleteContents(false, range);
 		changeEditor.deleteContents(false);
@@ -295,7 +295,7 @@ $(document).ready(function() {
 		
 		// Delete right through block.
 		range.setStart(el.find('p:eq(0)')[0], 0);
-		range.moveStart('character', 9)
+		range.moveStart('character', 9);
 		range.collapse(true);
 		changeEditor.deleteContents(true, range);
 		changeEditor.deleteContents(true);
@@ -338,7 +338,7 @@ $(document).ready(function() {
 		
 		// Delete right through block.
 		range.setStart(el.find('p:eq(0)')[0], 0);
-		range.moveStart('character', 9)
+		range.moveStart('character', 9);
 		range.collapse(true);
 		changeEditor.deleteContents(true, range);
 		changeEditor.deleteContents(true);
@@ -362,14 +362,13 @@ $(document).ready(function() {
 		
 		// Delete left through adjacent, different-user deletes
 		range.setStartAfter(el.find('span:eq(1)')[0]);
-		range.moveStart('character', 2)
+		range.moveStart('character', 2);
 		range.collapse(true);
 		changeEditor.deleteContents(false, range);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
 
 		ok(el.find('.del:eq(0)').text() === 't ' && el.find('.del:eq(3)').text() === ' t',
 			'Deleted left through adjacent, different-user deletes.');
@@ -382,10 +381,9 @@ $(document).ready(function() {
 		
 		// Delete right through adjacent, different-user deletes
 		range.setStart(el.find('p:eq(0)')[0], 0);
-		range.moveStart('character', 3)
+		range.moveStart('character', 3);
 		range.collapse(true);
 		changeEditor.deleteContents(true, range);
-		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
@@ -402,7 +400,7 @@ $(document).ready(function() {
 		
 		// Delete left through adjacent, same-user deletes
 		range.setStartAfter(el.find('span:eq(1)')[0]);
-		range.moveStart('character', 2)
+		range.moveStart('character', 2);
 		range.collapse(true);
 		changeEditor.deleteContents(false, range);
 		changeEditor.deleteContents(false);
@@ -423,7 +421,7 @@ $(document).ready(function() {
 		
 		// Delete right through adjacent, same-user deletes
 		range.setStart(el.find('p:eq(0)')[0], 0);
-		range.moveStart('character', 3)
+		range.moveStart('character', 3);
 		range.collapse(true);
 		changeEditor.deleteContents(true, range);
 		changeEditor.deleteContents(true);
@@ -443,7 +441,7 @@ $(document).ready(function() {
 		
 		// Delete selection
 		range.setStart(el.find('p')[0], 0);
-		range.moveStart('character', 5)
+		range.moveStart('character', 5);
 		range.collapse(true);
 		range.moveEnd('character', 6);
 		changeEditor.deleteContents(true, range);

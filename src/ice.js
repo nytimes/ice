@@ -939,14 +939,6 @@
 
             }
 
-            // If we are deleting into, or in, a non-tracking/void container then move cursor to right of container
-            if (this._getVoidElement(range.endContainer)) {
-                range.setEnd(range.endContainer, 0)
-                range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer) || 0);
-                range.collapse();
-                return true;
-            }
-
             // If we are deleting into a no tracking containiner, then remove the content
             if (this._getNoTrackElement(range.endContainer.parentElement)) {
                 range.deleteContents();
@@ -1014,7 +1006,6 @@
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
-
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -1046,13 +1037,6 @@
             // text1 <img>| text2 -> text1 |<img> text2
             range.moveStart(ice.dom.CHARACTER_UNIT, -1);
             range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-
-            // If we are deleting into, or in, a void container then move cursor to left of container
-            if (this._getVoidElement(range.startContainer)) {
-                range.setStart(range.startContainer, 0);
-                range.collapse(true);
-                return true;
-            }
 
             // If we are deleting into a no tracking containiner, then remove the content
             if (this._getNoTrackElement(range.startContainer.parentElement)) {
@@ -1125,9 +1109,6 @@
         // To track text and other nodes, only deletion implemented
         _addNodeTracking: function (contentNode, range, del, moveLeft) {
             var contentAddNode = this.getIceNode(contentNode, 'insertType');
-            if (range) {
-                range.selectNode(contentNode);
-            }
             if (del) {
                 if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
                     contentNode.parentNode.removeChild(contentNode);
@@ -1146,36 +1127,39 @@
                     return true;
 
                 } else if (range && this.getIceNode(contentNode, 'deleteType')) {
-
                     var found = false;
                     if (moveLeft) {
-                        // Move the range to the left until there is valid sibling.
-                        var previousSibling = ice.dom.getPrevContentNode(contentNode);
+                        // Move to the left until there is valid sibling.
+                        var previousSibling = ice.dom.getPrevContentNode(contentNode, this.element);
                         while (!found) {
                             ctNode = this.getIceNode(previousSibling, 'deleteType');
                             if (!ctNode) {
                                 found = true;
                             } else {
-                                previousSibling = previousSibling.previousSibling;
+                                previousSibling = ice.dom.getPrevContentNode(previousSibling, this.element);
                             }
                         }
-
                         if (previousSibling) {
-                            previousSibling = range.getLastSelectableChild(previousSibling);
-                            range.setStart(previousSibling, previousSibling.nodeValue.length);
+                            var lastSelectable = range.getLastSelectableChild(previousSibling);
+                            if (lastSelectable) {
+                                previousSibling = lastSelectable;
+                            }
+                            range.setStart(previousSibling,  ice.dom.getNodeCharacterLength(previousSibling));
+                            //range.setStart(previousSibling, previousSibling.nodeValue.length);
                             range.collapse(true);
                         }
+                        return true;
                         //return this._deleteFromLeft(range);
                     } else {
                         // Move the range to the right until there is valid sibling.
 
-                        var nextSibling = ice.dom.getNextContentNode(contentNode);
+                        var nextSibling = ice.dom.getNextContentNode(contentNode, this.element);
                         while (!found) {
                             ctNode = this.getIceNode(nextSibling, 'deleteType');
                             if (!ctNode) {
                                 found = true;
                             } else {
-                                nextSibling = nextSibling.nextSibling;
+                                nextSibling = ice.dom.getNextContentNode(nextSibling, this.element);
                             }
                         }
 
@@ -1214,8 +1198,9 @@
                     ctNode.appendChild(contentNode);
                 }
                 if (range) {
+                    range.selectNode(contentNode);
                     if (moveLeft) {
-                        range.setEnd(ctNode, 0);
+                        range.collapse(true);
                     } else {
                         range.collapse();
                     }
