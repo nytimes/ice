@@ -889,28 +889,22 @@ var errCount=0;
                 initialContainer = range.endContainer,
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer;
-
             // A bug in webkit moves the caret out of text nodes, so we put it back in.    
-            if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
-                
-                if (ice.dom.isBlockElement(commonAncestor)) {
+            if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) { 
+                 
                     if (commonAncestor.childNodes.length > initialOffset) {
-                        var nextContainer = document.createTextNode('');
-                        commonAncestor.insertBefore(nextContainer, commonAncestor.childNodes[initialOffset]);
+                        var tempTextContainer = document.createTextNode(' ');
+                        commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
+                        range.setStart(tempTextContainer, 1);
+                        range.collapse(true);
+                        var returnValue = this._deleteFromRight(range);
+                        ice.dom.remove(tempTextContainer);
+                        return returnValue;
                     } else {
                         var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
                         range.setStart(nextContainer, 0)
                         return true;
                     }
-                } else {
-                    var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
-                }
-                if (nextContainer) {
-                    range.setStart(nextContainer, 0);
-                    return this._deleteFromRight(range);
-                } else {
-                    return false;
-                }
 
             };
 
@@ -922,8 +916,7 @@ var errCount=0;
 
 
             // Handle cases of the caret is at the end of a container or placed directly in a block element
-            if (initialOffset === initialContainer.data.length && (!ice.dom.hasNoTextOrStubContent(initialContainer))) {
-
+            if (initialOffset === initialContainer.data.length && (!ice.dom.hasNoTextOrStubContent(initialContainer))) { 
                 var nextContainer = ice.dom.getNextNode(initialContainer, this.element);
 
 
@@ -952,8 +945,7 @@ var errCount=0;
             if (this._getNoTrackElement(range.endContainer.parentElement)) {
                 range.deleteContents();
                 return false;
-            }
-
+            }  
             // If the current block is empty, and there is a next block, remove the current block and put the caret at the start of the next block.
             if (isEmptyBlock && nextBlock) {
                 ice.dom.remove(parentBlock);
@@ -1140,6 +1132,9 @@ var errCount=0;
                     return true;
 
                 } else if (range && this.getIceNode(contentNode, 'deleteType')) {
+                    // It if the contentNode a text node, unite it with text nodes before and after it.
+                    contentNode.normalize();
+                    
                     var found = false;
                     if (moveLeft) {
                         // Move to the left until there is valid sibling.
@@ -1177,7 +1172,8 @@ var errCount=0;
                         }
 
                         if (nextSibling) {
-                            range.setStart(nextSibling, 0);
+//                            range.setStart(nextSibling, 0);
+                            range.selectNodeContents(nextSibling);
                             range.collapse(true);
                         }
                         return true;
@@ -1205,7 +1201,7 @@ var errCount=0;
                     }
                 } else if (nextDelNode && this._currentUserIceNode(nextDelNode)) {
                     var ctNode = nextDelNode;
-                    ctNode.insertBefore(contentNode, ctNode.firstChild);
+                    ctNode.insertBefore(contentNode, ctNode.firstChild);                    
                 } else {
                     var ctNode = this.createIceNode('deleteType');
                     contentNode.parentElement.insertBefore(ctNode, contentNode);
@@ -1213,12 +1209,17 @@ var errCount=0;
                 }
                 
                 if (range) {
-                    range.selectNodeContents(contentNode);
+                    if (ice.dom.isStubElement(contentNode)) {
+                        range.selectNode(contentNode);
+                    } else {
+                        range.selectNodeContents(contentNode);
+                    }
                     if (moveLeft) {
                         range.collapse(true);
                     } else {
                         range.collapse();
                     }
+                    contentNode.normalize();
                 }
                 return true;
             }
