@@ -608,7 +608,7 @@ InlineChangeEditor.prototype = {
 	 * Returns a selector for not tracking changes
 	 */
 	_getNoTrackSelector: function() {
-		return '.ins[data-userid="'+this.currentUser.id+'"],' + this.noTrack;
+		return this.noTrack;
 	},
 
 	/**
@@ -803,15 +803,16 @@ InlineChangeEditor.prototype = {
 
 			// search immediate childrens
 			if (elem.hasChildNodes()) {
-				for(var x=0; x<elem.childNodes.length; x++) {
+				for (var x=0; x<elem.childNodes.length; x++) {
 					var child = elem.childNodes[x];
-					if (this._getNoTrackElement(child)) {
+					var childAddNode = this.getIceNode(child, 'insertType');
+					if (this._getNoTrackElement(child) || childAddNode && this._currentUserIceNode(childAddNode)) {
 						ice.dom.remove(child);
 					}
 				}
 			}
 			// If the element is not to be track, delete the selection
-			if (this._getNoTrackElement(elem)) {
+			if (this._getNoTrackElement(elem)  || this._currentUserIceNode(elem)) {
 				ice.dom.remove(elem);
 			}
 

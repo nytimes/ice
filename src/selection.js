@@ -67,11 +67,7 @@ Selection.prototype = {
 		rangy.init();
 		rangy.config.checkSelectionRanges = false;
 
-		/**
-		 * Moves the start of the range using the specified `unitType`, by the specified
-		 * number of `units`. Defaults to `CHARACTER_UNIT` and units of 1.
-		 */
-		rangy.rangePrototype.moveStart = function(unitType, units) {
+		var move = function(range, unitType, units, isStart) {
 			if (units === 0) {
 				throw Error('InvalidArgumentException: units cannot be 0');
 			}
@@ -79,17 +75,25 @@ Selection.prototype = {
 			switch (unitType) {
 				case ice.dom.CHARACTER_UNIT:
 					if (units > 0) {
-						this.moveCharRight(true, units);
+						range.moveCharRight(isStart, units);
 					} else {
-						this.moveCharLeft(true, units);
+						range.moveCharLeft(isStart, units * -1);
 					}
 				break;
 
 				case ice.dom.WORD_UNIT:
 				default:
-					// Do nothing.
+					// Removed. TODO: possibly refactor or re-implement.
 				break;
 			}
+		};
+
+		/**
+		 * Moves the start of the range using the specified `unitType`, by the specified
+		 * number of `units`. Defaults to `CHARACTER_UNIT` and units of 1.
+		 */
+		rangy.rangePrototype.moveStart = function(unitType, units) {
+			move(this, unitType, units, true);
 		};
 
 		/**
@@ -97,24 +101,7 @@ Selection.prototype = {
 		 * number of `units`.
 		 */
 		rangy.rangePrototype.moveEnd = function(unitType, units) {
-			if (units === 0) {
-				throw Error('InvalidArgumentException: units cannot be 0');
-			}
-
-			switch (unitType) {
-				case ice.dom.CHARACTER_UNIT:
-					if (units > 0) {
-						this.moveCharRight(false, units);
-					} else {
-						this.moveCharLeft(false, units);
-					}
-				break;
-
-				case ice.dom.WORD_UNIT:
-				default:
-					// Do nothing.
-				break;
-			}
+			move(this, unitType, units, false);
 		};
 
 		/**
@@ -142,6 +129,34 @@ Selection.prototype = {
 		 * test <em>|it</em> out
 		 * test| <em>it</em> out
 		 * tes|t <em>it</em> out
+		 * 
+		 * A range could be mapped in one of two ways:
+		 * 
+		 * (1) If a startContainer is a Node of type Text, Comment, or CDATASection, then startOffset
+		 * is the number of characters from the start of startNode. For example, the following
+		 * are the range properties for `<p>te|st</p>` (where "|" is the collapsed range):
+		 * 
+		 * startContainer: <TEXT>test<TEXT>
+		 * startOffset: 2
+		 * endContainer: <TEXT>test<TEXT>
+		 * endOffset: 2
+		 * 
+		 * (2) For other Node types, startOffset is the number of child nodes between the start of
+		 * the startNode. Take the following html fragment:
+		 * 
+		 * `<p>some <span>test</span> text</p>`
+		 * 
+		 * If we were working with the following range properties:
+		 * 
+		 * startContainer: <p>
+		 * startOffset: 2
+		 * endContainer: <p>
+		 * endOffset: 2
+		 * 
+		 * Since <p> is an Element node, the offsets are based on the offset in child nodes of <p> and
+		 * the range is selecting the second child - the <span> tag.
+		 * 
+		 * <p><TEXT>some </TEXT><SPAN>test</SPAN><TEXT> text</TEXT></p>
 		 */
 		rangy.rangePrototype.moveCharLeft = function(moveStart, units) {
 			var container, offset;
@@ -154,24 +169,43 @@ Selection.prototype = {
 				offset	= this.endOffset;
 			}
 
-			offset += units;
+			// Handle the case where the range conforms to (2) (noted in the comment above).
+			if (container.nodeType === ice.dom.ELEMENT_NODE) {
+				if (container.hasChildNodes()) {
+					container = container.childNodes[offset];
+
+					container = this.getPreviousTextNode(container);
+
+					// Get the previous text container that is not an empty text node. 
+					while (container && container.nodeType == ice.dom.TEXT_NODE && container.nodeValue === "") {
+						container = this.getPreviousTextNode(container);
+					}
+
+					offset = container.data.length - units;
+				} else {
+					offset = units * -1;
+				}
+			} else {
+				offset -= units;
+			}
 
 			if (offset < 0) {
 				// We need to move to a previous selectable container.
 				while (offset < 0) {
 					var skippedBlockElem = [];
 					
-					// We are at the beginning of the body - break
-					if(!this.getPreviousContainer(container, skippedBlockElem)) { if(units === -1) return; offset = 0; break; }
-
-					container = this.getPreviousContainer(container, skippedBlockElem);
+					container = this.getPreviousTextNode(container, skippedBlockElem);
 					
+					// We are at the beginning/out of the editable - break.
+					if (!container) {
+						return;
+					}
+
 					if (container.nodeType === ice.dom.ELEMENT_NODE) {
 						continue;
 					}
 
-					offset = container.data.length;
-					offset--;
+					offset += container.data.length;
 				}
 			}
 
@@ -190,6 +224,34 @@ Selection.prototype = {
 		 * test <em>i|t</em> out
 		 * test <em>it|</em> out
 		 * test <em>it</em> |out
+		 * 
+		 * A range could be mapped in one of two ways:
+		 * 
+		 * (1) If a startContainer is a Node of type Text, Comment, or CDATASection, then startOffset
+		 * is the number of characters from the start of startNode. For example, the following
+		 * are the range properties for `<p>te|st</p>` (where "|" is the collapsed range):
+		 * 
+		 * startContainer: <TEXT>test<TEXT>
+		 * startOffset: 2
+		 * endContainer: <TEXT>test<TEXT>
+		 * endOffset: 2
+		 * 
+		 * (2) For other Node types, startOffset is the number of child nodes between the start of
+		 * the startNode. Take the following html fragment:
+		 * 
+		 * `<p>some <span>test</span> text</p>`
+		 * 
+		 * If we were working with the following range properties:
+		 * 
+		 * startContainer: <p>
+		 * startOffset: 2
+		 * endContainer: <p>
+		 * endOffset: 2
+		 * 
+		 * Since <p> is an Element node, the offsets are based on the offset in child nodes of <p> and
+		 * the range is selecting the second child - the <span> tag.
+		 * 
+		 * <p><TEXT>some </TEXT><SPAN>test</SPAN><TEXT> text</TEXT></p>
 		 */
 		rangy.rangePrototype.moveCharRight = function(moveStart, units) {
 			var container, offset;
@@ -288,7 +350,7 @@ Selection.prototype = {
 		/**
 		 * Returns the deepest previous container that the range can be extended to.
 		 * For example, if the previous container is an element that contains text nodes,
-		 * the the container's lastChild is returned.
+		 * then the container's lastChild is returned.
 		 */
 		rangy.rangePrototype.getPreviousContainer = function(container, skippedBlockElem) {
 			if (!container) {
@@ -334,28 +396,6 @@ Selection.prototype = {
 			return this.getPreviousContainer(container, skippedBlockElem);
 		};
 
-		/**
-		 * If incSpaces is false then any space at the beginning of a line will
-		 * be ignored.
-		 */
-		rangy.rangePrototype.getStartOffset = function(incSpaces) {
-			if (incSpaces === true) {
-				return this.startOffset;
-			}
-
-			var spaces	= 0;
-			var container = this.startContainer;
-			var cc		= container.data.charCodeAt(0);
-			while (cc === 10 || cc === 32) {
-				spaces++;
-				cc = container.data.charCodeAt(spaces);
-			}
-
-			var offset = (this.startOffset - spaces);
-
-			return offset;
-		};
-
 		rangy.rangePrototype.getNextTextNode = function(container) {
 			if (container.nodeType === ice.dom.ELEMENT_NODE) {
 				if (container.childNodes.length !== 0) {
@@ -369,6 +409,21 @@ Selection.prototype = {
 			}
 
 			return this.getNextTextNode(container);
+		};
+		
+		rangy.rangePrototype.getPreviousTextNode = function(container, skippedBlockEl) {
+			if (container.nodeType === ice.dom.ELEMENT_NODE) {
+				if (container.childNodes.length !== 0) {
+					return this.getLastSelectableChild(container);
+				}
+			}
+
+			container = this.getPreviousContainer(container, skippedBlockEl);
+			if (container.nodeType === ice.dom.TEXT_NODE) {
+				return container;
+			}
+
+			return this.getPreviousTextNode(container, skippedBlockEl);
 		};
 
 		rangy.rangePrototype.getFirstSelectableChild = function(element) {

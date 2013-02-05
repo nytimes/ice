@@ -1,5 +1,5 @@
 $(document).ready(function() {
-
+/*
 	module("ice plugin");
 
 	test("IceCopyPastePlugin.handleFormattedPasteValue", function() {
@@ -107,4 +107,5 @@ $(document).ready(function() {
 
 
 	});
+*/
 });
