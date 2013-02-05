@@ -68,6 +68,31 @@ $(document).ready(function() {
 				&& el.find('em > .ins > .del').text() === 'ist', 
 			'Deleted right through different user insert.');
 
+		// Setup for deleting left, through different user delete and insert
+		el = jQuery('<div>' +
+				'<p>a <em>l<span class="ins cts-1" userid="1" cid="1">ef</span><span class="del cts-1" userid="1" cid="1">ti</span>st</em> paragraph</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+
+		// Delete left through different user insert and delete.
+		range.setStartAfter(el.find('em')[0]);
+		range.moveStart('character', 2);
+		range.collapse(true);
+		changeEditor.deleteContents(false, range);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+
+		ok(el.find('.del').length === 6
+				&& el.find('em > .ins > .del').text() === 'ef', 
+			'Deleted right through different user insert and delete.');
+
+
 		// Setup for deleting left, through same user insert
 		el = jQuery('<div>' +
 				'<p>a <em><span class="ins cts-1" userid="4" cid="1">left</span>ist</em> paragraph</p>' +

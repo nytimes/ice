@@ -1157,7 +1157,6 @@ var errCount=0;
                             range.collapse(true);
                         }
                         return true;
-                        //return this._deleteFromLeft(range);
                     } else {
                         // Move the range to the right until there is valid sibling.
 
@@ -1172,7 +1171,6 @@ var errCount=0;
                         }
 
                         if (nextSibling) {
-//                            range.setStart(nextSibling, 0);
                             range.selectNodeContents(nextSibling);
                             range.collapse(true);
                         }
@@ -1225,155 +1223,6 @@ var errCount=0;
             }
         },
 
-
-
-        _addTextNodeTracking: function (textNode, range, del) {
-
-            if ((!del && range.startOffset === 0) || this.getIceNode(textNode, 'deleteType') !== null) {
-                return;
-            }
-
-            var beforeText = '';
-            var removedChar = '';
-            var afterText = '';
-
-            if (!del) {
-                beforeText = textNode.nodeValue.substring(0, (range.startOffset - 1));
-                removedChar = textNode.nodeValue.substr((range.startOffset - 1), 1);
-                afterText = textNode.nodeValue.substring(range.startOffset);
-            } else {
-                beforeText = textNode.nodeValue.substring(0, range.endOffset);
-                removedChar = textNode.nodeValue.substr(range.endOffset, 1);
-                afterText = textNode.nodeValue.substring((range.endOffset + 1));
-            }
-
-            if ((range.startOffset === 1 && !del) || (del && range.startOffset === 0)) {
-                // Check if we can merge to an existing previous CTNode.
-                var ctNode = this.getIceNode(textNode.previousSibling, 'deleteType');
-
-                // Null-out the node so we can create a new node for multi-user nesting/support
-                if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
-
-                if (ctNode) {
-                    // Can add the removed char to previous sibling.
-                    if (!del) {
-                        if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
-                            ctNode.lastChild.nodeValue += removedChar;
-                            range.setStart(ctNode.lastChild, (ctNode.lastChild.nodeValue.length - 1));
-                        } else {
-                            var charNode = this.env.document.createTextNode(removedChar);
-                            ctNode.appendChild(charNode);
-                            range.setStart(charNode, 0);
-                        }
-
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        if (textNode.nodeValue.length === 0) {
-                            // Move the range to the right until there is valid sibling.
-                            var found = false;
-                            var previousSibling = textNode.previousSibling;
-                            while (!found) {
-                                ctNode = this.getIceNode(previousSibling, 'deleteType');
-                                if (!ctNode) {
-                                    found = true;
-                                } else {
-                                    previousSibling = previousSibling.previousSibling;
-                                }
-                            }
-
-                            if (previousSibling) {
-                                previousSibling = range.getLastSelectableChild(previousSibling);
-                                range.setStart(previousSibling, previousSibling.nodeValue.length);
-                                range.collapse(true);
-                            }
-                        } else {
-                            range.collapse(true);
-                        }
-                    } else {
-                        if (ctNode.lastChild && ctNode.lastChild.nodeType === ice.dom.TEXT_NODE) {
-                            ctNode.lastChild.nodeValue += removedChar;
-                        } else {
-                            var charNode = this.env.document.createTextNode(removedChar);
-                            ctNode.appendChild(charNode);
-                        }
-
-                        // Update textNode.
-                        textNode.nodeValue = beforeText + afterText;
-                        if (textNode.nodeValue.length === 0) {
-                            // Move the range to the right until there is valid sibling.
-                            var found = false;
-                            var nextSibling = textNode.nextSibling;
-                            while (!found) {
-                                ctNode = this.getIceNode(nextSibling, 'deleteType');
-                                if (!ctNode) {
-                                    found = true;
-                                } else {
-                                    nextSibling = nextSibling.nextSibling;
-                                }
-                            }
-
-                            if (nextSibling) {
-                                range.setStart(nextSibling, 0);
-                                range.collapse(true);
-                            }
-                        } else {
-                            range.setStart(textNode, 0);
-                            range.collapse(true);
-                        }
-                    }
-                    return;
-                }
-            }
-
-            if (range.startOffset === textNode.nodeValue.length) {
-                // Range is at the end of the text node. Check if next sibling
-                // is a CTNode that we can join to.
-                var ctNode = this.getIceNode(textNode.nextSibling, 'deleteType');
-
-                // Null-out the node so we can create a new node for multi-user nesting/support
-                if (ctNode !== null && !this._currentUserIceNode(ctNode)) ctNode = null;
-
-                if (ctNode) {
-                    if (ctNode.firstChild && ctNode.firstChild.nodeType === ice.dom.TEXT_NODE) {
-                        ctNode.firstChild.nodeValue = removedChar + ctNode.firstChild.nodeValue;
-                    } else {
-                        var charNode = this.env.document.createTextNode(removedChar);
-                        ice.dom.insertBefore(ctNode.firstChild, charNode);
-                    }
-
-                    // Update textNode.
-                    textNode.nodeValue = beforeText;
-                    range.setStart(textNode, textNode.nodeValue.length);
-                    range.setEnd(textNode, textNode.nodeValue.length);
-                    return;
-                }
-            }
-
-            var ctNode = this.createIceNode('deleteType');
-            var newNode = null;
-            if (del !== true) {
-                newNode = textNode.splitText(range.startOffset - 1);
-                newNode.nodeValue = newNode.nodeValue.substring(1);
-
-                ice.dom.insertAfter(textNode, newNode);
-                ctNode.firstChild.nodeValue = removedChar;
-                ice.dom.insertAfter(textNode, ctNode);
-                range.setStart(textNode, textNode.nodeValue.length);
-                range.setEnd(textNode, textNode.nodeValue.length);
-            } else {
-                newNode = textNode.splitText(range.endOffset);
-                newNode.nodeValue = newNode.nodeValue.substring(1);
-
-                ice.dom.insertAfter(textNode, newNode);
-                ctNode.firstChild.nodeValue = removedChar;
-                ice.dom.insertAfter(textNode, ctNode);
-                range.setStart(newNode, 0);
-                range.setEnd(newNode, 0);
-            }
-
-        },
 
         /**
          * Handles arrow, delete key events, and others.
