@@ -944,7 +944,7 @@
                 range.setEnd(range.endContainer, 0)
                 range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer) || 0);
                 range.collapse();
-                return this._deleteFromRight(range);
+                return true;
             }
 
             // If we are deleting into a no tracking containiner, then remove the content
@@ -1051,7 +1051,7 @@
             if (this._getVoidElement(range.startContainer)) {
                 range.setStart(range.startContainer, 0);
                 range.collapse(true);
-                return this._deleteFromLeft(range);
+                return true;
             }
 
             // If we are deleting into a no tracking containiner, then remove the content
@@ -1102,9 +1102,14 @@
                     ice.dom.remove(ice.dom.find(endContainer, 'br'));
                     return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
                 } else {
+                    
                     // if mergeBlocks is not enabled, just place the caret at the end of the previous block.
                     var lastSelectable = range.getLastSelectableChild(prevBlock);
-                    range.setStart(lastSelectable, lastSelectable.data.length);
+                    if (lastSelectable) {
+                        range.setStart(lastSelectable, lastSelectable.data.length);
+                    } else {
+                        range.setStart(prevBlock, prevBlock.childNodes.length);
+                    }
                     range.collapse(true);
                     return true;
                 }
@@ -1160,8 +1165,7 @@
                             range.setStart(previousSibling, previousSibling.nodeValue.length);
                             range.collapse(true);
                         }
-
-                        return this._deleteFromLeft(range);
+                        //return this._deleteFromLeft(range);
                     } else {
                         // Move the range to the right until there is valid sibling.
 
@@ -1179,8 +1183,8 @@
                             range.setStart(nextSibling, 0);
                             range.collapse(true);
                         }
-
-                        return this._deleteFromRight(range);
+                        return true;
+                        //return this._deleteFromRight(range);
                     }
 
                 }

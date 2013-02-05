@@ -368,6 +368,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
 
 		ok(el.find('.del:eq(0)').text() === 't ' && el.find('.del:eq(3)').text() === ' t',
 			'Deleted left through adjacent, different-user deletes.');
@@ -383,6 +385,8 @@ $(document).ready(function() {
 		range.moveStart('character', 3)
 		range.collapse(true);
 		changeEditor.deleteContents(true, range);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
@@ -404,6 +408,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+
 		
 		ok(el.find('.del:eq(0)').text() === 't delete1'
 				&& el.find('.del:eq(1)').text() === 'delete2 t',
@@ -423,7 +429,8 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
-		console.log(el);
+		changeEditor.deleteContents(true);
+
 		ok(el.find('.del:eq(1)').text() === 'delete2 t' && el.find('.del:eq(0)').text() === 't delete1',
 			'Deleted right through adjacent, same-user deletes.');
 
