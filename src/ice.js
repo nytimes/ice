@@ -1,3 +1,5 @@
+var errCount=0;
+
 (function () {
 
     var exports = this,
@@ -65,7 +67,7 @@
 
         // Switch for whether paragraph breaks should be removed when the user is deleting over a 
         // paragraph break while changes are tracked.
-        mergeBlocks: true,
+        mergeBlocks: true
     };
 
     InlineChangeEditor = function (options) {
@@ -879,6 +881,7 @@
 
         // Delete
         _deleteFromRight: function (range) {
+            
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
                 isEmptyBlock = parentBlock ? (ice.dom.hasNoTextOrStubContent(parentBlock)) : false,
                 nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
@@ -889,6 +892,7 @@
 
             // A bug in webkit moves the caret out of text nodes, so we put it back in.    
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
+                
                 if (ice.dom.isBlockElement(commonAncestor)) {
                     if (commonAncestor.childNodes.length > initialOffset) {
                         var nextContainer = document.createTextNode('');
@@ -901,8 +905,12 @@
                 } else {
                     var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
                 }
-                range.setStart(nextContainer, 0);
-                return this._deleteFromRight(range);
+                if (nextContainer) {
+                    range.setStart(nextContainer, 0);
+                    return this._deleteFromRight(range);
+                } else {
+                    return false;
+                }
 
             };
 
@@ -911,8 +919,6 @@
             // text1 |<img> text2 -> text1 <img>| text2
             range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
             range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-
-
 
 
             // Handle cases of the caret is at the end of a container or placed directly in a block element
@@ -924,6 +930,9 @@
 
                 // If the next container is outside of ICE then do nothing.
                 if (!nextContainer) {
+                   // range.setStart(initialContainer, initialOffset);
+                    range.selectNodeContents(initialContainer);
+                    range.collapse();
                     return false;
                 }
 
@@ -995,6 +1004,8 @@
             var remainingTextNode = deletedCharacter.splitText(1);
 
             return this._addNodeTracking(deletedCharacter, range, true, false);
+
+            
         },
 
         // Backspace
@@ -1006,6 +1017,7 @@
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
+               
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -1031,7 +1043,6 @@
                 }
 
             }
-
             // Move range to position the cursor on the inside of any adjacent container that it is going
             // to potentially delete into or before a stub element.  E.G.: <em>text</em>| test  ->  <em>text|</em> test or
             // text1 <img>| text2 -> text1 |<img> text2
@@ -1059,7 +1070,6 @@
 
             // Handles cases in which the caret is at the start of the line
             if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
-
                 // If the previous block is empty, remove the previous block. 
                 if (prevBlockIsEmpty) {
                     ice.dom.remove(prevBlock);
@@ -1108,11 +1118,14 @@
         },
         // To track text and other nodes, only deletion implemented
         _addNodeTracking: function (contentNode, range, del, moveLeft) {
+
             var contentAddNode = this.getIceNode(contentNode, 'insertType');
             if (del) {
                 if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
+                    if (range && moveLeft) {                        
+                        range.selectNode(contentNode);
+                    }
                     contentNode.parentNode.removeChild(contentNode);
-
                     // Remove a potential empty tracking container
                     if (contentAddNode !== null && (ice.dom.hasNoTextOrStubContent(contentAddNode))) {
                         var newstart = this.env.document.createTextNode('');
@@ -1181,6 +1194,7 @@
                 }
                 var prevDelNode = this.getIceNode(contentNode.previousSibling, 'deleteType');
                 var nextDelNode = this.getIceNode(contentNode.nextSibling, 'deleteType');;
+                
                 if (prevDelNode && this._currentUserIceNode(prevDelNode)) {
                     var ctNode = prevDelNode;
                     ctNode.appendChild(contentNode);
@@ -1197,8 +1211,9 @@
                     contentNode.parentElement.insertBefore(ctNode, contentNode);
                     ctNode.appendChild(contentNode);
                 }
+                
                 if (range) {
-                    range.selectNode(contentNode);
+                    range.selectNodeContents(contentNode);
                     if (moveLeft) {
                         range.collapse(true);
                     } else {
