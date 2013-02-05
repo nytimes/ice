@@ -1153,7 +1153,6 @@ var errCount=0;
                                 previousSibling = lastSelectable;
                             }
                             range.setStart(previousSibling,  ice.dom.getNodeCharacterLength(previousSibling));
-                            //range.setStart(previousSibling, previousSibling.nodeValue.length);
                             range.collapse(true);
                         }
                         return true;
