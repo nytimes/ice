@@ -608,7 +608,7 @@ InlineChangeEditor.prototype = {
 	 * Returns a selector for not tracking changes
 	 */
 	_getNoTrackSelector: function() {
-		return '.ins[userid="'+this.currentUser.id+'"],' + this.noTrack;
+		return '.ins[data-userid="'+this.currentUser.id+'"],' + this.noTrack;
 	},
 
 	/**
@@ -988,12 +988,12 @@ InlineChangeEditor.prototype = {
 	},
 
 	_deleteFromLeft: function(range) {
-
 		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0]
 				|| ice.dom.is(range.startContainer, this.blockEl)
 				&& range.startContainer
 				|| null,
 			prevBlock = parentBlock && parentBlock.previousSibling || null,
+			nextBlock = parentBlock && parentBlock.nextSibling || null,
 			isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) && ice.dom.getNodeTextContent(range.startContainer) == '');
 
 		// Move range to position the cursor on the inside of any adjacent container that it is going
@@ -1011,7 +1011,8 @@ InlineChangeEditor.prototype = {
       }
 
       // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
-      range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+      if(range.endContainer.accessKey != "" || range.startContainer.accessKey != "")
+        range.moveStart(ice.dom.CHARACTER_UNIT, 1);
 
       // Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
       if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
