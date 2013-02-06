@@ -987,13 +987,11 @@
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
-
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
                 // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
                 if (ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
                     if (initialOffset === 0) {
-
                         var firstItem = commonAncestor.firstElementChild;
                         if (firstItem) {
                             range.setStart(firstItem, 0);
@@ -1003,8 +1001,8 @@
 
                     } else {
                         var lastItem = commonAncestor.lastElementChild;
-
                         if (lastItem) {
+                            
                             var lastSelectable = range.getLastSelectableChild(lastItem);
                             if (lastSelectable) {
                                 range.setStart(lastSelectable, lastSelectable.data.length);
@@ -1014,6 +1012,7 @@
                         }
                     }
                 }
+                
                 if (initialOffset === 0) {
                     var prevContainer = ice.dom.getPrevContentNode(initialContainer, this.element);
                 } else {
@@ -1039,15 +1038,24 @@
                     if (!ice.dom.canContainTextElement(prevContainer)) {
                         prevContainer = prevContainer.lastElementChild;
                     }
+                    // Before putting the caret into the last selectable child, lets see if the last element is a stub element. If it is, we need to put the caret there manually.
+                    if(prevContainer.lastChild && prevContainer.lastChild.nodeType!==ice.dom.TEXT_NODE && ice.dom.isStubElement(prevContainer.lastChild)) {
+                        range.setStartAfter(prevContainer.lastChild);
+                        range.collapse(true);
+                        return true;
+                    }              
+                    // Find the last selectable part of the prevContainer. If it exists, put the caret there.
                     var lastSelectable = range.getLastSelectableChild(prevContainer);
+                   
                     if (lastSelectable) {
                         range.selectNodeContents(lastSelectable);
                         range.collapse()
                         return true;
                     }
-
+               
 
                 }
+                 
 
             }
             // Move range to position the cursor on the inside of any adjacent container that it is going

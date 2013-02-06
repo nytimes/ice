@@ -588,7 +588,7 @@ $(document).ready(function() {
 
 		// Setup for deleting left through paragraphs with images.
 		el = jQuery('<div>' +
-		'<p>First paragraph.<img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"></p><p><img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"></p><p>Next<img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"> <em>pa</em>ragraph</p>' +
+		'<p>First paragraph.<img></p><p><img></p><p>Next<img> <em>pa</em>ragraph</p>' +
 			'</div>');
 		changeEditor = getIce(el);
 		
@@ -610,7 +610,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
