@@ -63,11 +63,7 @@ var errCount=0;
         noTrack: '.ice-no-track',
 
         // Selector for elements to avoid - move range before or after - similar handling to deletes
-        avoid: '.ice-avoid',
-
-        // Switch for whether paragraph breaks should be removed when the user is deleting over a 
-        // paragraph break while changes are tracked.
-        mergeBlocks: true
+        avoid: '.ice-avoid'
     };
 
     InlineChangeEditor = function (options) {
@@ -809,13 +805,13 @@ var errCount=0;
             var bookmark = new ice.Bookmark(this.env, range),
                 elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
                 b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
-                b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
-                betweenBlocks = new Array();
+                b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
+                //betweenBlocks = new Array();
 
             for (var i = 0; i < elements.length; i++) {
                 var elem = elements[i];
                 if (ice.dom.isBlockElement(elem)) {
-                    betweenBlocks.push(elem);
+                   // betweenBlocks.push(elem);
                     if (!ice.dom.canContainTextElement(elem)) {
                         // Ignore containers that are not supposed to contain text. Check children instead.
                         for (k = 0; k < elem.childNodes.length; k++) {
@@ -852,11 +848,6 @@ var errCount=0;
                         ice.dom.remove(parentBlock);
                     }
                 }
-            }
-            if (this.mergeBlocks && b1 !== b2) {
-                while (betweenBlocks.length)
-                ice.dom.mergeContainers(betweenBlocks.shift(), b1);
-                ice.dom.mergeContainers(b2, b1);
             }
 
             var startEl = bookmark.start.previousSibling;
@@ -965,30 +956,11 @@ var errCount=0;
                     return true;
                 }
 
-                // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
-                if (this.mergeBlocks) {
-                    // Since the range is moved by character, it may have passed through empty blocks.
-                    // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-                    if (nextBlock !== ice.dom.getBlockParent(range.endContainer, this.element)) {
-                        range.setEnd(nextBlock, 0);
-                    }
-                    // The browsers like to auto-insert breaks into empty paragraphs - remove them.
-                    var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
-                    for (var i = 0; i < elements.length; i++) {
-                        ice.dom.remove(elements[i]);
-                    }
-
-                    var startContainer = range.startContainer;
-                    var endContainer = range.endContainer;
-                    ice.dom.remove(ice.dom.find(startContainer, 'br'));
-                    ice.dom.remove(ice.dom.find(endContainer, 'br'));
-                    return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
-                } else {
-                    // if mergeBlocks is not enabled, just place the caret at the start of the next block.
-                    range.setStart(nextBlock, 0);
-                    range.collapse(true);
-                    return true;
-                }
+                // Place the caret at the start of the next block.
+                range.setStart(nextBlock, 0);
+                range.collapse(true);
+                return true;
+                
             }
 
             var entireTextNode = range.endContainer;
@@ -1068,37 +1040,17 @@ var errCount=0;
                     range.collapse();
                     return true;
                 }
-
-                // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
-                if (this.mergeBlocks) {
-                    // Since the range is moved by character, it may have passed through empty blocks.
-                    // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-                    if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
-                        range.setStart(prevBlock, prevBlock.childNodes.length);
-                    }
-                    // The browsers like to auto-insert breaks into empty paragraphs - remove them.
-                    var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
-                    for (var i = 0; i < elements.length; i++) {
-                        ice.dom.remove(elements[i]);
-                    }
-
-                    var startContainer = range.startContainer;
-                    var endContainer = range.endContainer;
-                    ice.dom.remove(ice.dom.find(startContainer, 'br'));
-                    ice.dom.remove(ice.dom.find(endContainer, 'br'));
-                    return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
-                } else {
                     
-                    // if mergeBlocks is not enabled, just place the caret at the end of the previous block.
-                    var lastSelectable = range.getLastSelectableChild(prevBlock);
-                    if (lastSelectable) {
-                        range.setStart(lastSelectable, lastSelectable.data.length);
-                    } else {
-                        range.setStart(prevBlock, prevBlock.childNodes.length);
-                    }
-                    range.collapse(true);
-                    return true;
+                // Place the caret at the end of the previous block.
+                var lastSelectable = range.getLastSelectableChild(prevBlock);
+                if (lastSelectable) {
+                    range.setStart(lastSelectable, lastSelectable.data.length);
+                } else {
+                    range.setStart(prevBlock, prevBlock.childNodes.length);
                 }
+                range.collapse(true);
+                return true;
+                
             }
 
             var entireTextNode = range.startContainer;

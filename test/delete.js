@@ -308,8 +308,9 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 
-		ok(el.find('p').length === 1
-				&& el.find('.del:eq(0)').text() === '1pa',
+		ok(el.find('p').length === 2
+				&& el.find('.del:eq(0)').text() === '1'
+				&& el.find('.del:eq(1)').text() === 'pa',
 			'Deleted left through blocks.');
 
 		// Setup for deleting right, through blocks
@@ -328,9 +329,10 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		
-		ok(el.find('p').length === 1
-				&& el.find('.del').length === 1
-				&& el.find('.del:eq(0)').text() === ' 1pa',
+		ok(el.find('p').length === 2
+				&& el.find('.del').length === 2
+				&& el.find('.del:eq(0)').text() === ' 1'
+				&& el.find('.del:eq(1)').text() === 'pa',
 			'Deleted right through blocks.');
 
 		// Setup for deleting left, through empty blocks
@@ -350,7 +352,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 
-		ok(el.find('p').length === 1
+		ok(el.find('p').length === 2
 				&& el.find('.del:eq(0)').text() === '1'
 				&& el.find('.del:eq(1)').text() === 'pa',
 			'Deleted left through empty blocks.');
@@ -373,7 +375,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		
-		ok(el.find('p').length === 1
+		ok(el.find('p').length === 2
 				&& el.find('.del').length === 2
 				&& el.find('.del:eq(0)').text() === ' 1'
 				&& el.find('.del:eq(1)').text() === 'pa',
