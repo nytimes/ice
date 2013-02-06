@@ -484,7 +484,7 @@ $(document).ready(function() {
 
 		// Setup for deleting left through paragraphs and list.
 		el = jQuery('<div>' +
-				'<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li><p>Next <em>pa</em>ragraph</p>' +
+				'<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li></ul><p>Next <em>pa</em>ragraph</p>' +
 			'</div>');
 		changeEditor = getIce(el);
 		
@@ -540,7 +540,7 @@ $(document).ready(function() {
 
 		// Setup for deleting right through paragraphs and list.
 		el = jQuery('<div>' +
-				'<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li><p>Next paragraph</p>' +
+				'<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li></ul><p>Next paragraph</p>' +
 			'</div>');
 		changeEditor = getIce(el);
 		
@@ -581,11 +581,77 @@ $(document).ready(function() {
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
 		changeEditor.deleteContents(true);
-console.log(el);
-console.log(el.find('.del').length);
+
 		ok(el.find('.del').length === 7 
 			&&el.find('.del:eq(6)').text() === 'N',
 			'Delete right through paragraphs and list.');
+
+		// Setup for deleting left through paragraphs with images.
+		el = jQuery('<div>' +
+		'<p>First paragraph.<img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"></p><p><img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"></p><p>Next<img src="http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg" width="100"> <em>pa</em>ragraph</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete left through paragraphs with images
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.moveStart('character', 3);
+		range.collapse(true);
+		changeEditor.deleteContents(false, range);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+
+		ok(el.find('.del').length === 5 
+			&&el.find('.del > img').length == 3 
+			&&el.find('.del:eq(0)').text() === 'aph.',
+			'Delete left through paragraphs with images.');
+
+		// Setup for deleting right through paragraphss with images.
+		el = jQuery('<div>' +
+				'<p>First <em>pa</em>ragraph.<img></p><p><img></p><p>Next<img> paragraph.</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete right through paragraphs with images
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.collapse(true);
+		changeEditor.deleteContents(true, range);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+
+		ok(el.find('.del').length === 3 
+			&&el.find('.del > img').length == 3 
+			&&el.find('.del:eq(2)').text() === 'Next p',
+			'Delete right through paragraphs with images.');
 
 
 	

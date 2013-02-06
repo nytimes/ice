@@ -876,6 +876,7 @@
                 initialContainer = range.endContainer,
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer;
+                
             // Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in    
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -898,9 +899,11 @@
                     ice.dom.remove(tempTextContainer);
                     return returnValue;
                 } else {
+                    
                     var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
-                    range.setStart(nextContainer, 0)
-                    return true;
+                    range.setEnd(nextContainer,0);
+                    range.collapse();
+                    return this._deleteFromRight(range);
                 }
 
             };
@@ -993,14 +996,17 @@
                 // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
                 if (ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
                     if (initialOffset === 0) {
+                        
                         var firstItem = commonAncestor.firstElementChild;
                         if (firstItem) {
                             range.setStart(firstItem, 0);
                             range.collapse()
                             return this._deleteFromLeft(range);
                         }
+                        
                     } else {
                         var lastItem = commonAncestor.lastElementChild;
+                        
                         if (lastItem) {
                             var lastSelectable = range.getLastSelectableChild(lastItem);
                             if (lastSelectable) {
@@ -1080,7 +1086,13 @@
                     range.collapse();
                     return true;
                 }
-
+                // If the previous Block ends with a stub element, set the caret behind it.
+                if (ice.dom.isStubElement(prevBlock.lastChild)) {
+                    range.setStartAfter(prevBlock.lastChild);
+                    range.collapse(true);
+                    return true;
+                }
+                
                 // Place the caret at the end of the previous block.
                 var lastSelectable = range.getLastSelectableChild(prevBlock);
                 if (lastSelectable) {
