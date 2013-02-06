@@ -988,138 +988,136 @@ InlineChangeEditor.prototype = {
 		return true;
 	},
 
-	_deleteFromLeft: function(range) {
+	_deleteFromLef: function(range) {
 		var parentBlock = ice.dom.parents(range.startContainer, this.blockEl)[0]
 				|| ice.dom.is(range.startContainer, this.blockEl)
 				&& range.startContainer
 				|| null,
 			prevBlock = parentBlock && parentBlock.previousSibling || null,
-			nextBlock = parentBlock && parentBlock.nextSibling || null,
 			isEmptyBlock = (ice.dom.is(range.startContainer, this.blockEl) && ice.dom.getNodeTextContent(range.startContainer) == '');
 
 		// Move range to position the cursor on the inside of any adjacent container that it is going
 		// to potentially delete into.  E.G.: <em>text</em>| test  ->  <em>text|</em> test
-    if(range.startOffset > 0 || prevBlock){
-		  range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-
-      // If the container we are deleting into is outside of our ice element, then we need to stop.
-      var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
-        movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
-      if (failedToMove || !prevBlock && movedOutsideBlock) {
-        if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-        range.collapse(true);
-        return true;
-      }
-
-      // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
-      if(range.endContainer.accessKey != "" || range.startContainer.accessKey != "")
-        range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-
-      // Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
-      if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
-        if (this._getVoidElement(prevBlock)) {
-          range.deleteContents();
-          return false;
-        }
-      }
-
-      // If we are deleting into, or in, a void container then move cursor to left of container
-      if (this._getVoidElement(range.startContainer)) {
-        range.setStart(range.startContainer, 0);
-        range.collapse(true);
-        return this._deleteFromLeft(range);
-      }
-
-      // Deleting from beginning of block to end of previous block - merge the blocks
-      if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
-        // Since the range is moved by character, it may have passed through empty blocks.
-        // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-        if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
-          range.setStart(prevBlock, 0);
-        // The browsers like to auto-insert breaks into empty paragraphs - remove them.
-        ice.dom.remove(ice.dom.find(range.endContainer, 'br'));
-        return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
-      }
-
-      // If we are deleting into a no tracking containiner, then remove the content
-      if (this._getNoTrackElement(range.startContainer.parentElement)) {
-        range.deleteContents();
-        return false;
-      }
-
-      var container = range.startContainer;
-
-      // First check if caret is at the start of a container.
-      if (range.startOffset === 0) {
-        // Check if need to merge containers.
-        var cRange = range.cloneRange();
-        cRange.moveStart(ice.dom.CHARACTER_UNIT, -1);
-
-        var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
-        if (sParent) {
-          if (ice.dom.isChildOf(sParent, this.element) === false) {
-            return false;
-          }
-
-          var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
-
-          // If the start of the cloned range has moved to a new block
-          // parent then merge these nodes.
-          if (eParent !== sParent) {
-            ice.dom.mergeContainers(eParent, sParent);
-
-            range.setStart(cRange.startContainer, cRange.startContainer.data.length);
-            range.collapse(true);
-
-            // Two block containers merged.
-            return;
-          }
-        }//end if
-
-        // Caret is at the start of a container so it needs to
-        // move to the previous container.
-        var previousContainer = range.getPreviousContainer(container);
-
-        // If range is at the beginning of the container and the
-        // previous container is out side of Ice then do nothing.
-        if(!ice.dom.isChildOf(previousContainer, this.element)) {
-          return false;
-        }
-
-        if (ice.dom.isStubElement(previousContainer)) {
+        if(range.startOffset > 0 || prevBlock){
           range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-          ice.dom.addClass(previousContainer, this._getIceNodeClass('deleteType'));
-          ice.dom.attr(previousContainer, 'title', 'Content removed');
-          range.collapse(true);
-        } else {
-          var lastSelectable = range.getLastSelectableChild(previousContainer);
-          range.setStart(lastSelectable, lastSelectable.data.length);
-          this._addTextNodeTracking(lastSelectable, range);
-        }
-      } else {
-        var textNode = range.startContainer;
-        var textAddNode = this.getIceNode(textNode, 'insertType');
 
-        // Create a new ct node if we aren't already in one by the same user.
-        if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
-          this._addTextNodeTracking(textNode, range);
-        } else {
-          range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-          range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
-          range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
-          range.deleteContents();
-
-          // The textAddNode is a tracking node that may be empty now - clean it up.
-          if(textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
-            var newstart = this.env.document.createTextNode('');
-            ice.dom.insertBefore(textAddNode, newstart);
-            range.setStart(newstart, 0);
-            range.collapse(true);
-            ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
+          // If the container we are deleting into is outside of our ice element, then we need to stop.
+          var failedToMove = (range.startOffset === range.endOffset && range.startContainer === range.endContainer),
+              movedOutsideBlock = !ice.dom.isChildOf(range.startContainer, this.element);
+          if (failedToMove || !prevBlock && movedOutsideBlock) {
+              if (prevBlock) range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+              range.collapse(true);
+              return true;
           }
-        }
-      }
-    }
+
+          // Move the range forward 1 character to complete the cursor positioning in the adjacent container.
+          range.moveStart(ice.dom.CHARACTER_UNIT, 1);
+
+          // Prevent merging blocks if the range spans multiple blocks and the previous block is a void element.
+          if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+              if (this._getVoidElement(prevBlock)) {
+                  range.deleteContents();
+                  return false;
+              }
+          }
+
+          // If we are deleting into, or in, a void container then move cursor to left of container
+          if (this._getVoidElement(range.startContainer)) {
+              range.setStart(range.startContainer, 0);
+              range.collapse(true);
+              return this._deleteFromLeft(range);
+          }
+
+          // Deleting from beginning of block to end of previous block - merge the blocks
+          if (ice.dom.onBlockBoundary(range.startContainer, range.endContainer, this.blockEl) || isEmptyBlock) {
+              // Since the range is moved by character, it may have passed through empty blocks.
+              // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+              if(prevBlock !== ice.dom.parents(range.startContainer, this.blockEl)[0])
+                  range.setStart(prevBlock, 0);
+              // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+              ice.dom.remove(ice.dom.find(range.startContainer, 'br'));
+              return ice.dom.mergeBlockWithSibling(range, ice.dom.parents(range.endContainer, this.blockEl)[0] || parentBlock);
+          }
+
+          // If we are deleting into a no tracking containiner, then remove the content
+          if (this._getNoTrackElement(range.startContainer.parentElement)) {
+              range.deleteContents();
+              return false;
+          }
+
+          var container = range.startContainer;
+
+          // First check if caret is at the start of a container.
+          if (range.startOffset === 0) {
+              // Check if need to merge containers.
+              var cRange = range.cloneRange();
+              cRange.moveStart(ice.dom.CHARACTER_UNIT, -1);
+
+              var sParent = ice.dom.getBlockParent(cRange.startContainer, this.element);
+              if (sParent) {
+                  if (ice.dom.isChildOf(sParent, this.element) === false) {
+                      return false;
+                  }
+
+                  var eParent = ice.dom.getBlockParent(cRange.endContainer, this.element);
+
+                  // If the start of the cloned range has moved to a new block
+                  // parent then merge these nodes.
+                  if (eParent !== sParent) {
+                      ice.dom.mergeContainers(eParent, sParent);
+
+                      range.setStart(cRange.startContainer, cRange.startContainer.data.length);
+                      range.collapse(true);
+
+                      // Two block containers merged.
+                      return;
+                  }
+              }
+
+              // Caret is at the start of a container so it needs to
+              // move to the previous container.
+              var previousContainer = range.getPreviousContainer(container);
+
+              // If range is at the beginning of the container and the
+              // previous container is out side of Ice then do nothing.
+              if(!ice.dom.isChildOf(previousContainer, this.element)) {
+                  return false;
+              }
+
+              if (ice.dom.isStubElement(previousContainer)) {
+                  range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+                  ice.dom.addClass(previousContainer, this._getIceNodeClass('deleteType'));
+                  ice.dom.attr(previousContainer, 'title', 'Content removed');
+                  range.collapse(true);
+              } else {
+                  var lastSelectable = range.getLastSelectableChild(previousContainer);
+                  range.setStart(lastSelectable, lastSelectable.data.length);
+                  this._addTextNodeTracking(lastSelectable, range);
+              }
+          } else {
+              var textNode = range.startContainer;
+              var textAddNode = this.getIceNode(textNode, 'insertType');
+
+              // Create a new ct node if we aren't already in one by the same user.
+              if (textAddNode === null || !this._currentUserIceNode(textAddNode)) {
+                  this._addTextNodeTracking(textNode, range);
+              } else {
+                  range.moveStart(ice.dom.CHARACTER_UNIT, -1);
+                  range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
+                  range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
+                  range.deleteContents();
+
+                  // The textAddNode is a tracking node that may be empty now - clean it up.
+                  if(textAddNode !== null && ice.dom.isBlank(ice.dom.getNodeTextContent(textAddNode))) {
+                      var newstart = this.env.document.createTextNode('');
+                      ice.dom.insertBefore(textAddNode, newstart);
+                      range.setStart(newstart, 0);
+                      range.collapse(true);
+                      ice.dom.replaceWith(textAddNode, ice.dom.contents(textAddNode));
+                  }
+              }
+          }
+		}
 		return true;
 	},
 
