@@ -1,5 +1,3 @@
-var errCount=0;
-
 (function () {
 
     var exports = this,
@@ -870,7 +868,7 @@ var errCount=0;
 
         // Delete
         _deleteFromRight: function (range) {
-            
+
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
                 isEmptyBlock = parentBlock ? (ice.dom.hasNoTextOrStubContent(parentBlock)) : false,
                 nextBlock = parentBlock && ice.dom.getNextContentNode(parentBlock, this.element), // || ice.dom.getBlockParent(parentBlock, this.element) || null,
@@ -879,34 +877,31 @@ var errCount=0;
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer;
             // Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in    
-            if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) { 
-                
+            if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
+
                 // If placed at the beginning of a container that cannot contain text, such as an ul element, place the caret at the beginning of the first item.
-                if (initialOffset===0 && ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
+                if (initialOffset === 0 && ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
                     var firstItem = commonAncestor.firstElementChild;
                     if (firstItem) {
-                        range.setStart(firstItem,0);
+                        range.setStart(firstItem, 0);
                         range.collapse()
                         return this._deleteFromRight(range);
                     }
                 }
-                
-                    if (commonAncestor.childNodes.length > initialOffset) {
-                        var tempTextContainer = document.createTextNode(' ');
-                        console.log(commonAncestor);
-                        console.log(range);
-                        //return true;
-                        commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
-                        range.setStart(tempTextContainer, 1);
-                        range.collapse(true);
-                        var returnValue = this._deleteFromRight(range);
-                        ice.dom.remove(tempTextContainer);
-                        return returnValue;
-                    } else {
-                        var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
-                        range.setStart(nextContainer, 0)
-                        return true;
-                    }
+
+                if (commonAncestor.childNodes.length > initialOffset) {
+                    var tempTextContainer = document.createTextNode(' ');
+                    commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
+                    range.setStart(tempTextContainer, 1);
+                    range.collapse(true);
+                    var returnValue = this._deleteFromRight(range);
+                    ice.dom.remove(tempTextContainer);
+                    return returnValue;
+                } else {
+                    var nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
+                    range.setStart(nextContainer, 0)
+                    return true;
+                }
 
             };
 
@@ -918,14 +913,14 @@ var errCount=0;
 
 
             // Handle cases of the caret is at the end of a container or placed directly in a block element
-            if (initialOffset === initialContainer.data.length && (!ice.dom.hasNoTextOrStubContent(initialContainer))) { 
+            if (initialOffset === initialContainer.data.length && (!ice.dom.hasNoTextOrStubContent(initialContainer))) {
                 var nextContainer = ice.dom.getNextNode(initialContainer, this.element);
 
 
 
                 // If the next container is outside of ICE then do nothing.
                 if (!nextContainer) {
-                   // range.setStart(initialContainer, initialOffset);
+                    // range.setStart(initialContainer, initialOffset);
                     range.selectNodeContents(initialContainer);
                     range.collapse();
                     return false;
@@ -947,7 +942,7 @@ var errCount=0;
             if (this._getNoTrackElement(range.endContainer.parentElement)) {
                 range.deleteContents();
                 return false;
-            }  
+            }
             // If the current block is empty, and there is a next block, remove the current block and put the caret at the start of the next block.
             if (isEmptyBlock && nextBlock) {
                 ice.dom.remove(parentBlock);
@@ -971,7 +966,7 @@ var errCount=0;
                 range.setStart(nextBlock, 0);
                 range.collapse(true);
                 return true;
-                
+
             }
 
             var entireTextNode = range.endContainer;
@@ -980,7 +975,7 @@ var errCount=0;
 
             return this._addNodeTracking(deletedCharacter, range, true, false);
 
-            
+
         },
 
         // Backspace
@@ -992,25 +987,32 @@ var errCount=0;
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
-               
+
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
-                console.log(initialOffset);
-                console.log(range);
-                //return true;
-               // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
-                if (initialOffset===0 && ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
-                    
-                    var firstItem = commonAncestor.firstElementChild;
-                    if (firstItem) {
-                        range.setStart(firstItem,0);
-                        range.collapse()
-                        return this._deleteFromLeft(range);
+                // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
+                if (ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
+                    if (initialOffset === 0) {
+                        var firstItem = commonAncestor.firstElementChild;
+                        if (firstItem) {
+                            range.setStart(firstItem, 0);
+                            range.collapse()
+                            return this._deleteFromLeft(range);
+                        }
+                    } else {
+                        var lastItem = commonAncestor.lastElementChild;
+                        if (lastItem) {
+                            var lastSelectable = range.getLastSelectableChild(lastItem);
+                            if (lastSelectable) {
+                                range.setStart(lastSelectable, lastSelectable.data.length);
+                                range.collapse()
+                                return this._deleteFromLeft(range);
+                            }
+                        }
                     }
                 }
-
                 if (initialOffset === 0) {
-                    var prevContainer = ice.dom.getPrevNode(initialContainer, this.element);
+                    var prevContainer = ice.dom.getPrevContentNode(initialContainer, this.element);
                 } else {
                     var prevContainer = commonAncestor.childNodes[initialOffset - 1];
                 }
@@ -1028,6 +1030,20 @@ var errCount=0;
                 // If the caret was placed directly after a stub element or an element that is not editable, enclose the element with a delete ice node.
                 if (ice.dom.isStubElement(prevContainer) && ice.dom.isChildOf(prevContainer, parentBlock) || !prevContainer.isContentEditable) {
                     return this._addNodeTracking(prevContainer, range, true, true);
+                }
+
+                if (prevContainer !== parentBlock && !ice.dom.isChildOf(prevContainer, parentBlock)) {
+                    if (!ice.dom.canContainTextElement(prevContainer)) {
+                        prevContainer = prevContainer.lastElementChild;
+                    }
+                    var lastSelectable = range.getLastSelectableChild(prevContainer);
+                    if (lastSelectable) {
+                        range.selectNodeContents(lastSelectable);
+                        range.collapse()
+                        return true;
+                    }
+
+
                 }
 
             }
@@ -1064,7 +1080,7 @@ var errCount=0;
                     range.collapse();
                     return true;
                 }
-                    
+
                 // Place the caret at the end of the previous block.
                 var lastSelectable = range.getLastSelectableChild(prevBlock);
                 if (lastSelectable) {
@@ -1074,7 +1090,7 @@ var errCount=0;
                 }
                 range.collapse(true);
                 return true;
-                
+
             }
 
             var entireTextNode = range.startContainer;
@@ -1090,7 +1106,7 @@ var errCount=0;
             var contentAddNode = this.getIceNode(contentNode, 'insertType');
             if (del) {
                 if (contentAddNode && this._currentUserIceNode(contentAddNode)) {
-                    if (range && moveLeft) {                        
+                    if (range && moveLeft) {
                         range.selectNode(contentNode);
                     }
                     contentNode.parentNode.removeChild(contentNode);
@@ -1110,7 +1126,7 @@ var errCount=0;
                 } else if (range && this.getIceNode(contentNode, 'deleteType')) {
                     // It if the contentNode a text node, unite it with text nodes before and after it.
                     contentNode.normalize();
-                    
+
                     var found = false;
                     if (moveLeft) {
                         // Move to the left until there is valid sibling.
@@ -1128,7 +1144,7 @@ var errCount=0;
                             if (lastSelectable) {
                                 previousSibling = lastSelectable;
                             }
-                            range.setStart(previousSibling,  ice.dom.getNodeCharacterLength(previousSibling));
+                            range.setStart(previousSibling, ice.dom.getNodeCharacterLength(previousSibling));
                             range.collapse(true);
                         }
                         return true;
@@ -1163,7 +1179,7 @@ var errCount=0;
                 }
                 var prevDelNode = this.getIceNode(contentNode.previousSibling, 'deleteType');
                 var nextDelNode = this.getIceNode(contentNode.nextSibling, 'deleteType');;
-                
+
                 if (prevDelNode && this._currentUserIceNode(prevDelNode)) {
                     var ctNode = prevDelNode;
                     ctNode.appendChild(contentNode);
@@ -1174,13 +1190,13 @@ var errCount=0;
                     }
                 } else if (nextDelNode && this._currentUserIceNode(nextDelNode)) {
                     var ctNode = nextDelNode;
-                    ctNode.insertBefore(contentNode, ctNode.firstChild);                    
+                    ctNode.insertBefore(contentNode, ctNode.firstChild);
                 } else {
                     var ctNode = this.createIceNode('deleteType');
                     contentNode.parentElement.insertBefore(ctNode, contentNode);
                     ctNode.appendChild(contentNode);
                 }
-                
+
                 if (range) {
                     if (ice.dom.isStubElement(contentNode)) {
                         range.selectNode(contentNode);

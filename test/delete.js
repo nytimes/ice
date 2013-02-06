@@ -484,7 +484,7 @@ $(document).ready(function() {
 
 		// Setup for deleting left through paragraphs and list.
 		el = jQuery('<div>' +
-				'<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li></ul><p>Next <em>pa</em>ragraph</p>' +
+				'<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li><p>Next <em>pa</em>ragraph</p>' +
 			'</div>');
 		changeEditor = getIce(el);
 		
@@ -540,7 +540,7 @@ $(document).ready(function() {
 
 		// Setup for deleting right through paragraphs and list.
 		el = jQuery('<div>' +
-				'<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li></ul><p>Next paragraph</p>' +
+				'<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li><p>Next paragraph</p>' +
 			'</div>');
 		changeEditor = getIce(el);
 		
