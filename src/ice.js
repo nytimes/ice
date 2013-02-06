@@ -806,12 +806,10 @@ var errCount=0;
                 elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
                 b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
                 b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
-                //betweenBlocks = new Array();
 
             for (var i = 0; i < elements.length; i++) {
                 var elem = elements[i];
                 if (ice.dom.isBlockElement(elem)) {
-                   // betweenBlocks.push(elem);
                     if (!ice.dom.canContainTextElement(elem)) {
                         // Ignore containers that are not supposed to contain text. Check children instead.
                         for (k = 0; k < elem.childNodes.length; k++) {

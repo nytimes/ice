@@ -90,6 +90,29 @@ $(document).ready(function() {
 
 		ok(el.find('.del').length === 6
 				&& el.find('em > .ins > .del').text() === 'ef', 
+			'Deleted left through different user insert and delete.');
+
+		// Setup for deleting right, through different user delete and insert
+		el = jQuery('<div>' +
+				'<p>a <em>r<span class="ins cts-1" userid="1" cid="1">ig</span><span class="del cts-1" userid="1" cid="1">hte</span>st</em> paragraph</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+
+		// Delete right through different user insert and delete.
+		range.setStart(el.find('p')[0], 0);
+		range.collapse(true);
+		changeEditor.deleteContents(true, range);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+
+		ok(el.find('.del').length === 6
+				&& el.find('em > .ins > .del').text() === 'ig', 
 			'Deleted right through different user insert and delete.');
 
 
@@ -458,6 +481,112 @@ $(document).ready(function() {
 
 		ok(el.find('.del:eq(1)').text() === 'delete2 t' && el.find('.del:eq(0)').text() === 't delete1',
 			'Deleted right through adjacent, same-user deletes.');
+
+		// Setup for deleting left through paragraphs and list.
+		el = jQuery('<div>' +
+				'<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li></ul><p>Next <em>pa</em>ragraph</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete left through paragraphs and list
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.moveStart('character', 3);
+		range.collapse(true);
+		changeEditor.deleteContents(false, range);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+
+		ok(el.find('.del').length === 7 
+			&&el.find('.del:eq(0)').text() === '.',
+			'Delete left through paragraphs and list.');
+
+		// Setup for deleting right through paragraphs and list.
+		el = jQuery('<div>' +
+				'<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li></ul><p>Next paragraph</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete right through paragraphs and list
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.collapse(true);
+		changeEditor.deleteContents(true, range);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+console.log(el);
+console.log(el.find('.del').length);
+		ok(el.find('.del').length === 7 
+			&&el.find('.del:eq(6)').text() === 'N',
+			'Delete right through paragraphs and list.');
+
 
 	
 		// Setup for deleting selection
