@@ -878,11 +878,24 @@ var errCount=0;
                 initialContainer = range.endContainer,
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer;
-            // A bug in webkit moves the caret out of text nodes, so we put it back in.    
+            // Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in    
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) { 
-                 
+                
+                // If placed at the beginning of a container that cannot contain text, such as an ul element, place the caret at the beginning of the first item.
+                if (initialOffset===0 && ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
+                    var firstItem = commonAncestor.firstElementChild;
+                    if (firstItem) {
+                        range.setStart(firstItem,0);
+                        range.collapse()
+                        return this._deleteFromRight(range);
+                    }
+                }
+                
                     if (commonAncestor.childNodes.length > initialOffset) {
                         var tempTextContainer = document.createTextNode(' ');
+                        console.log(commonAncestor);
+                        console.log(range);
+                        //return true;
                         commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
                         range.setStart(tempTextContainer, 1);
                         range.collapse(true);
@@ -982,6 +995,19 @@ var errCount=0;
                
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
+                console.log(initialOffset);
+                console.log(range);
+                //return true;
+               // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
+                if (initialOffset===0 && ice.dom.isBlockElement(commonAncestor) && (!ice.dom.canContainTextElement(commonAncestor))) {
+                    
+                    var firstItem = commonAncestor.firstElementChild;
+                    if (firstItem) {
+                        range.setStart(firstItem,0);
+                        range.collapse()
+                        return this._deleteFromLeft(range);
+                    }
+                }
 
                 if (initialOffset === 0) {
                     var prevContainer = ice.dom.getPrevNode(initialContainer, this.element);
