@@ -987,6 +987,7 @@
                 initialContainer = range.startContainer,
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer;
+
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
                 // If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
@@ -1002,7 +1003,7 @@
                     } else {
                         var lastItem = commonAncestor.lastElementChild;
                         if (lastItem) {
-                            
+
                             var lastSelectable = range.getLastSelectableChild(lastItem);
                             if (lastSelectable) {
                                 range.setStart(lastSelectable, lastSelectable.data.length);
@@ -1012,7 +1013,7 @@
                         }
                     }
                 }
-                
+
                 if (initialOffset === 0) {
                     var prevContainer = ice.dom.getPrevContentNode(initialContainer, this.element);
                 } else {
@@ -1039,25 +1040,32 @@
                         prevContainer = prevContainer.lastElementChild;
                     }
                     // Before putting the caret into the last selectable child, lets see if the last element is a stub element. If it is, we need to put the caret there manually.
-                    if(prevContainer.lastChild && prevContainer.lastChild.nodeType!==ice.dom.TEXT_NODE && ice.dom.isStubElement(prevContainer.lastChild)) {
+                    if (prevContainer.lastChild && prevContainer.lastChild.nodeType !== ice.dom.TEXT_NODE && ice.dom.isStubElement(prevContainer.lastChild)) {
                         range.setStartAfter(prevContainer.lastChild);
                         range.collapse(true);
                         return true;
-                    }              
+                    }
                     // Find the last selectable part of the prevContainer. If it exists, put the caret there.
                     var lastSelectable = range.getLastSelectableChild(prevContainer);
-                   
+
                     if (lastSelectable) {
                         range.selectNodeContents(lastSelectable);
                         range.collapse()
                         return true;
                     }
-               
+
 
                 }
-                 
+
 
             }
+            // Firefox: If an image is at the start of the paragraph and the user has just deleted the image using backspace, an empty text node is created in the delete node before 
+            // the image, but the caret is placed with the image. We move the caret to the empty text node and execute deleteFromLeft again. 
+            if (initialOffset === 1 && !ice.dom.isBlockElement(commonAncestor) && range.startContainer.childNodes.length > 1 && range.startContainer.childNodes[0].nodeType === ice.dom.TEXT_NODE && range.startContainer.childNodes[0].data.length === 0) {
+                range.setStart(range.startContainer, 0);
+                return this._deleteFromLeft(range);
+            };
+
             // Move range to position the cursor on the inside of any adjacent container that it is going
             // to potentially delete into or before a stub element.  E.G.: <em>text</em>| test  ->  <em>text|</em> test or
             // text1 <img>| text2 -> text1 |<img> text2

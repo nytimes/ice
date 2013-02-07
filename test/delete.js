@@ -653,6 +653,147 @@ $(document).ready(function() {
 			&&el.find('.del:eq(2)').text() === 'Next p',
 			'Delete right through paragraphs with images.');
 
+// Setup for deleting left through lists with images between paragraphs with images.
+		el = jQuery('<div>' +
+		'<p>First paragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><img><p>Last <em>pa</em>ragraph.</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete left through lists with images between paragraphs with images
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.moveStart('character', 3);
+		range.collapse(true);
+		changeEditor.deleteContents(false, range);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+
+		ok(el.find('.del').length === 11 
+			&&el.find('.del > img').length == 8 
+			&&el.find('.del:eq(0)').text() === 't paragraph.',
+			'Delete left through lists with images between paragraphs with images.');
+
+		// Setup for deleting right through lists with images between paragraphs with images.
+		el = jQuery('<div>' +
+				'<p>First <em>pa</em>ragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><img><p>Last paragraph.</p>' +
+			'</div>');
+		changeEditor = getIce(el);
+		
+		// Delete right through lists with images between paragraphs with images
+		range.setStartAfter(el.find('em:eq(0)')[0]);
+		range.collapse(true);
+		changeEditor.deleteContents(true, range);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+		changeEditor.deleteContents(true);
+
+		ok(el.find('.del').length === 9 
+			&&el.find('.del > img').length == 8 
+			&&el.find('.del:eq(8)').text() === 'Last par',
+			'Delete right through lists with images between paragraphs with images.');
+
 
 	
 		// Setup for deleting selection
