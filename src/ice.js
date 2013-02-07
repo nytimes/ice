@@ -765,12 +765,19 @@
         },
 
         _insertNode: function (node, range, insertingDummy) {
-            if (!ice.dom.isBlockElement(range.startContainer) && !ice.dom.canContainTextElement(ice.dom.getBlockParent(range.startContainer, this.element))) {
+            if (!ice.dom.isBlockElement(range.startContainer) && !ice.dom.canContainTextElement(ice.dom.getBlockParent(range.startContainer, this.element)) && range.startContainer.previousSibling) {
                 range.setStart(range.startContainer.previousSibling, 0);
 
             }
             var startContainer = range.startContainer;
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null;
+            if (parentBlock===this.element) {
+                var firstPar = document.createElement(this.blockEl);
+                parentBlock.appendChild(firstPar);
+                range.setStart(firstPar, 0);
+                range.collapse();
+                return this._insertNode(node, range, insertingDummy);
+            }
             if (ice.dom.hasNoTextOrStubContent(parentBlock)) {
                 ice.dom.empty(parentBlock);
                 ice.dom.append(parentBlock, '<br>');

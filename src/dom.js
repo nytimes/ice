@@ -449,21 +449,13 @@
     }
 
     dom.canContainTextElement = function (element) {
-        return dom.TEXT_CONTAINER_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
-    };
-    /*
-dom.getPrevContentNode = function (node, container) {
-        if (dom.canContainTextElement(node.parentNode)) {
-                return dom.getPrevNode(node, container);
-                
-        } else if (node.previousElementSibling) {
-                return node.previousElementSibling; 
-        } else if (node.parentNode.previousElementSibling) {
-                return node.parentNode.previousElementSibling; 
+        if (element && element.nodeName) {
+            return dom.TEXT_CONTAINER_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
+        } else {
+            return false;
         }
-        
-        return null;
-};*/
+    };
+
     dom.getFirstChild = function (node) {
         if (node.firstChild) {
             if (node.firstChild.nodeType === dom.ELEMENT_NODE) {

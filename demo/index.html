@@ -9,8 +9,6 @@
 	<script type="text/javascript" src='../lib/rangy-1.2/rangy-cssclassapplier.js'></script>
 	<script type="text/javascript" src='../lib/rangy-1.2/rangy-selectionsaverestore.js'></script>
 	<script type="text/javascript" src='../lib/rangy-1.2/rangy-serializer.js'></script>
-        <script type="text/javascript" src='../lib/rangy-1.3alpha.755/rangy-textrange.js'></script>
-        <script type="text/javascript" src='../lib/rangy-1.3alpha.755/rangy-highlighter.js'></script>
 	<script type="text/javascript" src='../src/ice.js'></script>
 	<script type="text/javascript" src='../src/dom.js'></script>
 	<script type="text/javascript" src='../src/icePlugin.js'></script>
@@ -103,7 +101,6 @@
 			window.tracker = new ice.InlineChangeEditor({
 				element: text,
 				handleEvents: true,
-                               mergeBlocks: false,
 				currentUser: {id: 11, name: 'Geoffrey Jellineck'},
 				plugins : ['IceAddTitlePlugin', 'IceSmartQuotesPlugin', 'IceEmdashPlugin', {
 						name : 'IceCopyPastePlugin',
