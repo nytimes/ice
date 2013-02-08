@@ -35,12 +35,12 @@
         // for the other types, leaving the html content in place.
         changeTypes: {
             insertType: {
-                tag: 'insert',
+                tag: 'span',
                 alias: 'ins',
                 action: 'Inserted'
             },
             deleteType: {
-                tag: 'delete',
+                tag: 'span',
                 alias: 'del',
                 action: 'Deleted'
             }
