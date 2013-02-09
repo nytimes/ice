@@ -794,6 +794,50 @@ $(document).ready(function() {
 			&&el.find('.del:eq(8)').text() === 'Last par',
 			'Delete right through lists with images between paragraphs with images.');
 
+                
+                // Setup for deleting left through image inside different user insert.
+                el = jQuery('<div>' +
+                '<p>The <span class="ins cts-1" userid="1" cid="1"><img></span> te<em>x</em>t</p>' +
+                        '</div>');
+                changeEditor = getIce(el);
+                
+                // Delete left through image inside different user insert
+                range.setStartAfter(el.find('em:eq(0)')[0]);
+                range.collapse(true);
+                changeEditor.deleteContents(false, range);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);
+                changeEditor.deleteContents(false);             
+
+                ok(el.find('.del').length === 4 
+                        &&el.find('.ins > .del > img').length == 1 
+                        &&el.find('.del:eq(0)').text() === 'he ',
+                        'Delete left through image inside different user insert.');
+
+                // Setup for deleting right through image inside different user insert.
+                el = jQuery('<div>' +
+                '<p>T<em>h</em>e <span class="ins cts-1" userid="1" cid="1"><img></span> text</p>' +
+                        '</div>');
+                changeEditor = getIce(el);
+                
+                // Delete right through through image inside different user insert
+                range.setStartAfter(el.find('em:eq(0)')[0]);
+                range.collapse(true);
+                changeEditor.deleteContents(true, range);
+                changeEditor.deleteContents(true);
+                changeEditor.deleteContents(true);
+                changeEditor.deleteContents(true);
+                changeEditor.deleteContents(true);
+                changeEditor.deleteContents(true);
+
+                ok(el.find('.del').length === 3 
+                        &&el.find('.ins > .del > img').length == 1 
+                        &&el.find('.del:eq(2)').text() === ' te',
+                        'Delete right through image inside different user insert.');
 
 	
 		// Setup for deleting selection
