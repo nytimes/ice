@@ -100,7 +100,7 @@
 		<script type="text/javascript">
 
 		$(function() {
-			var text = document.getElementById('textbody');
+			text = document.getElementById('textbody');
 			window.tracker = new ice.InlineChangeEditor({
 				element: text,
 				handleEvents: true,
@@ -133,12 +133,15 @@
 		}
 
                 function insertSampleImage() {
+                        var range = tracker.getCurrentRange();
+                        if (!ice.dom.isChildOf(range.startContainer, text)) {
+                                return false;
+                        }
                         var image = document.createElement('img');
                         image.src = "http://graphics8.nytimes.com/images/2012/05/23/us/20120524_ARCTIC_337-slide-CZKZ/20120524_ARCTIC_337-slide-CZKZ-articleLarge.jpg";
                         image.width = 200;
-                        var selection = window.getSelection();
-                        var range = selection.getRangeAt(0);
                         tracker.insert(image, range);
+                        text.focus();
                 }
 
 		</script>

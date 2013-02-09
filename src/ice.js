@@ -765,13 +765,14 @@
         },
 
         _insertNode: function (node, range, insertingDummy) {
+            var origNode = node;
             if (!ice.dom.isBlockElement(range.startContainer) && !ice.dom.canContainTextElement(ice.dom.getBlockParent(range.startContainer, this.element)) && range.startContainer.previousSibling) {
                 range.setStart(range.startContainer.previousSibling, 0);
 
             }
             var startContainer = range.startContainer;
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null;
-            if (parentBlock===this.element) {
+            if (parentBlock === this.element) {
                 var firstPar = document.createElement(this.blockEl);
                 parentBlock.appendChild(firstPar);
                 range.setStart(firstPar, 0);
@@ -1026,12 +1027,16 @@
                 } else {
                     var prevContainer = commonAncestor.childNodes[initialOffset - 1];
                 }
-
                 // If the previous container is outside of ICE then do nothing.
                 if (!prevContainer) {
                     return false;
                 }
 
+                // Firefox finds an ice node wrapped around an image instead of the image itself some times, so we make sure to look at the image instead. 
+                if (ice.dom.is(prevContainer,  '.' + this._getIceNodeClass('insertType') + ', .' + this._getIceNodeClass('deleteType')) && prevContainer.childNodes.length > 0) {
+                    
+                    prevContainer = prevContainer.lastChild;
+                }
                 // If the previous container is non-editable, look at the parent element instead. 
                 if (!prevContainer.isContentEditable) {
                     prevContainer = prevContainer.parentElement;
@@ -1066,13 +1071,13 @@
 
 
             }
+            
             // Firefox: If an image is at the start of the paragraph and the user has just deleted the image using backspace, an empty text node is created in the delete node before 
             // the image, but the caret is placed with the image. We move the caret to the empty text node and execute deleteFromLeft again. 
             if (initialOffset === 1 && !ice.dom.isBlockElement(commonAncestor) && range.startContainer.childNodes.length > 1 && range.startContainer.childNodes[0].nodeType === ice.dom.TEXT_NODE && range.startContainer.childNodes[0].data.length === 0) {
                 range.setStart(range.startContainer, 0);
                 return this._deleteFromLeft(range);
             };
-
             // Move range to position the cursor on the inside of any adjacent container that it is going
             // to potentially delete into or before a stub element.  E.G.: <em>text</em>| test  ->  <em>text|</em> test or
             // text1 <img>| text2 -> text1 |<img> text2
@@ -1100,12 +1105,14 @@
 
             // Handles cases in which the caret is at the start of the line
             if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+
                 // If the previous block is empty, remove the previous block. 
                 if (prevBlockIsEmpty) {
                     ice.dom.remove(prevBlock);
                     range.collapse();
                     return true;
                 }
+
                 // If the previous Block ends with a stub element, set the caret behind it.
                 if (ice.dom.isStubElement(prevBlock.lastChild)) {
                     range.setStartAfter(prevBlock.lastChild);

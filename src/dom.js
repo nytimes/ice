@@ -194,6 +194,9 @@
     dom.getNodeTextContent = function (node) {
         return jQuery(node).text();
     };
+    dom.getNodeStubContent = function (node) {
+        return jQuery(node).find(dom.CONTENT_STUB_ELEMENTS.join(', '));
+    };    
     dom.hasNoTextOrStubContent = function (node) {
         if (dom.getNodeTextContent(node).length > 0) return false;
         if (jQuery(node).find(dom.CONTENT_STUB_ELEMENTS.join(', ')).length > 0) return false;
