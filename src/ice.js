@@ -940,16 +940,26 @@
                     range.collapse();
                     return false;
                 }
-
-                // If the next container is non-editable, look at the parent element instead.
-                if (!nextContainer.isContentEditable) {
-                    nextContainer = nextContainer.parentElement;
+                
+                // If the next container is a text node, look at the parent node instead.
+                if (nextContainer.nodeType === ice.dom.TEXT_NODE) {
+                    nextContainer = nextContainer.parentNode;
+                }
+                
+                // If the next container is non-editable, enclose it with a delete ice node and add an empty text node after it to position the caret.
+                if (nextContainer.nodeType !== ice.dom.TEXT_NODE && !nextContainer.isContentEditable) {
+                    var returnValue = this._addNodeTracking(nextContainer, false, false);
+                    var emptySpaceNode = document.createTextNode('');
+                    nextContainer.parentNode.insertBefore(emptySpaceNode, nextContainer.nextSibling);
+                    range.selectNode(emptySpaceNode);
+                    range.collapse(true);
+                    return returnValue;
                 }
 
                 if (this._handleVoidEl(nextContainer, range)) return false;
 
-                // If the caret was placed directly before a stub element or an element that is not editable, enclose the element with a delete ice node.
-                if (ice.dom.isChildOf(nextContainer, parentBlock) && ice.dom.isStubElement(nextContainer) || !nextContainer.isContentEditable) {
+                // If the caret was placed directly before a stub element, enclose the element with a delete ice node.
+                if (ice.dom.isChildOf(nextContainer, parentBlock) && ice.dom.isStubElement(nextContainer)) {
                     return this._addNodeTracking(nextContainer, range, false);
                 }
 
@@ -1044,21 +1054,31 @@
                     return false;
                 }
 
-                // Firefox finds an ice node wrapped around an image instead of the image itself sometimes, so we make sure to look at the image instead.
-                if (ice.dom.is(prevContainer,  '.' + this._getIceNodeClass('insertType') + ', .' + this._getIceNodeClass('deleteType')) && prevContainer.childNodes.length > 0 && prevContainer.lastChild) {
+                // Firefox finds an ice node wrapped around an image instead of the image itself some times, so we make sure to look at the image instead.
+                if (ice.dom.is(prevContainer,  '.' + this._getIceNodeClass('insertType') + ', .' + this._getIceNodeClass('deleteType')) && prevContainer.childNodes.length > 0) {
                     prevContainer = prevContainer.lastChild;
                 }
-
-                // If the previous container is non-editable, look at the parent element instead.
+                
+                // If the previous container is a text node, look at the parent node instead.
+                if (prevContainer.nodeType === ice.dom.TEXT_NODE) {
+                    prevContainer = prevContainer.parentNode;
+                }
+                    
+                // If the previous container is non-editable, enclose it with a delete ice node and add an empty text node before it to position the caret.
                 if (!prevContainer.isContentEditable) {
-                    prevContainer = prevContainer.parentElement;
+                    var returnValue = this._addNodeTracking(prevContainer, false, true);
+                    var emptySpaceNode = document.createTextNode('');
+                    prevContainer.parentNode.insertBefore(emptySpaceNode, prevContainer);
+                    range.selectNode(emptySpaceNode);
+                    range.collapse(true);
+                    return returnValue;
                 }
 
                 if (this._handleVoidEl(prevContainer, range)) return false;
 
-                // If the caret was placed directly after a stub element or an element that is not editable, enclose the element with a delete ice node.
+                // If the caret was placed directly after a stub element, enclose the element with a delete ice node.
                 if (ice.dom.isStubElement(prevContainer) && ice.dom.isChildOf(prevContainer, parentBlock) || !prevContainer.isContentEditable) {
-                    return this._addNodeTracking(prevContainer, range, true);
+                     return this._addNodeTracking(prevContainer, range, true);
                 }
 
                 // If the previous container is a stub element between blocks
