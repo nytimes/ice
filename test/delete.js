@@ -3,7 +3,7 @@ $(document).ready(function() {
 	module("ice core");
 
 	test("InlineChangeEditor.deleteContents", function() {
-		
+
 		// Setup for deleting left, through different user insert
 		var el = jQuery('<div>' +
 				'<p>a <em>left<span class="ins cts-1" userid="1" cid="1">ist</span></em> paragraph</p>' +
@@ -418,7 +418,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
 
 		ok(el.find('.del:eq(0)').text() === 't ' && el.find('.del:eq(3)').text() === ' t',
 			'Deleted left through adjacent, different-user deletes.');
@@ -610,7 +610,7 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
@@ -653,12 +653,12 @@ $(document).ready(function() {
 			&&el.find('.del:eq(2)').text() === 'Next p',
 			'Delete right through paragraphs with images.');
 
-// Setup for deleting left through lists with images between paragraphs with images.
+		// Setup for deleting left through lists with images between paragraphs with images.
 		el = jQuery('<div>' +
-		'<p>First paragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><img><p>Last <em>pa</em>ragraph.</p>' +
+		'<p>First paragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><p>Last <em>pa</em>ragraph.</p>' +
 			'</div>');
 		changeEditor = getIce(el);
-		
+
 		// Delete left through lists with images between paragraphs with images
 		range.setStartAfter(el.find('em:eq(0)')[0]);
 		range.moveStart('character', 3);
@@ -677,7 +677,6 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
@@ -695,13 +694,6 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
@@ -719,7 +711,15 @@ $(document).ready(function() {
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
-		changeEditor.deleteContents(false);		
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
+		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
 		changeEditor.deleteContents(false);
@@ -980,5 +980,158 @@ $(document).ready(function() {
 
 		equal(el.find('.del').length, 3);
 		equal(el.text(), 'texttext same user delete texttext');
+
+
+		// <div><p>text|</p><img><p>second</p></div>
+		//             |
+		//             A
+		// Delete right from A and expect the img to be deleted leaving the cursor at A
+		el = jQuery('<div><p>text</p><img><p>second</p></div>');
+
+		changeEditor = getIce(el);
+		range.setStart(el.find('p')[0].childNodes[0], 4);
+
+		changeEditor.deleteContents(true, range);
+
+		equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
+		equal(range.startOffset, 4);
+
+
+		// <div><p>text</p><img><p>|second</p></div>
+		//                         |
+		//                         A
+		// Delete left from A and expect the img to be deleted leaving the cursor at A
+		el = jQuery('<div><p>text</p><img><p>second</p></div>');
+
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(1)')[0].childNodes[0], 0);
+
+		changeEditor.deleteContents(false, range);
+
+		ok(!el.find('img')[0]);
+		equal(range.startContainer, el.find('p:eq(1)')[0].childNodes[0]);
+		equal(range.startOffset, 0);
+
+
+		// <div><p>text|</p><p class="ice-avoid">avoided</p><p>text</p></div>
+		//             |
+		//             A
+		// Delete right from A and expect the cursor to stay in place.
+		el = jQuery('<div><p>text</p><p class="ice-avoid">avoided</p><p>text</p></div>');
+		changeEditor = getIce(el);
+
+		range.setStart(el.find('p')[0].childNodes[0], 4);
+
+		changeEditor.deleteContents(true, range);
+
+		ok(el.find('p.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
+		equal(range.startOffset, 4);
+
+
+		// <div><p>text</p><p class="ice-avoid">avoided</p><p>|second</p></div>
+		//                                                    |
+		//                                                    A
+		// Delete left from A and expect the cursor to stay in place.
+		el = jQuery('<div><p>text</p><p class="ice-avoid">avoided</p><p>second</p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(2)')[0].childNodes[0], 0);
+
+		changeEditor.deleteContents(false, range);
+
+		ok(el.find('p.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p:eq(2)')[0].childNodes[0]);
+		equal(range.startOffset, 0);
+
+
+		// <div><p>text|</p><img class="ice-avoid"><p>second</p></div>
+		//             |
+		//             A
+		// Delete right from A and expect the cursor to stay put
+		// since a void element is the next container.
+		el = jQuery('<div><p>text</p><img class="ice-avoid"><p>second</p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
+		changeEditor.deleteContents(true, range);
+
+		ok(el.find('img.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
+		equal(range.startOffset, 4);
+
+
+		// <div><p>text</p><img class="ice-avoid"><p>|second</p></div>
+		//                                           |
+		//                                           A
+		// Delete left from A and expect the cursor to stay put
+		// since a void element is the previous container.
+		el = jQuery('<div><p>text</p><img class="ice-avoid"><p>second</p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(1)')[0].childNodes[0], 0);
+
+		changeEditor.deleteContents(false, range);
+
+		ok(el.find('img.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p:eq(1)')[0].childNodes[0]);
+		equal(range.startOffset, 0);
+
+
+		// <div><p>text|<img class="ice-avoid">second</p></div>
+		//             |
+		//             A
+		// Delete right from A and expect the cursor to stay put
+		// since a void element is the next container.
+		el = jQuery('<div><p>text<img class="ice-avoid">second</p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
+		changeEditor.deleteContents(true, range);
+
+		ok(el.find('img.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
+		equal(range.startOffset, 4);
+
+
+		// <div><p>text<img class="ice-avoid">|second</p></div>
+		//                                    |
+		//                                    A
+		// Delete left from A and expect the cursor to stay put
+		// since a void element is the previous container.
+		el = jQuery('<div><p>text<img class="ice-avoid">second</p></div>');
+		changeEditor = getIce(el);
+		range.setStartAfter(el.find('img')[0]);
+
+		changeEditor.deleteContents(false, range);
+
+		ok(el.find('img.ice-avoid')[0]);
+		equal(range.startContainer, el.find('p')[0]);
+		equal(range.startOffset, 2);
+
+
+		// <div><p>text|<span class="ice-avoid">avoid</span>second</p></div>
+		//             |
+		//             A
+		// Delete right from A and expect the cursor to stay put
+		// since a void element is the next container.
+		el = jQuery('<div><p>text<span class="ice-avoid">avoid</span>second</p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
+		changeEditor.deleteContents(true, range);
+
+		equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
+		equal(range.startOffset, 4);
+
+
+		// <div><p>text<span class="ice-avoid">avoid</span>|second</p></div>
+		//                                                 |
+		//                                                 A
+		// Delete left from A and expect the cursor to stay put
+		// since a void element is the previous container.
+		el = jQuery('<div><p>text<span class="ice-avoid">avoid</span>|second</p></div>');
+		changeEditor = getIce(el);
+		range.setStartAfter(el.find('span')[0]);
+
+		changeEditor.deleteContents(false, range);
+
+		equal(range.startContainer, el.find('p')[0]);
+		equal(range.startOffset, 2);
 	});
 });

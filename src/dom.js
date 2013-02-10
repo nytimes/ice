@@ -25,8 +25,8 @@
     dom.WORD_UNIT = 'word';
     dom.BREAK_ELEMENT = 'br';
     dom.CONTENT_STUB_ELEMENTS = ['img', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
-    dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', ];
-    dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', ];
+    dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
     dom.STUB_ELEMENTS = dom.CONTENT_STUB_ELEMENTS.slice();
     dom.STUB_ELEMENTS.push(dom.BREAK_ELEMENT);
@@ -196,7 +196,7 @@
     };
     dom.getNodeStubContent = function (node) {
         return jQuery(node).find(dom.CONTENT_STUB_ELEMENTS.join(', '));
-    };    
+    };
     dom.hasNoTextOrStubContent = function (node) {
         if (dom.getNodeTextContent(node).length > 0) return false;
         if (jQuery(node).find(dom.CONTENT_STUB_ELEMENTS.join(', ')).length > 0) return false;
@@ -378,7 +378,7 @@
             }
         }
         return null;
-    }
+    };
     dom.getNextContentNode = function (node, container) {
         if (node) {
             while (node.parentNode) {
@@ -402,7 +402,7 @@
             }
         }
         return null;
-    }
+    };
 
 
     dom.getPrevNode = function (node, container) {
@@ -425,7 +425,7 @@
             }
         }
         return null;
-    }
+    };
     dom.getPrevContentNode = function (node, container) {
         if (node) {
             while (node.parentNode) {
@@ -449,7 +449,7 @@
             }
         }
         return null;
-    }
+    };
 
     dom.canContainTextElement = function (element) {
         if (element && element.nodeName) {
