@@ -940,7 +940,7 @@
                 }
                 
                 // If the next container is non-editable, enclose it with a delete ice node and add an empty text node after it to position the caret.
-                if (nextContainer.nodeType !== ice.dom.TEXT_NODE && !nextContainer.isContentEditable) {
+                if (!nextContainer.isContentEditable) {
                     var returnValue = this._addNodeTracking(nextContainer, false, false);
                     var emptySpaceNode = document.createTextNode('');
                     nextContainer.parentNode.insertBefore(emptySpaceNode, nextContainer.nextSibling);
