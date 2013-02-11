@@ -1154,7 +1154,7 @@
                 }
 
                 // If the previous Block ends with a stub element, set the caret behind it.
-                if (ice.dom.isStubElement(prevBlock.lastChild)) {
+                if (prevBlock && prevBlock.lastChild && ice.dom.isStubElement(prevBlock.lastChild)) {
                     range.setStartAfter(prevBlock.lastChild);
                     range.collapse(true);
                     return true;
