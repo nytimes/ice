@@ -1164,10 +1164,12 @@
                 lastSelectable = range.getLastSelectableChild(prevBlock);
                 if (lastSelectable) {
                     range.setStart(lastSelectable, lastSelectable.data.length);
-                } else {
+                    range.collapse(true);
+                } else if (prevBlock) {
                     range.setStart(prevBlock, prevBlock.childNodes.length);
+                    range.collapse(true);
                 }
-                range.collapse(true);
+                
                 return true;
 
             }
