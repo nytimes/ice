@@ -893,7 +893,7 @@
                 initialContainer = range.endContainer,
                 initialOffset = range.endOffset,
                 commonAncestor = range.commonAncestorContainer,
-                nextContainer;
+                nextContainer, returnValue;
 
             // Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in.
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
@@ -913,7 +913,7 @@
                     commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
                     range.setStart(tempTextContainer, 1);
                     range.collapse(true);
-                    var returnValue = this._deleteFromRight(range);
+                    returnValue = this._deleteFromRight(range);
                     ice.dom.remove(tempTextContainer);
                     return returnValue;
                 } else {
@@ -947,8 +947,8 @@
                 }
                 
                 // If the next container is non-editable, enclose it with a delete ice node and add an empty text node after it to position the caret.
-                if (nextContainer.nodeType !== ice.dom.TEXT_NODE && !nextContainer.isContentEditable) {
-                    var returnValue = this._addNodeTracking(nextContainer, false, false);
+                if (!nextContainer.isContentEditable) {
+                    returnValue = this._addNodeTracking(nextContainer, false, false);
                     var emptySpaceNode = document.createTextNode('');
                     nextContainer.parentNode.insertBefore(emptySpaceNode, nextContainer.nextSibling);
                     range.selectNode(emptySpaceNode);
@@ -1054,11 +1054,11 @@
                     return false;
                 }
 
-                // Firefox finds an ice node wrapped around an image instead of the image itself some times, so we make sure to look at the image instead.
-                if (ice.dom.is(prevContainer,  '.' + this._getIceNodeClass('insertType') + ', .' + this._getIceNodeClass('deleteType')) && prevContainer.childNodes.length > 0) {
+                // Firefox finds an ice node wrapped around an image instead of the image itself sometimes, so we make sure to look at the image instead.
+                if (ice.dom.is(prevContainer,  '.' + this._getIceNodeClass('insertType') + ', .' + this._getIceNodeClass('deleteType')) && prevContainer.childNodes.length > 0 && prevContainer.lastChild) {
                     prevContainer = prevContainer.lastChild;
                 }
-                
+
                 // If the previous container is a text node, look at the parent node instead.
                 if (prevContainer.nodeType === ice.dom.TEXT_NODE) {
                     prevContainer = prevContainer.parentNode;
@@ -1154,7 +1154,7 @@
                 }
 
                 // If the previous Block ends with a stub element, set the caret behind it.
-                if (ice.dom.isStubElement(prevBlock.lastChild)) {
+                if (prevBlock && prevBlock.lastChild && ice.dom.isStubElement(prevBlock.lastChild)) {
                     range.setStartAfter(prevBlock.lastChild);
                     range.collapse(true);
                     return true;
@@ -1164,10 +1164,12 @@
                 lastSelectable = range.getLastSelectableChild(prevBlock);
                 if (lastSelectable) {
                     range.setStart(lastSelectable, lastSelectable.data.length);
-                } else {
+                    range.collapse(true);
+                } else if (prevBlock) {
                     range.setStart(prevBlock, prevBlock.childNodes.length);
+                    range.collapse(true);
                 }
-                range.collapse(true);
+                
                 return true;
 
             }
