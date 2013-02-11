@@ -829,7 +829,7 @@
                 if (ice.dom.isBlockElement(elem)) {
                     if (!ice.dom.canContainTextElement(elem)) {
                         // Ignore containers that are not supposed to contain text. Check children instead.
-                        for (k = 0; k < elem.childNodes.length; k++) {
+                        for (var k = 0; k < elem.childNodes.length; k++) {
                             elements.push(elem.childNodes[k]);
                         }
                         continue;
