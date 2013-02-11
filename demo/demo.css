@@ -64,36 +64,85 @@ a.mceButton16 img.mceIcon { width: 16px; height: 16px; padding: 2px;}
 .ins {
 	text-decoration: underline;
 }
+
 .cts-1 {
     color: green;
+}
+.del.cts-1 img {
+    border-color: green;
+}
+.ins.cts-1 img {
+    background-color: green;
 }
 .cts-2 {
     color: #C02000;
 }
-
+.del.cts-2 img {
+    border-color: #C02000;
+}
+.ins.cts-2 img {
+    background-color: #C02000;
+}
 .cts-3 {
     color: #004090;
 }
-
+.del.cts-3 img {
+    border-color: #004090;
+}
+.ins.cts-3 img {
+    background-color: #004090;
+}
 .cts-4 {
     color: #F06000;
 }
-
+.del.cts-4 img {
+    border-color: #F06000;
+}
+.ins.cts-4 img {
+    background-color: #F06000;
+}
 .cts-5 {
     color: purple;
 }
-
+.del.cts-5 img {
+    border-color: purple;
+}
+.ins.cts-5 img {
+    background-color: purple;
+}
 .cts-6 {
     color: #801080;
 }
-
+.del.cts-6 img {
+    border-color: #801080;
+}
+.ins.cts-6 img {
+    background-color: #801080;
+}
 .cts-7 {
-		color: #1080B0;
+	color: #1080B0;
+}
+.del.cts-7 img {
+    border-color: #1080B0;
+}
+.ins.cts-7 img {
+    background-color: #1080B0;
 }
 
 .ice-avoid {
 	color: red;
 }
 
+.del img {
+    border-top-style: dotted;
+    border-bottom-style: dotted;
+    border-width: 4px;
+}
 
+.ins img {
+    padding: 3px;
+}
 
+.ins .del img {
+    padding: 0px 3px;
+}

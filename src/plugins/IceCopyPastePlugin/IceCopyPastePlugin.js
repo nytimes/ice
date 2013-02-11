@@ -111,6 +111,7 @@ IceCopyPastePlugin.prototype = {
 	 * the contents of the ice element body and calls a paste handler.
 	 */
 	handlePaste: function(e) {
+
 		var range = this._ice.getCurrentRange();
 
 		if(!range.collapsed) {
@@ -137,6 +138,7 @@ IceCopyPastePlugin.prototype = {
 			range.collapse(true);
 			this._ice.env.selection.addRange(range);
 		}
+
 		
 		this._tmpNode = this._ice.env.document.createElement(this._tmpNodeTagName);
 		range.insertNode(this._tmpNode);
@@ -149,6 +151,7 @@ IceCopyPastePlugin.prototype = {
 				this.setupPaste(true);
 				break;
 		}
+             
 	   return true;
 	},
 
@@ -183,8 +186,12 @@ IceCopyPastePlugin.prototype = {
 		}
 
 		html = this.beforePasteClean.call(this, html);
+                
+                
+                
 
 		if(stripTags) {
+                    
 			// Strip out change tracking tags.
 			html = this._ice.getCleanContent(html);
 			html = this.stripPaste(html);
