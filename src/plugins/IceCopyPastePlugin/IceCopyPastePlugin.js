@@ -60,7 +60,30 @@ IceCopyPastePlugin.prototype = {
     		return;
     	}
 		if(e.keyCode == 86) {
-			this.handlePaste();
+			// Need to handle timing
+			// 1. In case of Firefox
+			// 		Just do handlePaste() immediately.
+			// 2. In case of WebKit
+			// 		setTimeout(0) to execute handlePaste() after the parent handler is executed
+			var testCSS = function(prop) {
+				return prop in document.documentElement.style;
+			}
+			var isFirefox = testCSS('MozBoxSizing');
+			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+			var isChrome = !isSafari && testCSS('WebkitTransform');
+			var isIE = false || testCSS('msTransform');
+			
+			var self = this;
+			if(isFirefox){
+				self.handlePaste();
+			} else if(isSafari || isChrome) {
+				setTimeout(function(){
+					self.handlePaste();
+				},0);
+			} else {
+				// Handle IE?
+				self.handlePaste();
+			}
 		}
 	},
 	
@@ -300,8 +323,7 @@ IceCopyPastePlugin.prototype = {
 	createDiv: function(id) {
 		var oldEl = ice.dom.getId(id);
 		if(oldEl) {
-			ice.dom.empty(oldEl);
-			return oldEl;
+			ice.dom.remove(oldEl);
 		}
 
 		var div = this._ice.env.document.createElement('div');
