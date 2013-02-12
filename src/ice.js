@@ -895,6 +895,10 @@
                 commonAncestor = range.commonAncestorContainer,
                 nextContainer, returnValue;
 
+
+            // If the current block is empty then let the browser handle the delete/event.
+            if (isEmptyBlock) return false;
+
             // Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in.
             if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -973,14 +977,6 @@
                 return false;
             }
 
-            // If the current block is empty, and there is a next block, remove the current block and put the caret at the start of the next block.
-            if (isEmptyBlock && nextBlock) {
-                ice.dom.remove(parentBlock);
-                range.setStart(nextBlock, 0);
-                range.collapse(true);
-                return true;
-            }
-
             // Handles cases in which the caret is at the end of the block
             if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
 
@@ -1016,6 +1012,9 @@
                 initialOffset = range.startOffset,
                 commonAncestor = range.commonAncestorContainer,
                 lastSelectable, prevContainer;
+
+            // If the current block is empty, then let the browser handle the key/event.
+            if (isEmptyBlock) return false;
 
             // Handle cases of the caret is at the start of a container or outside a text node
             if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
@@ -1128,19 +1127,6 @@
             if (this._getNoTrackElement(range.startContainer.parentElement)) {
                 range.deleteContents();
                 return false;
-            }
-
-            // If the current block is empty, and there is a previous block, remove the current block and put the caret at the end of previous block.
-            if (isEmptyBlock && prevBlock) {
-                ice.dom.remove(parentBlock);
-                lastSelectable = range.getLastSelectableChild(prevBlock);
-                if (lastSelectable) {
-                    range.setStart(lastSelectable, lastSelectable.data.length);
-                } else {
-                    range.setStart(prevBlock, 0);
-                }
-                range.collapse(true);
-                return true;
             }
 
             // Handles cases in which the caret is at the start of the line
