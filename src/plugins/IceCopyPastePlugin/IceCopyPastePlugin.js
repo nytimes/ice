@@ -65,18 +65,10 @@ IceCopyPastePlugin.prototype = {
 			// 		Just do handlePaste() immediately.
 			// 2. In case of WebKit
 			// 		setTimeout(0) to execute handlePaste() after the parent handler is executed
-			var testCSS = function(prop) {
-				return prop in document.documentElement.style;
-			}
-			var isFirefox = testCSS('MozBoxSizing');
-			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-			var isChrome = !isSafari && testCSS('WebkitTransform');
-			var isIE = false || testCSS('msTransform');
-			
 			var self = this;
-			if(isFirefox){
+			if(ice.dom.isBrowser("mozilla")){
 				self.handlePaste();
-			} else if(isSafari || isChrome) {
+			} else if(ice.dom.isBrowser("webkit")) {
 				setTimeout(function(){
 					self.handlePaste();
 				},0);
