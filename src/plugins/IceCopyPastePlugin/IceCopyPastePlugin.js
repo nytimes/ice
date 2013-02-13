@@ -178,11 +178,18 @@ IceCopyPastePlugin.prototype = {
 		var div = this.createDiv(this._pasteId), self = this;
 		div.focus();
 
+		$(div).on("paste", function(){
+			setTimeout(function() {
+				self.handlePasteValue(stripTags);
+			}, 0);
+		});
+		/*
 		div.onpaste = function() {
 			setTimeout(function() {
 				self.handlePasteValue(stripTags);
-			}, 1);
+			}, 0);
 		};
+		*/
 		return true;
 	},
 
@@ -508,7 +515,8 @@ IceCopyPastePlugin.prototype = {
 			moveTo = moveTo && moveTo.lastChild || moveTo || this._tmpNode;
 			// Move the range to the end of moveTo so that the cursor will be at the end of the paste.
 			var range = this._ice.getCurrentRange();
-			range.setStart(moveTo, moveTo.length);
+
+			range.setStart(moveTo, 1);
 			range.collapse(true);
 			this._ice.selection.addRange(range);
 			// Set focus back to ice element.
