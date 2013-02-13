@@ -228,6 +228,7 @@ IceCopyPastePlugin.prototype = {
 		// do some splitting so we do not have P tags in P tags, etc. Split the
 		// container from current selection and then insert paste contents after it.
 		if(ice.dom.hasBlockChildren(fragment)) {
+			console.log("0");
 
 			// Split from current selection.
 			var block = ice.dom.isChildOfTagName(this._tmpNode, this._ice.blockEl);
@@ -254,16 +255,23 @@ IceCopyPastePlugin.prototype = {
 				//  textnode <p>blocktext</p> <p>blocktext</p> moretext
 				// In which case we wrap the leading or trailing text nodes in blocks.
 				if(ice.dom.isBlockElement(fragment.firstChild)) {
+					console.log("1");
 					if(fragment.firstChild.textContent !== "") {
+						console.log("2");
 						innerBlock = null;
 						var insert = null;
 						if(this._ice.isTracking) {
+							console.log("3");
 							insert = this._ice.createIceNode('insertType');
 							this._ice.addChange('insertType', [insert]);
 							newEl = document.createElement(fragment.firstChild.tagName);
 							insert.innerHTML = fragment.firstChild.innerHTML;
 							newEl.appendChild(insert);
+
+							console.log("newEl = ", newEl);
+							console.log("innerBlock = ", innerBlock);
 						} else {
+							console.log("4");
 							insert = newEl = document.createElement(fragment.firstChild.tagName);
 							newEl.innerHTML = fragment.firstChild.innerHTML;
 						}
@@ -272,15 +280,21 @@ IceCopyPastePlugin.prototype = {
 					}
 					fragment.removeChild(fragment.firstChild);
 				} else {
+					console.log("5");
 					if(!innerBlock) {
+						console.log("6");
 						// Create a new block and append an insert
 						newEl = document.createElement(this._ice.blockEl);
 						ice.dom.insertBefore(prevBlock, newEl);
 						if(this._ice.isTracking) {
+							console.log("7");
 							innerBlock = this._ice.createIceNode('insertType');
 							this._ice.addChange('insertType', [innerBlock]);
 							newEl.appendChild(innerBlock);
+							console.log("newEl = ", newEl);
+							console.log("innerBlock = ", innerBlock);
 						} else {
+							console.log("8");
 							innerBlock = newEl;
 						}
 					}
@@ -293,12 +307,15 @@ IceCopyPastePlugin.prototype = {
 			}
 
 		} else {
+			console.log("9");
 			if(this._ice.isTracking) {
+				console.log("10");
 				newEl = this._ice.createIceNode('insertType', fragment);
 				this._ice.addChange('insertType', [newEl]);
 				range.insertNode(newEl);
 				lastEl = newEl;
 			} else {
+				console.log("11");
 				var child;
 				while((child = fragment.firstChild)) {
 					range.insertNode(child);
@@ -509,8 +526,7 @@ IceCopyPastePlugin.prototype = {
 			moveTo = moveTo && moveTo.lastChild || moveTo || this._tmpNode;
 			// Move the range to the end of moveTo so that the cursor will be at the end of the paste.
 			var range = this._ice.getCurrentRange();
-
-			range.setStart(moveTo, 1);
+			range.setStartAfter(moveTo);
 			range.collapse(true);
 			this._ice.selection.addRange(range);
 			// Set focus back to ice element.
