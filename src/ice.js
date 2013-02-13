@@ -960,7 +960,7 @@
                     return returnValue;
                 }
 
-                if (this._handleVoidEl(nextContainer, range)) return false;
+                if (this._handleVoidEl(nextContainer, range)) return true;
 
                 // If the caret was placed directly before a stub element, enclose the element with a delete ice node.
                 if (ice.dom.isChildOf(nextContainer, parentBlock) && ice.dom.isStubElement(nextContainer)) {
@@ -969,7 +969,7 @@
 
             }
 
-            if (this._handleVoidEl(nextContainer, range)) return false;
+            if (this._handleVoidEl(nextContainer, range)) return true;
 
             // If we are deleting into a no tracking containiner, then remove the content
             if (this._getNoTrackElement(range.endContainer.parentElement)) {
@@ -1073,7 +1073,7 @@
                     return returnValue;
                 }
 
-                if (this._handleVoidEl(prevContainer, range)) return false;
+                if (this._handleVoidEl(prevContainer, range)) return true;
 
                 // If the caret was placed directly after a stub element, enclose the element with a delete ice node.
                 if (ice.dom.isStubElement(prevContainer) && ice.dom.isChildOf(prevContainer, parentBlock) || !prevContainer.isContentEditable) {
