@@ -65,6 +65,7 @@ IceCopyPastePlugin.prototype = {
 			// 		Just do handlePaste() immediately.
 			// 2. In case of WebKit
 			// 		setTimeout(0) to execute handlePaste() after the parent handler is executed
+			//
 			var self = this;
 			if(ice.dom.isBrowser("mozilla")){
 				self.handlePaste();
@@ -178,18 +179,11 @@ IceCopyPastePlugin.prototype = {
 		var div = this.createDiv(this._pasteId), self = this;
 		div.focus();
 
-		$(div).on("paste", function(){
-			setTimeout(function() {
-				self.handlePasteValue(stripTags);
-			}, 0);
-		});
-		/*
 		div.onpaste = function() {
 			setTimeout(function() {
 				self.handlePasteValue(stripTags);
 			}, 0);
 		};
-		*/
 		return true;
 	},
 
