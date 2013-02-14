@@ -60,23 +60,7 @@ IceCopyPastePlugin.prototype = {
     		return;
     	}
 		if(e.keyCode == 86) {
-			// Need to handle timing
-			// 1. In case of Firefox
-			// 		Just do handlePaste() immediately.
-			// 2. In case of WebKit
-			// 		setTimeout(0) to execute handlePaste() after the parent handler is executed
-			//
-			var self = this;
-			if(ice.dom.isBrowser("mozilla")){
-				self.handlePaste();
-			} else if(ice.dom.isBrowser("webkit")) {
-				setTimeout(function(){
-					self.handlePaste();
-				},0);
-			} else {
-				// Handle IE?
-				self.handlePaste();
-			}
+			this.handlePaste();
 		}
 	},
 	
@@ -177,13 +161,22 @@ IceCopyPastePlugin.prototype = {
 	 */
 	setupPaste: function(stripTags) {
 		var div = this.createDiv(this._pasteId), self = this;
-		div.focus();
 
+		var self = this;
 		div.onpaste = function() {
-			setTimeout(function() {
+			setTimeout(function(){
 				self.handlePasteValue(stripTags);
-			}, 0);
+			},0);
 		};
+
+		if(ice.dom.isBrowser("webkit")){
+			div.blur();
+			setTimeout(function(){
+				div.focus();
+			}, 0);
+		} else {
+			div.focus();
+		}
 		return true;
 	},
 
@@ -195,7 +188,6 @@ IceCopyPastePlugin.prototype = {
 	handlePasteValue: function(stripTags) {
 		// Get the pasted content.
 		var html = ice.dom.getHtml(document.getElementById(this._pasteId));
-
 		var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
 		if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {  
 			html = ice.dom.getHtml(html);
