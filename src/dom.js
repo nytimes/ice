@@ -724,8 +724,8 @@
             result.type = 'msie';
         } else if (jQuery.browser.opera === true) {
             result.type = 'opera';
-        } else if (jQuery.browser.safari === true) {
-            result.type = 'safari';
+        } else if (jQuery.browser.webkit === true) {
+            result.type = 'webkit';
         }
         return result;
     };

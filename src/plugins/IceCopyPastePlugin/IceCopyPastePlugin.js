@@ -161,13 +161,22 @@ IceCopyPastePlugin.prototype = {
 	 */
 	setupPaste: function(stripTags) {
 		var div = this.createDiv(this._pasteId), self = this;
-		div.focus();
 
+		var self = this;
 		div.onpaste = function() {
-			setTimeout(function() {
+			setTimeout(function(){
 				self.handlePasteValue(stripTags);
-			}, 1);
+			},0);
 		};
+
+		if(ice.dom.isBrowser("webkit")){
+			div.blur();
+			setTimeout(function(){
+				div.focus();
+			}, 0);
+		} else {
+			div.focus();
+		}
 		return true;
 	},
 
@@ -179,7 +188,6 @@ IceCopyPastePlugin.prototype = {
 	handlePasteValue: function(stripTags) {
 		// Get the pasted content.
 		var html = ice.dom.getHtml(document.getElementById(this._pasteId));
-
 		var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
 		if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {  
 			html = ice.dom.getHtml(html);
@@ -212,7 +220,6 @@ IceCopyPastePlugin.prototype = {
 		// do some splitting so we do not have P tags in P tags, etc. Split the
 		// container from current selection and then insert paste contents after it.
 		if(ice.dom.hasBlockChildren(fragment)) {
-
 			// Split from current selection.
 			var block = ice.dom.isChildOfTagName(this._tmpNode, this._ice.blockEl);
 			range.setEndAfter(block.lastChild);
@@ -300,8 +307,7 @@ IceCopyPastePlugin.prototype = {
 	createDiv: function(id) {
 		var oldEl = ice.dom.getId(id);
 		if(oldEl) {
-			ice.dom.empty(oldEl);
-			return oldEl;
+			ice.dom.remove(oldEl);
 		}
 
 		var div = this._ice.env.document.createElement('div');
@@ -494,7 +500,7 @@ IceCopyPastePlugin.prototype = {
 			moveTo = moveTo && moveTo.lastChild || moveTo || this._tmpNode;
 			// Move the range to the end of moveTo so that the cursor will be at the end of the paste.
 			var range = this._ice.getCurrentRange();
-			range.setStart(moveTo, moveTo.length);
+			range.setStartAfter(moveTo);
 			range.collapse(true);
 			this._ice.selection.addRange(range);
 			// Set focus back to ice element.
