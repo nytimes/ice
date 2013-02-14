@@ -1133,5 +1133,33 @@ $(document).ready(function() {
 
 		equal(range.startContainer, el.find('p')[0]);
 		equal(range.startOffset, 2);
+
+		// <div><p><span class="ins" cid="66" userid="4">|text|</span></p></div>
+		//                                               |    |
+		//                                               A    B
+		// Delete the selection A-B in the same user insert
+		// and expect that the text is removed.
+		el = jQuery('<div><p><span class="ins" cid="66" userid="4">text</span></p></div>');
+		changeEditor = getIce(el);
+		range.setStart(el.find('span')[0].childNodes[0], 0);
+		range.setEnd(el.find('span')[0].childNodes[0], 4);
+
+		changeEditor.deleteContents(false, range);
+
+		equal(el.find('span').text(), '');
+
+		// <div><p>|<em><span class="ins" cid="66" userid="4">text</span></em>|</p></div>
+		//         |                                                          |
+		//         A                                                          B
+		// Delete the selection A-B with a nested same user
+		// insert and expect that the insert is removed.
+		el = jQuery('<div><p><em><span class="ins" cid="66" userid="4">text</span></em></p></div>');
+		changeEditor = getIce(el);
+		range.setStartBefore(el.find('em')[0]);
+		range.setEndAfter(el.find('em')[0]);
+
+		changeEditor.deleteContents(false, range);
+
+		equal(el.find('span').length, 0);
 	});
 });
