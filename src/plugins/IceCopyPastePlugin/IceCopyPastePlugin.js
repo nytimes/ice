@@ -12,7 +12,7 @@ IceCopyPastePlugin = function(ice_instance) {
 	// API
 
 	// 'formatted' - paste will be MS Word cleaned.
-	// 'formattedClean' - paste will be MS Word cleaned, insert and 
+	// 'formattedClean' - paste will be MS Word cleaned, insert and
 	//    delete tags will be removed keeping insert content in place,
 	//    and tags not found in `preserve` will be stripped.
 	this.pasteType = 'formattedClean';
@@ -23,8 +23,8 @@ IceCopyPastePlugin = function(ice_instance) {
 	//   'p,a[href],i[style|title],span[*]'
 	// Would allow `p`, `a`, `i` and `span` tags. The attributes for
 	// each one of these tags would be cleaned as follows: `p` tags
-	// would have all attributes removed, `a` tags will have all but 
-	// `href` attributes removed, `i` tags will have all but `style` 
+	// would have all attributes removed, `a` tags will have all but
+	// `href` attributes removed, `i` tags will have all but `style`
 	// and `title` attributes removed, and `span` tags will keep all attributes.
 	this.preserve = 'p';
 
@@ -35,13 +35,14 @@ IceCopyPastePlugin = function(ice_instance) {
 	this.afterPasteClean = function(body) { return body; };
 
 	// Event Listeners
-	ice_instance.element.oncopy = function() { return self.handleCopy.apply(self) };
-	ice_instance.element.oncut = function() { return self.handleCut.apply(self) };
+	ice_instance.element.oncopy = function() { return self.handleCopy.apply(self); };
+	ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
+
 	// We can't listen for `onpaste` unless we use an algorithm that temporarily switches
 	// out the body and lets the browser paste there (found it hard to maintain in mce).
-	// Instead, we'll watch the keydown event and handle paste with a typical temp element 
+	// Instead, we'll watch the keydown event and handle paste with a typical temp element
 	// algorithm, which means that pasting from the context menu won't work.
-}
+};
 
 IceCopyPastePlugin.prototype = {
 
@@ -49,67 +50,23 @@ IceCopyPastePlugin.prototype = {
 		settings = settings || {};
 		ice.dom.extend(this, settings);
 
-		//this._ice.changeTypes.cutType = { tag: 'delete', alias: 'del', action: 'Cut'}
-
 		this.preserve += ',' + this._tmpNodeTagName;
 		this.setupPreserved();
 	},
 
 	keyDown: function(e) {
 		if (e.metaKey !== true && e.ctrlKey !== true) {
-    		return;
-    	}
+			return;
+		}
 		if(e.keyCode == 86) {
 			this.handlePaste();
 		}
 	},
-	
-	/**
-	 * Saves the current selection in a document fragment, then calls a cut handler
-	 * after a brief timeout, giving the browser time to cut.
-	 */
-	handleCut: function() {
-		if(!this._ice.isTracking) return;
-		var range = this._ice.getCurrentRange();
-		if(range.collapsed) return;
-		var html = range.cloneContents();
-		var self = this;
-		setTimeout(function() {
-			self.doCut(html);	
-		}, 1);
-		return true;
-	},
 
-	/**
-	 * At this point, the browser has cut the text out. With the given `html` this will
-	 * restore the cut content and delete it with track changes tags.
-	 */
-	doCut: function(html) {
-		var range = this._ice.getCurrentRange(), child, last;
-		this._tmpNode = this._ice.env.document.createElement('span');
-		range.insertNode(this._tmpNode);
-		range.setStartAfter(this._tmpNode);
-		range.collapse(true);
-		while((child = html.firstChild)) {
-			range.insertNode(child);
-			range.setStartAfter(child);
-			range.collapse(true);
-			last = child;
-		}
-		range.setStartBefore(this._tmpNode);
-		range.collapse(true);
-		range.setEndAfter(last);
-		this._ice.env.selection.addRange(range);
-		this._ice.deleteContents(null, null, 'cutType');
-		ice.dom.remove(this._tmpNode);
-	},
-	
 	handleCopy: function(e) {},
 
-	/**
-	 * Inserts a temporary placeholder for the current range and removes
-	 * the contents of the ice element body and calls a paste handler.
-	 */
+	// Inserts a temporary placeholder for the current range and removes
+	// the contents of the ice element body and calls a paste handler.
 	handlePaste: function(e) {
 
 		var range = this._ice.getCurrentRange();
@@ -152,17 +109,14 @@ IceCopyPastePlugin.prototype = {
 				break;
 		}
              
-	   return true;
+		return true;
 	},
 
-	/**
-	 * Create a temporary div and set focus to it so that the browser can paste into it. 
-	 * Set a timeout to push a paste handler on to the end of the execution stack.
-	 */
+	// Create a temporary div and set focus to it so that the browser can paste into it.
+	// Set a timeout to push a paste handler on to the end of the execution stack.
 	setupPaste: function(stripTags) {
 		var div = this.createDiv(this._pasteId), self = this;
 
-		var self = this;
 		div.onpaste = function() {
 			setTimeout(function(){
 				self.handlePasteValue(stripTags);
@@ -180,23 +134,18 @@ IceCopyPastePlugin.prototype = {
 		return true;
 	},
 
-	/**
-	 * By the time we get here, the pasted content will already be in the body. Extract the
-	 * paste, format it, remove any Microsoft or extraneous tags outside of `this.preserve`
-	 * and merge the pasted content into the original fragment body.
-	 */
+	// By the time we get here, the pasted content will already be in the body. Extract the
+	// paste, format it, remove any Microsoft or extraneous tags outside of `this.preserve`
+	// and merge the pasted content into the original fragment body.
 	handlePasteValue: function(stripTags) {
 		// Get the pasted content.
 		var html = ice.dom.getHtml(document.getElementById(this._pasteId));
 		var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
-		if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {  
+		if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {
 			html = ice.dom.getHtml(html);
 		}
 
 		html = this.beforePasteClean.call(this, html);
-                
-                
-                
 
 		if(stripTags) {
                     
@@ -212,7 +161,7 @@ IceCopyPastePlugin.prototype = {
 		range.setStartAfter(this._tmpNode);
 		range.collapse(true);
 
-		var newEl = null;
+		var innerBlock = null, lastEl = null, newEl = null;
 		var fragment = range.createContextualFragment(html);
 		var changeid = this._ice.startBatchChange();
 
@@ -233,7 +182,6 @@ IceCopyPastePlugin.prototype = {
 			range.collapse(true);
 			this._ice.selection.addRange(range);
 			var prevBlock = range.startContainer;
-			var innerBlock = null, newEl = null, lastEl = null;
 			
 			// Paste all of the children in the fragment.
 			while(fragment.firstChild) {
@@ -279,7 +227,7 @@ IceCopyPastePlugin.prototype = {
 					innerBlock.appendChild(fragment.removeChild(fragment.firstChild));
 				}
 			}
-			if(!newblock.textContent) { 
+			if (!newblock.textContent) {
 				newblock.parentNode.removeChild(newblock);
 			}
 
@@ -324,11 +272,9 @@ IceCopyPastePlugin.prototype = {
 		return div;
 	},
 
-	/**
-	 * Intercepts cut operation and handles by creating an editable div, copying the current selection
-	 * into it, deleting the current selection with track changes, and selecting the contents in the 
-	 * editable div.
-	 */
+	// Intercepts cut operation and handles by creating an editable div, copying the current selection
+	// into it, deleting the current selection with track changes, and selecting the contents in the
+	// editable div.
 	handleCut: function() {
 		this.cutElementId = 'icecut';
 		this.cutElement = this.createDiv(this.cutElementId);
@@ -351,11 +297,10 @@ IceCopyPastePlugin.prototype = {
 			ice.dom.remove(this.cutElement);
 		}, 10);
 	},
-	
-	/**
-	 * Strips ice change tracking tags, Microsoft Word styling/content, and any
-	 * tags and attributes not found in `preserve` from the given `content`.
-	 */
+
+
+	// Strips ice change tracking tags, Microsoft Word styling/content, and any
+	// tags and attributes not found in `preserve` from the given `content`.
 	stripPaste: function(content) {
 		// Clean word stuff out and strip tags that are not in `this.preserve`.
 		content = this._cleanWordPaste(content);
@@ -363,15 +308,13 @@ IceCopyPastePlugin.prototype = {
 		return content;
 	},
 
-	/**
-	 * Parses `preserve` to setup `_tags` with a comma delimited list of all of the 
-	 * defined tags, and the `_attributesMap` with a mapping between the allowed tags and 
-	 * an array of their allowed attributes. For example, given this value:
-	 *   `preserve` = 'p,a[href|class],span[*]'
-	 * The following will result:
-	 *   `_tags` = 'p,a,span'
-	 *   `_attributesMap` = ['p' => [], 'a' => ['href', 'class'], 'span' => ['*']]
-	 */
+	// Parses `preserve` to setup `_tags` with a comma delimited list of all of the
+	// defined tags, and the `_attributesMap` with a mapping between the allowed tags and
+	// an array of their allowed attributes. For example, given this value:
+	//   `preserve` = 'p,a[href|class],span[*]'
+	// The following will result:
+	//   `_tags` = 'p,a,span'
+	//   `_attributesMap` = ['p' => [], 'a' => ['href', 'class'], 'span' => ['*']]
 	setupPreserved: function() {
 		var self = this;
 		this._tags = '';
@@ -385,14 +328,12 @@ IceCopyPastePlugin.prototype = {
 
 			if(self._tags) self._tags += ',';
 			self._tags += tag.toLowerCase();
-			self._attributesMap[tag] = attr.split('|'); 
+			self._attributesMap[tag] = attr.split('|');
 		});
 	},
-	
-	/**
-	 * Cleans the given `body` by removing any tags not found in `_tags` and replacing them with
-	 * their inner contents, and removes attributes from any tags that aren't mapped in `_attributesMap`.
-	 */
+
+	// Cleans the given `body` by removing any tags not found in `_tags` and replacing them with
+	// their inner contents, and removes attributes from any tags that aren't mapped in `_attributesMap`.
 	cleanPreserved: function(body) {
 		var self = this;
 		var bodyel = this._ice.env.document.createElement('div');
@@ -448,42 +389,8 @@ IceCopyPastePlugin.prototype = {
 
 		// Remove class, lang and style attributes.
 		content = content.replace(/<(\w[^>]*) (lang)=([^ |>]*)([^>]*)/gi, "<$1$4");
-		// commenting it out for now but we might take out this whole method in the near future (with a planned regression test)
-//		content = content.replace(new RegExp('<(\\w[^>]*) style="([^"]*)"([^>]*)', 'gi'), "<$1$3");
-
+	
 		return content;
-	},
-
-	_getListType: function(elem, listTypes) {
-		var elContent = ice.dom.getHtml(elem);
-		var info = null;
-		ice.dom.foreach(listTypes, function(k) {
-			ice.dom.foreach(listTypes[k], function(j) {
-				ice.dom.foreach(listTypes[k][j], function(m) {
-					if ((new RegExp(listTypes[k][j][m])).test(elContent) === true) {
-						info = {
-							html: elContent.replace(new RegExp(listTypes[k][j][m]), ''),
-							listType: k,
-							listStyle: j
-						};
-						// Break from loop.
-						return false;
-					}
-				});
-
-				if (info !== null) {
-					// Break from loop.
-					return false;
-				}
-			});
-
-			if (info !== null) {
-				// Break from loop.
-				return false;
-			}
-		});
-
-		return info;
 	},
 
 	_cleanPaste: function(content) {
