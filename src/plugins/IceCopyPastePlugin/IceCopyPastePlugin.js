@@ -342,7 +342,7 @@ IceCopyPastePlugin.prototype = {
 			range.setStart(crange.startContainer, crange.startOffset);
 			range.collapse(true);
 			self._ice.env.selection.addRange(range);
-			ice.dom.remove(this.cutElement);
+			//ice.dom.remove(this.cutElement);
 		}, 10);
 	},
 	
