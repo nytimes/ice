@@ -382,10 +382,10 @@
             }
             var changeid = this.startBatchChange(this.changeTypes['deleteType'].alias);
             if (range.collapsed === false) {
-                this._deleteFromSelection(range);
+                this._deleteSelection(range);
             } else {
-                if (right) prevent = this._deleteFromRight(range);
-                else prevent = this._deleteFromLeft(range);
+                if (right) prevent = this._deleteRight(range);
+                else prevent = this._deleteLeft(range);
             }
             this.selection.addRange(range);
             this.endBatchChange(changeid);
@@ -817,7 +817,7 @@
             return false;
         },
 
-        _deleteFromSelection: function (range) {
+        _deleteSelection: function (range) {
             // Bookmark the range and get elements between.
             var bookmark = new ice.Bookmark(this.env, range),
                 elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
@@ -884,7 +884,7 @@
         },
 
         // Delete
-        _deleteFromRight: function (range) {
+        _deleteRight: function (range) {
 
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
                 isEmptyBlock = parentBlock ? (ice.dom.hasNoTextOrStubContent(parentBlock)) : false,
@@ -908,7 +908,7 @@
                     if (firstItem) {
                         range.setStart(firstItem, 0);
                         range.collapse();
-                        return this._deleteFromRight(range);
+                        return this._deleteRight(range);
                     }
                 }
 
@@ -917,14 +917,14 @@
                     commonAncestor.insertBefore(tempTextContainer, commonAncestor.childNodes[initialOffset]);
                     range.setStart(tempTextContainer, 1);
                     range.collapse(true);
-                    returnValue = this._deleteFromRight(range);
+                    returnValue = this._deleteRight(range);
                     ice.dom.remove(tempTextContainer);
                     return returnValue;
                 } else {
                     nextContainer = ice.dom.getNextContentNode(commonAncestor, this.element);
                     range.setEnd(nextContainer, 0);
                     range.collapse();
-                    return this._deleteFromRight(range);
+                    return this._deleteRight(range);
                 }
             }
 
@@ -1002,7 +1002,7 @@
         },
 
         // Backspace
-        _deleteFromLeft: function (range) {
+        _deleteLeft: function (range) {
 
             var parentBlock = ice.dom.isBlockElement(range.startContainer) && range.startContainer || ice.dom.getBlockParent(range.startContainer, this.element) || null,
                 isEmptyBlock = parentBlock ? ice.dom.hasNoTextOrStubContent(parentBlock) : false,
@@ -1025,7 +1025,7 @@
                         if (firstItem) {
                             range.setStart(firstItem, 0);
                             range.collapse();
-                            return this._deleteFromLeft(range);
+                            return this._deleteLeft(range);
                         }
 
                     } else {
@@ -1036,7 +1036,7 @@
                             if (lastSelectable) {
                                 range.setStart(lastSelectable, lastSelectable.data.length);
                                 range.collapse();
-                                return this._deleteFromLeft(range);
+                                return this._deleteLeft(range);
                             }
                         }
                     }
@@ -1114,7 +1114,7 @@
             // the image, but the caret is placed with the image. We move the caret to the empty text node and execute deleteFromLeft again.
             if (initialOffset === 1 && !ice.dom.isBlockElement(commonAncestor) && range.startContainer.childNodes.length > 1 && range.startContainer.childNodes[0].nodeType === ice.dom.TEXT_NODE && range.startContainer.childNodes[0].data.length === 0) {
                 range.setStart(range.startContainer, 0);
-                return this._deleteFromLeft(range);
+                return this._deleteLeft(range);
             }
 
             // Move range to position the cursor on the inside of any adjacent container that it is going
