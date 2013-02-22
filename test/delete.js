@@ -1134,6 +1134,7 @@ $(document).ready(function() {
     equal(range.startContainer, el.find('p')[0]);
     equal(range.startOffset, 2);
 
+
     // <div><p><span class="ins" cid="66" userid="4">|text|</span></p></div>
     //                                               |    |
     //                                               A    B
@@ -1148,6 +1149,7 @@ $(document).ready(function() {
 
     equal(el.find('span').text(), '');
 
+
     // <div><p>|<em><span class="ins" cid="66" userid="4">text</span></em>|</p></div>
     //         |                                                          |
     //         A                                                          B
@@ -1161,6 +1163,7 @@ $(document).ready(function() {
     changeEditor.deleteContents(false, range);
 
     equal(el.find('span').length, 0);
+
 
     // <div><p><em><span class="ins" cid="66" userid="4">te|xt</span>text</em>te|xt</p></div>
     //                                                     |                    |

@@ -818,6 +818,7 @@
     },
 
     _deleteSelection: function (range) {
+
       // Bookmark the range and get elements between.
       var bookmark = new ice.Bookmark(this.env, range),
         elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
@@ -863,17 +864,7 @@
         }
       }
 
-      var startEl = bookmark.start.previousSibling;
-      if (!startEl) {
-        startEl = this.env.document.createTextNode('');
-        ice.dom.insertBefore(bookmark.start, startEl);
-        this.selection.addRange(range);
-        bookmark.selectBookmark();
-        range.setStart(startEl, 0);
-      } else {
-        bookmark.selectBookmark();
-      }
-
+      bookmark.selectBookmark();
       range.collapse(false);
     },
 
@@ -1172,8 +1163,10 @@
           range.selectNode(contentNode);
         }
         contentNode.parentNode.removeChild(contentNode);
+        var cleanNode = ice.dom.cloneNode(contentAddNode);
+        ice.dom.remove(ice.dom.find(cleanNode, '.iceBookmark'));
         // Remove a potential empty tracking container
-        if (contentAddNode !== null && (ice.dom.hasNoTextOrStubContent(contentAddNode))) {
+        if (contentAddNode !== null && (ice.dom.hasNoTextOrStubContent(cleanNode[0]))) {
           var newstart = this.env.document.createTextNode('');
           ice.dom.insertBefore(contentAddNode, newstart);
           if (range) {
