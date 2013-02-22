@@ -1,16 +1,16 @@
 (function() {
 
 var exports = this, IceAddTitlePlugin;
-	
+  
 IceAddTitlePlugin = function(ice_instance) {
-	this._ice = ice_instance;
+  this._ice = ice_instance;
 };
 
 IceAddTitlePlugin.prototype = {
-	nodeCreated: function(node, option) {
-		node.setAttribute('title', (option.action || 'Modified') + ' by ' + node.getAttribute(this._ice.userNameAttribute) 
-				+ ' - ' + ice.dom.date('d/m/Y h:i', parseInt(node.getAttribute(this._ice.timeAttribute))));
-	}
+  nodeCreated: function(node, option) {
+    node.setAttribute('title', (option.action || 'Modified') + ' by ' + node.getAttribute(this._ice.userNameAttribute)
+        + ' - ' + ice.dom.date('d/m/Y h:i', parseInt(node.getAttribute(this._ice.timeAttribute))));
+  }
 };
 
 ice.dom.noInclusionInherits(IceAddTitlePlugin, ice.IcePlugin);
