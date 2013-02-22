@@ -10,7 +10,7 @@ $(document).ready(function() {
       '</div>');
     var changeEditor = getIce(el);
     var range = changeEditor.env.selection.createRange();
-  
+
     // Delete left through different user insert.
     range.setStartAfter(el.find('em')[0]);
     range.moveStart('character', 2);
@@ -121,7 +121,7 @@ $(document).ready(function() {
         '<p>a <em><span class="ins cts-1" userid="4" cid="1">left</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through same user insert.
     range.setStartAfter(el.find('em')[0]);
     range.moveStart('character', 10);
@@ -1161,5 +1161,19 @@ $(document).ready(function() {
     changeEditor.deleteContents(false, range);
 
     equal(el.find('span').length, 0);
+
+    // <div><p><em><span class="ins" cid="66" userid="4">te|xt</span>text</em>te|xt</p></div>
+    //                                                     |                    |
+    //                                                     A                    B
+    // Delete the selection A-B in a nested same user insert and
+    // expect same user insert to be removed, not deleted.
+    el = jQuery('<div><p><em><span class="ins" cid="66" userid="4">text</span>text</em>text</p></div>');
+    changeEditor = getIce(el);
+    range.setStart(el.find('span')[0].childNodes[0], 2);
+    range.setEnd(el.find('p')[0].childNodes[1], 2);
+    changeEditor.deleteContents(false, range);
+
+    equal(el.text(), 'tetexttext');
+    equal(el.find('.del').length, 2);
   });
 });

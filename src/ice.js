@@ -820,9 +820,7 @@
     _deleteSelection: function (range) {
       // Bookmark the range and get elements between.
       var bookmark = new ice.Bookmark(this.env, range),
-        elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
-        b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
-        b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
+        elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
 
       for (var i = 0; i < elements.length; i++) {
         var elem = elements[i];
@@ -874,13 +872,9 @@
         range.setStart(startEl, 0);
       } else {
         bookmark.selectBookmark();
-        // Move start of range to position it on the inside of any adjacent container, if exists.
-        // E.G.:  <em>text</em>|test  ->  <em>text|</em>test
-        range.moveStart(ice.dom.CHARACTER_UNIT, -1);
-        range.moveStart(ice.dom.CHARACTER_UNIT, 1);
       }
 
-      range.collapse();
+      range.collapse(false);
     },
 
     // Delete
