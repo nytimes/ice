@@ -328,7 +328,6 @@
           break;
         } else if (dom.isChildOf(toElem, fromElem.childNodes[i]) === true) {
           return dom.arrayMerge(elements, dom.getElementsBetween(fromElem.childNodes[i], toElem));
->>>>>>> upstream/master
         } else {
           elements.push(fromElem.childNodes[i]);
         }
