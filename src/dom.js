@@ -155,11 +155,21 @@
         return element;
     };
     dom.stripEnclosingTags = function (content, allowedTags) {
-        var c = jQuery(content);
-        c.find('*').not(allowedTags).replaceWith(function () {
-            var $this = jQuery(this);
-            return $this.contents();
-        });
+		jQuery(content).find('*').not(allowedTags).replaceWith(function () {
+			var ret = jQuery();
+			try{
+				var $this = jQuery(this);
+				ret = $this.contents();
+			} catch(e){
+			}
+
+			// Handling jQuery bug (which may be fixed in the official release later)
+			// http://bugs.jquery.com/ticket/13401 
+			if(ret.length === 0){
+				$this.remove();
+			}
+			return ret;
+		});
         return c[0];
     };
     dom.getSiblings = function (element, dir, elementNodesOnly, stopElem) {
