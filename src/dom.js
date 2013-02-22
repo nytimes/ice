@@ -154,7 +154,8 @@
     return element;
   };
   dom.stripEnclosingTags = function (content, allowedTags) {
-    jQuery(content).find('*').not(allowedTags).replaceWith(function () {
+    var c = jQuery(content);
+    c.find('*').not(allowedTags).replaceWith(function () {
       var ret = jQuery();
       try{
 	    var $this = jQuery(this);
