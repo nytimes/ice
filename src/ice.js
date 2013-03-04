@@ -1248,7 +1248,7 @@
         ctNode.insertBefore(contentNode, ctNode.firstChild);
       } else {
         ctNode = this.createIceNode('deleteType');
-        contentNode.parentElement.insertBefore(ctNode, contentNode);
+        contentNode.parentNode.insertBefore(ctNode, contentNode);
         ctNode.appendChild(contentNode);
       }
 
