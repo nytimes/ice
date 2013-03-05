@@ -68,12 +68,45 @@ IceCopyPastePlugin.prototype = {
   },
   keyPress: function(e){
 	// if it's cut mode, focus and webkit.
-      if(ice.dom.isBrowser("webkit")){
-		  if(this.cutElement){
-			  this.cutElement.focus();
-		  }
+      var c = null;
+      if (e.which == null) {
+        // IE.
+        c = String.fromCharCode(e.keyCode);
+      } else if (e.which > 0) {
+        c = String.fromCharCode(e.which);
+      }
+
+
+	  if(this.cutElement && c === 'x'){
+		if(ice.dom.isBrowser("webkit")){
+		  this.cutElement.focus();
+		}
+	  } else if(c === 'v'){
+		var div = document.getElementById(this._pasteId);
+		if(this._ice.env.frame){
+			if(ice.dom.isBrowser("webkit")){
+			  div.blur();
+			  setTimeout(function(){
+				div.focus();
+			  }, 0);
+			} else {
+				div.focus();
+			}
+		}
+		else{
+		  div.focus();
+		}
 	  }
 	  return true;
+
+
+
+
+
+
+
+
+
   },
   handleCopy: function(e) {},
 
