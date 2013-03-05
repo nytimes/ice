@@ -135,6 +135,20 @@ IceCopyPastePlugin.prototype = {
       },0);
     };
 
+	if(this._ice.env.frame){
+		if(ice.dom.isBrowser("webkit")){
+		  div.blur();
+		  setTimeout(function(){
+			div.focus();
+		  }, 0);
+		} else {
+			div.focus();
+		}
+	}
+	else{
+	  div.focus();
+	}
+/*
     if(ice.dom.isBrowser("webkit")){
       div.blur();
       setTimeout(function(){
@@ -143,6 +157,7 @@ IceCopyPastePlugin.prototype = {
     } else {
       div.focus();
     }
+	*/
     return true;
   },
 
@@ -278,7 +293,7 @@ IceCopyPastePlugin.prototype = {
     ice.dom.setStyle(div, 'position', 'fixed');
     ice.dom.setStyle(div, 'top', '10px');
     ice.dom.setStyle(div, 'left', '10px');
-	console.log('didididv = ', div);
+//	console.log('didididv = ', div);
 
     document.body.appendChild(div);
     return div;
