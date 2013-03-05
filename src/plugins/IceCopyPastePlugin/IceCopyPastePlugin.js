@@ -36,7 +36,7 @@ IceCopyPastePlugin = function(ice_instance) {
 
   // Event Listeners
   ice_instance.element.oncopy = function() { return self.handleCopy.apply(self); };
-  ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
+//  ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
 
   // We can't listen for `onpaste` unless we use an algorithm that temporarily switches
   // out the body and lets the browser paste there (found it hard to maintain in mce).
@@ -61,8 +61,20 @@ IceCopyPastePlugin.prototype = {
     if(e.keyCode == 86) {
       this.handlePaste();
     }
+	else if(e.keyCode == 88) {
+      this.handleCut();
+    }
+	return true;
   },
-
+  keyPress: function(e){
+	// if it's cut mode, focus and webkit.
+      if(ice.dom.isBrowser("webkit")){
+		  if(this.cutElement){
+			  this.cutElement.focus();
+		  }
+	  }
+	  return true;
+  },
   handleCopy: function(e) {},
 
   // Inserts a temporary placeholder for the current range and removes
@@ -156,7 +168,6 @@ IceCopyPastePlugin.prototype = {
 
     html = this.afterPasteClean.call(this, html);
     html = ice.dom.trim(html);
-
     var range = this._ice.getCurrentRange();
     range.setStartAfter(this._tmpNode);
     range.collapse(true);
@@ -267,6 +278,7 @@ IceCopyPastePlugin.prototype = {
     ice.dom.setStyle(div, 'position', 'fixed');
     ice.dom.setStyle(div, 'top', '10px');
     ice.dom.setStyle(div, 'left', '10px');
+	console.log('didididv = ', div);
 
     document.body.appendChild(div);
     return div;
@@ -283,19 +295,36 @@ IceCopyPastePlugin.prototype = {
     var html = range.getHTMLContents();
     if (this._ice.isTracking) this._ice.deleteContents();
     else range.deleteContents();
-    var crange = range.cloneRange();
-    crange.collapse(true);
+//    var crange = range.cloneRange();
+//	var crange = rangy.createRange();
+	var crange = document.createRange();
+//    crange.collapse(true);
     this.cutElement.innerHTML = html;
-    range.setStart(this.cutElement.firstChild, 0);
-    range.setEndAfter(this.cutElement.lastChild, this.cutElement.lastChild.length);
+
+    crange.setStart(this.cutElement.firstChild, 0);
+	crange.setEndAfter(this.cutElement.lastChild);
     var self = this;
+
+//	this.cutElement.blur();
+	setTimeout(function(){
+		self.cutElement.focus();
+		setTimeout(function() {
+		  range.setStart(crange.startContainer, crange.startOffset);
+		  range.collapse(true);
+		  self._ice.env.selection.addRange(range);
+		  ice.dom.remove(self.cutElement);
+		}, 0);
+	}, 0);
+	self._ice.env.selection.addRange(crange);
     // After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+	/*
     setTimeout(function() {
       range.setStart(crange.startContainer, crange.startOffset);
       range.collapse(true);
       self._ice.env.selection.addRange(range);
       //ice.dom.remove(this.cutElement);
     }, 10);
+	*/
   },
 
 
