@@ -62,7 +62,6 @@ IceCopyPastePlugin.prototype = {
       this.handlePaste();
     }
 	else if(e.keyCode == 88) {
-		var self = this;
 		this.handleCut();
     }
 	return true;
@@ -166,10 +165,12 @@ IceCopyPastePlugin.prototype = {
 
 	console.log("4");
 	if(this._ice.env.frame){
-		console.log("5");
+		console.log("inside setupPaste: TinyMCE");
 		if(ice.dom.isBrowser("webkit")){
+			console.log("inside setupPaste: TinyMCE > Webkit");
 			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
 			if(isSafari){
+				console.log("inside setupPaste: TinyMCE > Webkit > Safari");
 				div.blur();
 				console.log("7S");
 				setTimeout(function(){
@@ -178,6 +179,7 @@ IceCopyPastePlugin.prototype = {
 					div.focus();
 				}, 0);
 			} else {
+				console.log("inside setupPaste: TinyMCE > Webkit > Chrome");
 				div.blur();
 				console.log("7");
 				setTimeout(function(){
@@ -186,12 +188,13 @@ IceCopyPastePlugin.prototype = {
 				}, 0);
 			}
 		} else {
-			console.log("9");
+			console.log("inside setupPaste: TinyMCE > Non-Webkit");
 			div.focus();
 		}
 	}
 	else{
-			div.focus();
+		console.log("inside setupPaste: Vanilla Div");
+		div.focus();
 	}
     return true;
   },
@@ -358,6 +361,7 @@ IceCopyPastePlugin.prototype = {
 
 //	this.cutElement.blur();
 	if(this._ice.env.frame){
+		console.log("handleCut > TinyMCE");
 		// TINYMCE
 		setTimeout(function(){
 			self.cutElement.focus();
@@ -371,6 +375,7 @@ IceCopyPastePlugin.prototype = {
 			}, 0);
 		}, 0);
 	} else {
+		console.log("handleCut > Vanilla Div");
 		// Vanilla Div
 		setTimeout(function(){
 			self.cutElement.focus();
