@@ -62,10 +62,12 @@ IceCopyPastePlugin.prototype = {
       this.handlePaste();
     }
 	else if(e.keyCode == 88) {
+		console.log("#########################################");
 		this.handleCut();
     }
 	return true;
   },
+
   keyPress: function(e){
 	// if it's cut mode, focus and webkit.
       var c = null;
@@ -327,8 +329,8 @@ IceCopyPastePlugin.prototype = {
     var div = this._ice.env.document.createElement('div');
     div.id = id;
     div.setAttribute('contentEditable', true);
-    ice.dom.setStyle(div, 'width', '100px');
-    ice.dom.setStyle(div, 'height', '100px');
+    ice.dom.setStyle(div, 'width', '1px');
+    ice.dom.setStyle(div, 'height', '1px');
     ice.dom.setStyle(div, 'overflow', 'hidden');
     ice.dom.setStyle(div, 'position', 'fixed');
     ice.dom.setStyle(div, 'top', '10px');
@@ -382,6 +384,7 @@ IceCopyPastePlugin.prototype = {
 			console.log("after focus");
 			
 			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+			/*
 			setTimeout(function() {
 				console.log('after timeout');
 			  range.setStart(range.startContainer, range.startOffset);
@@ -389,7 +392,13 @@ IceCopyPastePlugin.prototype = {
 			  self._ice.env.selection.addRange(range);
 			  ice.dom.remove(self.cutElement);
 			}, 0);
+			*/
 		}, 0);
+
+		var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+		if(!isSafari){
+			self.cutElement.focus();
+		}
 	}
 	self._ice.env.selection.addRange(crange);
 
