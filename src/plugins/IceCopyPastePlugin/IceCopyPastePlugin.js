@@ -370,10 +370,16 @@ IceCopyPastePlugin.prototype = {
 			
 			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
 			setTimeout(function() {
-			  range.setStart(range.startContainer, range.startOffset);
-			  range.collapse(true);
-			  self._ice.env.selection.addRange(range);
-			  ice.dom.remove(self.cutElement);
+				ice.dom.remove(self.cutElement);
+				range.setStart(range.startContainer, range.startOffset);
+				range.collapse(false);
+				self._ice.env.selection.addRange(range);
+				// Set focus back to ice element.
+				if(self._ice.env.frame) {
+					self._ice.env.frame.contentWindow.focus();
+				} else {
+					self._ice.element.focus();
+				}
 			}, 100);
 		}, 0);
 	} else {
@@ -384,15 +390,18 @@ IceCopyPastePlugin.prototype = {
 			console.log("after focus");
 			
 			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
-			/*
 			setTimeout(function() {
-				console.log('after timeout');
-			  range.setStart(range.startContainer, range.startOffset);
-			  range.collapse(true);
-			  self._ice.env.selection.addRange(range);
-//			  ice.dom.remove(self.cutElement);
-			}, 0);
-			*/
+//				ice.dom.remove(self.cutElement);
+				range.setStart(range.startContainer, range.startOffset);
+				range.collapse(false);
+				self._ice.env.selection.addRange(range);
+				// Set focus back to ice element.
+				if(self._ice.env.frame) {
+					self._ice.env.frame.contentWindow.focus();
+				} else {
+					self._ice.element.focus();
+				}
+			}, 100);
 		}, 0);
 
 		var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
@@ -401,36 +410,6 @@ IceCopyPastePlugin.prototype = {
 		}
 	}
 	self._ice.env.selection.addRange(crange);
-
-/*
-		if(ice.dom.isBrowser("webkit")){
-			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-			if(this._ice.env.frame){
-				// TinyMCE
-				if(isSafari){
-//					self.cutElement.focus();
-					setTimeout(function(){
-						self.cutElement.focus();
-					}, 0);
-				} else {
-					setTimeout(function(){
-						self.cutElement.focus();
-					}, 0);
-				}
-			} else {
-				// Vanilla Div
-				console.log("Keydown cut - It's Webkit");
-//				self.cutElement.focus();
-				if(isSafari){
-					self.cutElement.focus();
-				} else {
-					setTimeout(function(){
-						self.cutElement.focus();
-					}, 0);
-				}
-			}
-		}
-		*/
   },
 
 
