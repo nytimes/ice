@@ -1360,7 +1360,6 @@
     },
 
     keyPress: function (e) {
-	  console.log("keypress in ice");
       if (this._preventKeyPress === true) {
         this._preventKeyPress = false;
         return;

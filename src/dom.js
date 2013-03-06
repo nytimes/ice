@@ -78,9 +78,7 @@
     }
   };
   dom.remove = function (element) {
-//	  console.log("dom.remove");
     if (element) {
-//		console.log("element exists", element);
       return jQuery(element).remove();
     }
   };

@@ -76,37 +76,12 @@ IceCopyPastePlugin.prototype = {
         c = String.fromCharCode(e.which);
       }
 
-
 	  if(this.cutElement && c === 'x'){
 		if(ice.dom.isBrowser("webkit")){
 		  this.cutElement.focus();
 		}
-	  } else if(c === 'v'){
-		var div = document.getElementById(this._pasteId);
-		if(this._ice.env.frame){
-			if(ice.dom.isBrowser("webkit")){
-			  div.blur();
-			  setTimeout(function(){
-				div.focus();
-			  }, 0);
-			} else {
-				div.focus();
-			}
-		}
-		else{
-		  div.focus();
-		}
 	  }
 	  return true;
-
-
-
-
-
-
-
-
-
   },
   handleCopy: function(e) {},
 
@@ -181,16 +156,6 @@ IceCopyPastePlugin.prototype = {
 	else{
 	  div.focus();
 	}
-/*
-    if(ice.dom.isBrowser("webkit")){
-      div.blur();
-      setTimeout(function(){
-        div.focus();
-      }, 0);
-    } else {
-      div.focus();
-    }
-	*/
     return true;
   },
 
@@ -326,7 +291,6 @@ IceCopyPastePlugin.prototype = {
     ice.dom.setStyle(div, 'position', 'fixed');
     ice.dom.setStyle(div, 'top', '10px');
     ice.dom.setStyle(div, 'left', '10px');
-//	console.log('didididv = ', div);
 
     document.body.appendChild(div);
     return div;
@@ -357,7 +321,7 @@ IceCopyPastePlugin.prototype = {
 	setTimeout(function(){
 		self.cutElement.focus();
 		setTimeout(function() {
-		  range.setStart(crange.startContainer, crange.startOffset);
+		  range.setStart(range.startContainer, range.startOffset);
 		  range.collapse(true);
 		  self._ice.env.selection.addRange(range);
 		  ice.dom.remove(self.cutElement);
