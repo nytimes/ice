@@ -62,7 +62,8 @@ IceCopyPastePlugin.prototype = {
       this.handlePaste();
     }
 	else if(e.keyCode == 88) {
-      this.handleCut();
+		var self = this;
+		this.handleCut();
     }
 	return true;
   },
@@ -75,10 +76,22 @@ IceCopyPastePlugin.prototype = {
       } else if (e.which > 0) {
         c = String.fromCharCode(e.which);
       }
-
+		var self = this;
+	  console.log("AA");
 	  if(this.cutElement && c === 'x'){
+		console.log("Keypress cut");
 		if(ice.dom.isBrowser("webkit")){
-		  this.cutElement.focus();
+			console.log("Keypress cut - It's Webkit");
+			self.cutElement.focus();
+		} else {
+			console.log("Keypress cut - It's NOT Webkit");
+		}
+	  } else if (c === 'v'){
+		console.log("Keypress paste");
+		if(ice.dom.isBrowser("webkit")){
+			console.log("Keypress paste - It's Webkit");
+			var div = document.getElementById(self._pasteId);
+			div.focus();
 		}
 	  }
 	  return true;
@@ -136,25 +149,49 @@ IceCopyPastePlugin.prototype = {
   // Set a timeout to push a paste handler on to the end of the execution stack.
   setupPaste: function(stripTags) {
     var div = this.createDiv(this._pasteId), self = this;
+	console.log("1");
 
     div.onpaste = function() {
+		console.log("2");
       setTimeout(function(){
+		console.log("3");
         self.handlePasteValue(stripTags);
       },0);
     };
+	div.onfocus = function(){
+		console.log("Focused!");
+		console.log("div.onpaste = ", div.onpaste);
+	};
 
+
+	console.log("4");
 	if(this._ice.env.frame){
+		console.log("5");
 		if(ice.dom.isBrowser("webkit")){
-		  div.blur();
-		  setTimeout(function(){
-			div.focus();
-		  }, 0);
+			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+			if(isSafari){
+				div.blur();
+				console.log("7S");
+				setTimeout(function(){
+					console.log("8S");
+					console.log("div exists? = ", div);
+					div.focus();
+				}, 0);
+			} else {
+				div.blur();
+				console.log("7");
+				setTimeout(function(){
+					console.log("8");
+					div.focus();
+				}, 0);
+			}
 		} else {
+			console.log("9");
 			div.focus();
 		}
 	}
 	else{
-	  div.focus();
+			div.focus();
 	}
     return true;
   },
@@ -163,6 +200,7 @@ IceCopyPastePlugin.prototype = {
   // paste, format it, remove any Microsoft or extraneous tags outside of `this.preserve`
   // and merge the pasted content into the original fragment body.
   handlePasteValue: function(stripTags) {
+						console.log("handlePasteValue");
     // Get the pasted content.
     var html = ice.dom.getHtml(document.getElementById(this._pasteId));
     var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
@@ -184,6 +222,7 @@ IceCopyPastePlugin.prototype = {
     var range = this._ice.getCurrentRange();
     range.setStartAfter(this._tmpNode);
     range.collapse(true);
+	console.log("Start = ", range.startContainer, range.startOffset);
 
     var innerBlock = null, lastEl = null, newEl = null;
     var fragment = range.createContextualFragment(html);
@@ -285,8 +324,8 @@ IceCopyPastePlugin.prototype = {
     var div = this._ice.env.document.createElement('div');
     div.id = id;
     div.setAttribute('contentEditable', true);
-    ice.dom.setStyle(div, 'width', '1px');
-    ice.dom.setStyle(div, 'height', '1px');
+    ice.dom.setStyle(div, 'width', '100px');
+    ice.dom.setStyle(div, 'height', '100px');
     ice.dom.setStyle(div, 'overflow', 'hidden');
     ice.dom.setStyle(div, 'position', 'fixed');
     ice.dom.setStyle(div, 'top', '10px');
@@ -318,25 +357,66 @@ IceCopyPastePlugin.prototype = {
     var self = this;
 
 //	this.cutElement.blur();
-	setTimeout(function(){
-		self.cutElement.focus();
-		setTimeout(function() {
-		  range.setStart(range.startContainer, range.startOffset);
-		  range.collapse(true);
-		  self._ice.env.selection.addRange(range);
-		  ice.dom.remove(self.cutElement);
+	if(this._ice.env.frame){
+		// TINYMCE
+		setTimeout(function(){
+			self.cutElement.focus();
+			
+			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+			setTimeout(function() {
+			  range.setStart(range.startContainer, range.startOffset);
+			  range.collapse(true);
+			  self._ice.env.selection.addRange(range);
+			  ice.dom.remove(self.cutElement);
+			}, 0);
 		}, 0);
-	}, 0);
+	} else {
+		// Vanilla Div
+		setTimeout(function(){
+			self.cutElement.focus();
+			console.log("after focus");
+			
+			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+			setTimeout(function() {
+				console.log('after timeout');
+			  range.setStart(range.startContainer, range.startOffset);
+			  range.collapse(true);
+			  self._ice.env.selection.addRange(range);
+			  ice.dom.remove(self.cutElement);
+			}, 0);
+		}, 0);
+	}
 	self._ice.env.selection.addRange(crange);
-    // After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
-	/*
-    setTimeout(function() {
-      range.setStart(crange.startContainer, crange.startOffset);
-      range.collapse(true);
-      self._ice.env.selection.addRange(range);
-      //ice.dom.remove(this.cutElement);
-    }, 10);
-	*/
+
+/*
+		if(ice.dom.isBrowser("webkit")){
+			var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+			if(this._ice.env.frame){
+				// TinyMCE
+				if(isSafari){
+//					self.cutElement.focus();
+					setTimeout(function(){
+						self.cutElement.focus();
+					}, 0);
+				} else {
+					setTimeout(function(){
+						self.cutElement.focus();
+					}, 0);
+				}
+			} else {
+				// Vanilla Div
+				console.log("Keydown cut - It's Webkit");
+//				self.cutElement.focus();
+				if(isSafari){
+					self.cutElement.focus();
+				} else {
+					setTimeout(function(){
+						self.cutElement.focus();
+					}, 0);
+				}
+			}
+		}
+		*/
   },
 
 
