@@ -374,7 +374,7 @@ IceCopyPastePlugin.prototype = {
 			  range.collapse(true);
 			  self._ice.env.selection.addRange(range);
 			  ice.dom.remove(self.cutElement);
-			}, 0);
+			}, 100);
 		}, 0);
 	} else {
 		console.log("handleCut > Vanilla Div");
@@ -390,7 +390,7 @@ IceCopyPastePlugin.prototype = {
 			  range.setStart(range.startContainer, range.startOffset);
 			  range.collapse(true);
 			  self._ice.env.selection.addRange(range);
-			  ice.dom.remove(self.cutElement);
+//			  ice.dom.remove(self.cutElement);
 			}, 0);
 			*/
 		}, 0);
