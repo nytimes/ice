@@ -12,6 +12,7 @@ javascripts:
     - lib/rangy-1.2/rangy-cssclassapplier.js
     - lib/rangy-1.2/rangy-selectionsaverestore.js
     - lib/rangy-1.2/rangy-serializer.js
+    - src/polyfills.js
     - src/ice.js
     - src/dom.js
     - src/bookmark.js

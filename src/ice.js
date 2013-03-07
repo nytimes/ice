@@ -292,7 +292,7 @@
       else range = this.getCurrentRange();
 
       if (typeof node === "string") {
-        if (node.trim() === "") node = node.replace(/ /g, "\u205f");
+        //if (node.trim() === "") node = node.replace(/ /g, "\u205f");
         node = document.createTextNode(node);
       }
 
@@ -1248,7 +1248,7 @@
         ctNode.insertBefore(contentNode, ctNode.firstChild);
       } else {
         ctNode = this.createIceNode('deleteType');
-        contentNode.parentElement.insertBefore(ctNode, contentNode);
+        contentNode.parentNode.insertBefore(ctNode, contentNode);
         ctNode.appendChild(contentNode);
       }
 
