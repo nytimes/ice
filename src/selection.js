@@ -18,15 +18,12 @@
      */
     _getSelection: function () {
       if (this._selection) {
-		  console.log("_getSelection 1");
 		  this._selection.refresh();
 	  }
       else if (this.env.frame) {
-		  console.log("_getSelection 2");
 		  this._selection = rangy.getIframeSelection(this.env.frame);
 	  }
       else {
-		  console.log("_getSelection 3");
 		  this._selection = rangy.getSelection();
 	  }
       return this._selection;
