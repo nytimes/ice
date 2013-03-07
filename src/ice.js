@@ -1364,9 +1364,6 @@
         this._preventKeyPress = false;
         return;
       }
-
-      if (!this.pluginsManager.fireKeyPressed(e)) return false;
-
       var c = null;
       if (e.which == null) {
         // IE.
@@ -1375,14 +1372,21 @@
         c = String.fromCharCode(e.which);
       }
 
-      // Inside a br - most likely in a placeholder of a new block - delete before handling.
-      var range = this.getCurrentRange();
-      var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
-      if (br) {
-        range.moveToNextEl(br);
-        br.parentNode.removeChild(br);
-      }
+	  if (!this.pluginsManager.fireKeyPress(e)) { return false; }
+      if (e.ctrlKey || e.metaKey) {
+		  return true;
+	  }
 
+
+	  // Inside a br - most likely in a placeholder of a new block - delete before handling.
+	  
+	  var range = this.getCurrentRange();
+	  var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
+	  if (br) {
+		range.moveToNextEl(br);
+		br.parentNode.removeChild(br);
+	  }
+	  
       // Ice will ignore the keyPress event if CMD or CTRL key is also pressed
       if (c !== null && e.ctrlKey !== true && e.metaKey !== true) {
         switch (e.keyCode) {

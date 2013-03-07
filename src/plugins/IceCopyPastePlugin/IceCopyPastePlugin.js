@@ -36,7 +36,7 @@ IceCopyPastePlugin = function(ice_instance) {
 
   // Event Listeners
   ice_instance.element.oncopy = function() { return self.handleCopy.apply(self); };
-  ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
+//  ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
 
   // We can't listen for `onpaste` unless we use an algorithm that temporarily switches
   // out the body and lets the browser paste there (found it hard to maintain in mce).
@@ -61,8 +61,33 @@ IceCopyPastePlugin.prototype = {
     if(e.keyCode == 86) {
       this.handlePaste();
     }
+	else if(e.keyCode == 88) {
+		this.handleCut();
+    }
+	return true;
   },
 
+  keyPress: function(e){
+	var c = null;
+	if (e.which == null) {
+		// IE.
+		c = String.fromCharCode(e.keyCode);
+	} else if (e.which > 0) {
+		c = String.fromCharCode(e.which);
+	}
+	var self = this;
+	if(this.cutElement && c === 'x'){
+		if(ice.dom.isBrowser("webkit")){
+			self.cutElement.focus();
+		}
+	} else if (c === 'v'){
+		if(ice.dom.isBrowser("webkit")){
+			var div = document.getElementById(self._pasteId);
+			div.focus();
+		}
+	}
+	return true;
+  },
   handleCopy: function(e) {},
 
   // Inserts a temporary placeholder for the current range and removes
@@ -123,14 +148,19 @@ IceCopyPastePlugin.prototype = {
       },0);
     };
 
-    if(ice.dom.isBrowser("webkit")){
-      div.blur();
-      setTimeout(function(){
-        div.focus();
-      }, 0);
-    } else {
-      div.focus();
-    }
+	if(this._ice.env.frame){
+		if(ice.dom.isBrowser("webkit")){
+			div.blur();
+			setTimeout(function(){
+				div.focus();
+			}, 0);
+		} else {
+			div.focus();
+		}
+	}
+	else{
+		div.focus();
+	}
     return true;
   },
 
@@ -156,7 +186,6 @@ IceCopyPastePlugin.prototype = {
 
     html = this.afterPasteClean.call(this, html);
     html = ice.dom.trim(html);
-
     var range = this._ice.getCurrentRange();
     range.setStartAfter(this._tmpNode);
     range.collapse(true);
@@ -283,19 +312,60 @@ IceCopyPastePlugin.prototype = {
     var html = range.getHTMLContents();
     if (this._ice.isTracking) this._ice.deleteContents();
     else range.deleteContents();
-    var crange = range.cloneRange();
-    crange.collapse(true);
+//    var crange = range.cloneRange();
+//	var crange = rangy.createRange();
+	var crange = document.createRange();
+//    crange.collapse(true);
     this.cutElement.innerHTML = html;
-    range.setStart(this.cutElement.firstChild, 0);
-    range.setEndAfter(this.cutElement.lastChild, this.cutElement.lastChild.length);
+
+    crange.setStart(this.cutElement.firstChild, 0);
+	crange.setEndAfter(this.cutElement.lastChild);
     var self = this;
-    // After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
-    setTimeout(function() {
-      range.setStart(crange.startContainer, crange.startOffset);
-      range.collapse(true);
-      self._ice.env.selection.addRange(range);
-      //ice.dom.remove(this.cutElement);
-    }, 10);
+
+//	this.cutElement.blur();
+	if(this._ice.env.frame){
+		// TINYMCE
+		setTimeout(function(){
+			self.cutElement.focus();
+			
+			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+			setTimeout(function() {
+				ice.dom.remove(self.cutElement);
+				range.setStart(range.startContainer, range.startOffset);
+				range.collapse(false);
+				self._ice.env.selection.addRange(range);
+				// Set focus back to ice element.
+				if(self._ice.env.frame) {
+					self._ice.env.frame.contentWindow.focus();
+				} else {
+					self._ice.element.focus();
+				}
+			}, 100);
+		}, 0);
+	} else {
+		// Vanilla Div
+		setTimeout(function(){
+			self.cutElement.focus();
+			
+			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+			setTimeout(function() {
+				range.setStart(range.startContainer, range.startOffset);
+				range.collapse(false);
+				self._ice.env.selection.addRange(range);
+				// Set focus back to ice element.
+				if(self._ice.env.frame) {
+					self._ice.env.frame.contentWindow.focus();
+				} else {
+					self._ice.element.focus();
+				}
+			}, 100);
+		}, 0);
+
+		if(ice.dom.getWebkitType() === "chrome"){
+			self.cutElement.focus();
+		}
+	}
+	self._ice.env.selection.addRange(crange);
   },
 
 

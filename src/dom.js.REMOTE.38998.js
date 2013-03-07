@@ -1,4 +1,5 @@
 (function () {
+
   var exports = this,
     dom = {};
 
@@ -156,19 +157,8 @@
   dom.stripEnclosingTags = function (content, allowedTags) {
     var c = jQuery(content);
     c.find('*').not(allowedTags).replaceWith(function () {
-      var ret = jQuery();
-      try{
-	    var $this = jQuery(this);
-	    ret = $this.contents();
-      } catch(e){
-      }
-
-      // Handling jQuery bug (which may be fixed in the official release later)
-      // http://bugs.jquery.com/ticket/13401 
-      if(ret.length === 0){
-	    $this.remove();
-      }
-      return ret;
+      var $this = jQuery(this);
+      return $this.contents();
     });
     return c[0];
   };
@@ -754,15 +744,6 @@
       this._browserType = 'other';
     }
     return this._browserType;
-  };
-  dom.getWebkitType = function(){
-	if(dom.browser().type !== "webkit") {
-		console.log("Not a webkit!");
-		return false;
-	}
-    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-	if(isSafari) return "safari";
-	return "chrome";
   };
   dom.isBrowser = function (browser) {
     return (dom.browser().type === browser);

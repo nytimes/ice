@@ -1,4 +1,186 @@
 (function () {
+
+<<<<<<< HEAD
+    var exports = this,
+        dom = {};
+
+    dom.DOM_VK_DELETE = 8;
+    dom.DOM_VK_LEFT = 37;
+    dom.DOM_VK_UP = 38;
+    dom.DOM_VK_RIGHT = 39;
+    dom.DOM_VK_DOWN = 40;
+    dom.DOM_VK_ENTER = 13;
+    dom.ELEMENT_NODE = 1;
+    dom.ATTRIBUTE_NODE = 2;
+    dom.TEXT_NODE = 3;
+    dom.CDATA_SECTION_NODE = 4;
+    dom.ENTITY_REFERENCE_NODE = 5;
+    dom.ENTITY_NODE = 6;
+    dom.PROCESSING_INSTRUCTION_NODE = 7;
+    dom.COMMENT_NODE = 8;
+    dom.DOCUMENT_NODE = 9;
+    dom.DOCUMENT_TYPE_NODE = 10;
+    dom.DOCUMENT_FRAGMENT_NODE = 11;
+    dom.NOTATION_NODE = 12;
+    dom.CHARACTER_UNIT = 'character';
+    dom.WORD_UNIT = 'word';
+    dom.BREAK_ELEMENT = 'br';
+    dom.CONTENT_STUB_ELEMENTS = ['img', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
+    dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+
+    dom.STUB_ELEMENTS = dom.CONTENT_STUB_ELEMENTS.slice();
+    dom.STUB_ELEMENTS.push(dom.BREAK_ELEMENT);
+    
+    dom.getKeyChar = function (e) {
+        return String.fromCharCode(e.which);
+    };
+    dom.getClass = function (className, startElement, tagName) {
+        if (!startElement) {
+            startElement = document.body;
+        }
+        className = '.' + className.split(' ').join('.');
+        if (tagName) {
+            className = tagName + className;
+        }
+        return jQuery.makeArray(jQuery(startElement).find(className));
+    };
+    dom.getId = function (id, startElement) {
+        if (!startElement) {
+            startElement = document;
+        }
+        element = startElement.getElementById(id);
+        return element;
+    };
+    dom.getTag = function (tagName, startElement) {
+        if (!startElement) {
+            startElement = document;
+        }
+        return jQuery.makeArray(jQuery(startElement).find(tagName));
+    };
+    dom.getElementWidth = function (element) {
+        return element.offsetWidth;
+    };
+    dom.getElementHeight = function (element) {
+        return element.offsetHeight;
+    };
+    dom.getElementDimensions = function (element) {
+        var result = {
+            'width': dom.getElementWidth(element),
+            'height': dom.getElementHeight(element)
+        };
+        return result;
+    };
+    dom.trim = function (string) {
+        return jQuery.trim(string);
+    };
+    dom.empty = function (element) {
+        if (element) {
+            return jQuery(element).empty();
+        }
+    };
+    dom.remove = function (element) {
+        if (element) {
+            return jQuery(element).remove();
+        }
+    };
+    dom.prepend = function (parent, elem) {
+        jQuery(parent).prepend(elem);
+    };
+    dom.append = function (parent, elem) {
+        jQuery(parent).append(elem);
+    };
+    dom.insertBefore = function (before, elem) {
+        jQuery(before).before(elem);
+    };
+    dom.insertAfter = function (after, elem) {
+        jQuery(after).after(elem);
+    };
+    dom.getHtml = function (element) {
+        return jQuery(element).html();
+    };
+    dom.setHtml = function (element, content) {
+        if (element) {
+            jQuery(element).html(content);
+        }
+    };
+    dom.contents = function (el) {
+        return jQuery(el).contents();
+    };
+    /**
+     * Returns the inner contents of `el` as a DocumentFragment.
+     */
+    dom.extractContent = function (el) {
+        var frag = document.createDocumentFragment(),
+            child;
+        while ((child = el.firstChild)) {
+            frag.appendChild(child);
+        }
+        return frag;
+    },
+
+    /**
+     * Returns this `node` or the first parent tracking node that matches the given `selector`.
+     */
+    dom.getNode = function (node, selector) {
+        return dom.is(node, selector) ? node : dom.parents(node, selector)[0] || null;
+    },
+
+    dom.getParents = function (elements, filter, stopEl) {
+        var res = jQuery(elements).parents(filter);
+        var ln = res.length;
+        var ar = [];
+        for (var i = 0; i < ln; i++) {
+            if (res[i] === stopEl) {
+                break;
+            }
+            ar.push(res[i]);
+        }
+        return ar;
+    };
+    dom.hasBlockChildren = function (parent) {
+        var c = parent.childNodes.length;
+        for (var i = 0; i < c; i++) {
+            if (parent.childNodes[i].nodeType === dom.ELEMENT_NODE) {
+                if (dom.isBlockElement(parent.childNodes[i]) === true) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    dom.removeTag = function (element, selector) {
+        jQuery(element).find(selector).replaceWith(function () {
+            return jQuery(this).contents();
+        });
+        return element;
+    };
+    dom.stripEnclosingTags = function (content, allowedTags) {
+		jQuery(content).find('*').not(allowedTags).replaceWith(function () {
+			var ret = jQuery();
+			try{
+				var $this = jQuery(this);
+				ret = $this.contents();
+			} catch(e){
+			}
+
+			// Handling jQuery bug (which may be fixed in the official release later)
+			// http://bugs.jquery.com/ticket/13401 
+			if(ret.length === 0){
+				$this.remove();
+			}
+			return ret;
+		});
+        return c[0];
+    };
+    dom.getSiblings = function (element, dir, elementNodesOnly, stopElem) {
+        if (elementNodesOnly === true) {
+            if (dir === 'prev') {
+                return jQuery(element).prevAll();
+            } else {
+                return jQuery(element).nextAll();
+            }
+=======
   var exports = this,
     dom = {};
 
@@ -156,19 +338,8 @@
   dom.stripEnclosingTags = function (content, allowedTags) {
     var c = jQuery(content);
     c.find('*').not(allowedTags).replaceWith(function () {
-      var ret = jQuery();
-      try{
-	    var $this = jQuery(this);
-	    ret = $this.contents();
-      } catch(e){
-      }
-
-      // Handling jQuery bug (which may be fixed in the official release later)
-      // http://bugs.jquery.com/ticket/13401 
-      if(ret.length === 0){
-	    $this.remove();
-      }
-      return ret;
+      var $this = jQuery(this);
+      return $this.contents();
     });
     return c[0];
   };
@@ -329,6 +500,7 @@
           break;
         } else if (dom.isChildOf(toElem, fromElem.childNodes[i]) === true) {
           return dom.arrayMerge(elements, dom.getElementsBetween(fromElem.childNodes[i], toElem));
+>>>>>>> upstream/master
         } else {
           elements.push(fromElem.childNodes[i]);
         }
@@ -754,15 +926,6 @@
       this._browserType = 'other';
     }
     return this._browserType;
-  };
-  dom.getWebkitType = function(){
-	if(dom.browser().type !== "webkit") {
-		console.log("Not a webkit!");
-		return false;
-	}
-    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-	if(isSafari) return "safari";
-	return "chrome";
   };
   dom.isBrowser = function (browser) {
     return (dom.browser().type === browser);

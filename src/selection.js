@@ -17,9 +17,15 @@
      * Returns the selection object for the current browser.
      */
     _getSelection: function () {
-      if (this._selection) this._selection.refresh();
-      else if (this.env.frame) this._selection = rangy.getIframeSelection(this.env.frame);
-      else this._selection = rangy.getSelection();
+      if (this._selection) {
+		  this._selection.refresh();
+	  }
+      else if (this.env.frame) {
+		  this._selection = rangy.getIframeSelection(this.env.frame);
+	  }
+      else {
+		  this._selection = rangy.getSelection();
+	  }
       return this._selection;
     },
 
