@@ -755,6 +755,15 @@
     }
     return this._browserType;
   };
+  dom.getWebkitType = function(){
+	if(dom.browser().type !== "webkit") {
+		console.log("Not a webkit!");
+		return false;
+	}
+    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+	if(isSafari) return "safari";
+	return "chrome";
+  };
   dom.isBrowser = function (browser) {
     return (dom.browser().type === browser);
   };

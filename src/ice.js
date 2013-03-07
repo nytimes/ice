@@ -1364,8 +1364,6 @@
         this._preventKeyPress = false;
         return;
       }
-
-
       var c = null;
       if (e.which == null) {
         // IE.
@@ -1373,7 +1371,6 @@
       } else if (e.which > 0) {
         c = String.fromCharCode(e.which);
       }
-
 
 	  if (!this.pluginsManager.fireKeyPress(e)) { return false; }
       if (e.ctrlKey || e.metaKey) {
@@ -1390,15 +1387,8 @@
 		br.parentNode.removeChild(br);
 	  }
 	  
-//      if (!this.pluginsManager.fireKeyPressed(e)) { return false; }
-
-
-
       // Ice will ignore the keyPress event if CMD or CTRL key is also pressed
       if (c !== null && e.ctrlKey !== true && e.metaKey !== true) {
-		  
-
-
         switch (e.keyCode) {
           case ice.dom.DOM_VK_DELETE:
             // Handle delete key for Firefox.
