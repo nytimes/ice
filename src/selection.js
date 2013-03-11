@@ -416,12 +416,6 @@
       };
 
       rangy.rangePrototype.getPreviousTextNode = function (container, skippedBlockEl) {
-        /*if (container.nodeType === ice.dom.ELEMENT_NODE) {
-          if (container.childNodes.length !== 0) {
-            return this.getLastSelectableChild(container);
-          }
-        }*/
-
         container = this.getPreviousContainer(container, skippedBlockEl);
         if (container.nodeType === ice.dom.TEXT_NODE) {
           return container;
