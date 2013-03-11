@@ -102,8 +102,28 @@
       jQuery(element).html(content);
     }
   };
+  // Remove whitespace/newlines between nested block elements
+  // that are supported by ice.
+  // For example the following element with innerHTML:
+  //   <div><p> para </p> <ul>  <li> hi </li>  </ul></div>
+  // Will be converted to the following:
+  //   <div><p> para </p><ul><li> hi </li></ul></div>
+  dom.removeWhitespace = function(element) {
+    jQuery(element).contents().filter(function() {
+      // Ice supports UL and OL, so recurse in these blocks to
+      // make sure that spaces don't exist between inner LI.
+      if (this.nodeType != ice.dom.TEXT_NODE && this.nodeName == 'UL' || this.nodeName == 'OL') {
+        dom.removeWhitespace(this);
+        return false;
+      } else if (this.nodeType != ice.dom.TEXT_NODE) {
+        return false;
+      } else {
+        return !/\S/.test(this.nodeValue);
+      }
+    }).remove();
+  };
   dom.contents = function (el) {
-    return jQuery(el).contents();
+    return jQuery.makeArray(jQuery(el).contents());
   };
   /**
    * Returns the inner contents of `el` as a DocumentFragment.
@@ -158,15 +178,14 @@
     c.find('*').not(allowedTags).replaceWith(function () {
       var ret = jQuery();
       try{
-	    var $this = jQuery(this);
-	    ret = $this.contents();
-      } catch(e){
-      }
+	      var $this = jQuery(this);
+	      ret = $this.contents();
+      } catch(e){}
 
       // Handling jQuery bug (which may be fixed in the official release later)
       // http://bugs.jquery.com/ticket/13401 
       if(ret.length === 0){
-	    $this.remove();
+  	    $this.remove();
       }
       return ret;
     });
@@ -769,6 +788,9 @@
   };
 
   dom.getBlockParent = function (node, container) {
+    if (dom.isBlockElement(node) === true) {
+      return node;
+    }
     if (node) {
       while (node.parentNode) {
         node = node.parentNode;
@@ -830,7 +852,7 @@
   };
 
   dom.mergeBlockWithSibling = function (range, block, next) {
-    var siblingBlock = next ? $(block).next().get(0) : $(block).prev().get(0); // block['nextSibling'] : block['previousSibling'];
+    var siblingBlock = next ? jQuery(block).next().get(0) : jQuery(block).prev().get(0); // block['nextSibling'] : block['previousSibling'];
     if (next) dom.mergeContainers(siblingBlock, block);
     else dom.mergeContainers(block, siblingBlock);
     range.collapse(true);

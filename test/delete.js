@@ -190,7 +190,7 @@ $(document).ready(function() {
         '<p>a<em> <span class="del cts-1" userid="1" cid="1">left</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through different user delete.
     range.setStartAfter(el.find('em')[0]);
     range.moveStart('character', 10);
@@ -321,7 +321,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p>paragraph 2</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through block.
     range.setStart(el.find('p:eq(1)')[0], 0);
     range.moveStart('character', 2);
@@ -331,9 +331,7 @@ $(document).ready(function() {
     changeEditor.deleteContents(false);
     changeEditor.deleteContents(false);
 
-    ok(el.find('p').length === 2
-        && el.find('.del:eq(0)').text() === '1'
-        && el.find('.del:eq(1)').text() === 'pa',
+    ok(el.find('p').length === 1 && el.find('.del').text() === '1pa',
       'Deleted left through blocks.');
 
     // Setup for deleting right, through blocks
@@ -341,7 +339,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p>paragraph 2</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete right through block.
     range.setStart(el.find('p:eq(0)')[0], 0);
     range.moveStart('character', 9);
@@ -351,11 +349,10 @@ $(document).ready(function() {
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
-    
-    ok(el.find('p').length === 2
-        && el.find('.del').length === 2
-        && el.find('.del:eq(0)').text() === ' 1'
-        && el.find('.del:eq(1)').text() === 'pa',
+
+    ok(el.find('p').length === 1
+        && el.find('.del').length === 1
+        && el.find('.del:eq(0)').text() === ' 1pa',
       'Deleted right through blocks.');
 
     // Setup for deleting left, through empty blocks
@@ -363,7 +360,7 @@ $(document).ready(function() {
         '<p><em>paragraph 1</em></p><p></p><p></p><p>paragraph 3</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through empty block.
     range.setStart(el.find('p:eq(3)')[0], 0);
     range.moveStart('character', 2);
@@ -375,7 +372,7 @@ $(document).ready(function() {
     changeEditor.deleteContents(false);
     changeEditor.deleteContents(false);
 
-    ok(el.find('p').length === 2
+    ok(el.find('p').length === 1
         && el.find('.del:eq(0)').text() === '1'
         && el.find('.del:eq(1)').text() === 'pa',
       'Deleted left through empty blocks.');
@@ -385,11 +382,12 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p></p><p></p><p><em>paragraph</em> 2</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete right through block.
     range.setStart(el.find('p:eq(0)')[0], 0);
     range.moveStart('character', 9);
     range.collapse(true);
+
     changeEditor.deleteContents(true, range);
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
@@ -397,8 +395,8 @@ $(document).ready(function() {
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
-    
-    ok(el.find('p').length === 2
+
+    ok(el.find('p').length === 1
         && el.find('.del').length === 2
         && el.find('.del:eq(0)').text() === ' 1'
         && el.find('.del:eq(1)').text() === 'pa',
@@ -409,7 +407,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" cid="1" userid="1">delete1</span><span class="del cts-1" cid="2" userid="1">delete2</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through adjacent, different-user deletes
     range.setStartAfter(el.find('span:eq(1)')[0]);
     range.moveStart('character', 2);
@@ -543,7 +541,7 @@ $(document).ready(function() {
         '<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li></ul><p>Next paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete right through paragraphs and list
     range.setStartAfter(el.find('em:eq(0)')[0]);
     range.collapse(true);
@@ -581,9 +579,10 @@ $(document).ready(function() {
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
     changeEditor.deleteContents(true);
+    changeEditor.deleteContents(true);
 
     ok(el.find('.del').length === 7 
-      &&el.find('.del:eq(6)').text() === 'N',
+      && el.find('.del:eq(6)').text() === 'N',
       'Delete right through paragraphs and list.');
 
     // Setup for deleting left through paragraphs with images.
@@ -591,7 +590,7 @@ $(document).ready(function() {
     '<p>First paragraph.<img></p><p><img></p><p>Next<img> <em>pa</em>ragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
-    
+
     // Delete left through paragraphs with images
     range.setStartAfter(el.find('em:eq(0)')[0]);
     range.moveStart('character', 3);
@@ -655,7 +654,7 @@ $(document).ready(function() {
 
     // Setup for deleting left through lists with images between paragraphs with images.
     el = jQuery('<div>' +
-    '<p>First paragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><p>Last <em>pa</em>ragraph.</p>' +
+    '<p>First paragraph.<img></p><ul><li><img></li><li>text<img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><p>Last <em>pa</em>ragraph.</p>' +
       '</div>');
     changeEditor = getIce(el);
 
@@ -704,30 +703,10 @@ $(document).ready(function() {
     changeEditor.deleteContents(false);
     changeEditor.deleteContents(false);
     changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
-    changeEditor.deleteContents(false);
 
-    ok(el.find('.del').length === 11 
-      &&el.find('.del > img').length == 8 
-      &&el.find('.del:eq(0)').text() === 't paragraph.',
+    ok(el.find('.del').length === 8 
+      && el.find('.del > img').length == 5 
+      && el.find('.del:eq(0)').text() === 'h.',
       'Delete left through lists with images between paragraphs with images.');
 
     // Setup for deleting right through lists with images between paragraphs with images.

@@ -61,7 +61,11 @@
     noTrack: '.ice-no-track',
 
     // Selector for elements to avoid - move range before or after - similar handling to deletes
-    avoid: '.ice-avoid'
+    avoid: '.ice-avoid',
+
+    // Switch for whether paragraph breaks should be removed when the user is deleting over a
+    // paragraph break while changes are tracked.
+    mergeBlocks: true
   };
 
   InlineChangeEditor = function (options) {
@@ -177,9 +181,8 @@
       var self = this,
         body = this.env.document.createElement('div');
       if (this.element.childNodes.length) {
-        ice.dom.each(ice.dom.contents(this.element), function (i, node) {
-          if (node.nodeType != ice.dom.TEXT_NODE) body.appendChild(node);
-        });
+        body.innerHTML = this.element.innerHTML;
+        ice.dom.removeWhitespace(body);
         if (body.innerHTML === '') body.appendChild(ice.dom.create('<' + this.blockEl + ' ><br/></' + this.blockEl + '>'));
       } else {
         body.appendChild(ice.dom.create('<' + this.blockEl + ' ><br/></' + this.blockEl + '>'));
@@ -821,11 +824,15 @@
 
       // Bookmark the range and get elements between.
       var bookmark = new ice.Bookmark(this.env, range),
-        elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
+        elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end),
+        b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0],
+        b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0],
+        betweenBlocks = new Array(); 
 
       for (var i = 0; i < elements.length; i++) {
         var elem = elements[i];
         if (ice.dom.isBlockElement(elem)) {
+          betweenBlocks.push(elem);
           if (!ice.dom.canContainTextElement(elem)) {
             // Ignore containers that are not supposed to contain text. Check children instead.
             for (var k = 0; k < elem.childNodes.length; k++) {
@@ -862,6 +869,12 @@
             ice.dom.remove(parentBlock);
           }
         }
+      }
+
+      if (this.mergeBlocks && b1 !== b2) {
+        while (betweenBlocks.length)
+          ice.dom.mergeContainers(betweenBlocks.shift(), b1);
+        ice.dom.mergeContainers(b2, b1);
       }
 
       bookmark.selectBookmark();
@@ -916,6 +929,8 @@
       // Move range to position the cursor on the inside of any adjacent container that it is going
       // to potentially delete into or after a stub element.  E.G.:  test|<em>text</em>  ->  test<em>|text</em> or
       // text1 |<img> text2 -> text1 <img>| text2
+
+      // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
       range.moveEnd(ice.dom.CHARACTER_UNIT, 1);
       range.moveEnd(ice.dom.CHARACTER_UNIT, -1);
 
@@ -929,12 +944,12 @@
           range.collapse();
           return false;
         }
-        
+
         // If the next container is a text node, look at the parent node instead.
         if (nextContainer.nodeType === ice.dom.TEXT_NODE) {
           nextContainer = nextContainer.parentNode;
         }
-        
+
         // If the next container is non-editable, enclose it with a delete ice node and add an empty text node after it to position the caret.
         if (!nextContainer.isContentEditable) {
           returnValue = this._addNodeTracking(nextContainer, false, false);
@@ -962,20 +977,36 @@
         return false;
       }
 
-      // Handles cases in which the caret is at the end of the block
       if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
+        if (this.mergeBlocks && ice.dom.is(ice.dom.getBlockParent(nextContainer, this.element), this.blockEl)) {
+          // Since the range is moved by character, it may have passed through empty blocks.
+          // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+          if (nextBlock !== ice.dom.getBlockParent(range.endContainer, this.element)) {
+            range.setEnd(nextBlock, 0);
+          }
+          // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+          var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer);
+          for (var i = 0; i < elements.length; i++) {
+            ice.dom.remove(elements[i]);
+          }
+          var startContainer = range.startContainer;
+          var endContainer = range.endContainer;
+          ice.dom.remove(ice.dom.find(startContainer, 'br'));
+          ice.dom.remove(ice.dom.find(endContainer, 'br'));
+          return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
+        } else {
+          // If the next block is empty, remove the next block.
+          if (nextBlockIsEmpty) {
+            ice.dom.remove(nextBlock);
+            range.collapse(true);
+            return true;
+          }
 
-        // If the next block is empty, remove the next block.
-        if (nextBlockIsEmpty) {
-          ice.dom.remove(nextBlock);
+          // Place the caret at the start of the next block.
+          range.setStart(nextBlock, 0);
           range.collapse(true);
           return true;
         }
-
-        // Place the caret at the start of the next block.
-        range.setStart(nextBlock, 0);
-        range.collapse(true);
-        return true;
       }
 
       var entireTextNode = range.endContainer;
@@ -1047,7 +1078,7 @@
         if (prevContainer.nodeType === ice.dom.TEXT_NODE) {
           prevContainer = prevContainer.parentNode;
         }
-          
+
         // If the previous container is non-editable, enclose it with a delete ice node and add an empty text node before it to position the caret.
         if (!prevContainer.isContentEditable) {
           var returnValue = this._addNodeTracking(prevContainer, false, true);
@@ -1087,7 +1118,7 @@
           // Find the last selectable part of the prevContainer. If it exists, put the caret there.
           lastSelectable = range.getLastSelectableChild(prevContainer);
 
-          if (lastSelectable) {
+          if (lastSelectable && !ice.dom.isOnBlockBoundary(range.startContainer, lastSelectable, this.element)) {
             range.selectNodeContents(lastSelectable);
             range.collapse();
             return true;
@@ -1114,7 +1145,7 @@
         return false;
       }
 
-      // Handles cases in which the caret is at the start of the line
+      // Handles cases in which the caret is at the start of the block.
       if (ice.dom.isOnBlockBoundary(range.startContainer, range.endContainer, this.element)) {
 
         // If the previous block is empty, remove the previous block.
@@ -1122,6 +1153,25 @@
           ice.dom.remove(prevBlock);
           range.collapse();
           return true;
+        }
+
+        // Merge blocks: If mergeBlocks is enabled, merge the previous and current block.
+        if (this.mergeBlocks && ice.dom.is(ice.dom.getBlockParent(prevContainer, this.element), this.blockEl)) {
+          // Since the range is moved by character, it may have passed through empty blocks.
+          // <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
+          if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
+            range.setStart(prevBlock, prevBlock.childNodes.length);
+          }
+          // The browsers like to auto-insert breaks into empty paragraphs - remove them.
+          var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
+          for (var i = 0; i < elements.length; i++) {
+            ice.dom.remove(elements[i]);
+          }
+          var startContainer = range.startContainer;
+          var endContainer = range.endContainer;
+          ice.dom.remove(ice.dom.find(startContainer, 'br'));
+          ice.dom.remove(ice.dom.find(endContainer, 'br'));
+          return ice.dom.mergeBlockWithSibling(range, ice.dom.getBlockParent(range.endContainer, this.element) || parentBlock);
         }
 
         // If the previous Block ends with a stub element, set the caret behind it.
@@ -1140,9 +1190,8 @@
           range.setStart(prevBlock, prevBlock.childNodes.length);
           range.collapse(true);
         }
-        
-        return true;
 
+        return true;
       }
 
       var entireTextNode = range.startContainer;

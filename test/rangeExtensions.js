@@ -3,19 +3,18 @@ $(document).ready(function() {
   module("range/rangy extensions");
 
   test("range.moveStart - move 1 character to the left", function() {
-    // <div><p><span>a paragrap|h</span>|</p></div>
-    //                         |        |
-    //                         A        B
+    // <div><p>a paragrap|h</p><ol><li>|<span><img></span></li></ol></div>
+    //                   |             |
+    //                   A             B
     // go from B to A
-    var el = jQuery('<div><p><span>a paragraph</span></p></div>');
+    var el = jQuery('<div><p>a paragraph</p><ol><li><span><img></span></li></ol></div>');
     var changeEditor = getIce(el);
     var range = changeEditor.env.selection.createRange();
-    
-    range.setStart(el.find('p')[0], 0);
-    range.collapse(false);
+
+    range.setStart(el.find('li')[0], 0);
     range.moveStart('character', -1);
 
-    equal(range.startContainer, el.find('span')[0].childNodes[0]);
+    equal(range.startContainer, el.find('p')[0].childNodes[0]);
     equal(range.startOffset, 10);
   });
 
