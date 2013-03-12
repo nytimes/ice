@@ -8,10 +8,7 @@ javascripts:
   sr_editor_plugin:
     - lib/tinymce/jscripts/tiny_mce/plugins/icesearchreplace/editor_plugin.js
   ice.min:
-    - lib/rangy-1.2/rangy-core.js
-    - lib/rangy-1.2/rangy-cssclassapplier.js
-    - lib/rangy-1.2/rangy-selectionsaverestore.js
-    - lib/rangy-1.2/rangy-serializer.js
+    - lib/rangy/rangy-core.js
     - src/polyfills.js
     - src/ice.js
     - src/dom.js
