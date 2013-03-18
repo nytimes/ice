@@ -29,7 +29,7 @@
 
   dom.STUB_ELEMENTS = dom.CONTENT_STUB_ELEMENTS.slice();
   dom.STUB_ELEMENTS.push(dom.BREAK_ELEMENT);
-  
+
   dom.getKeyChar = function (e) {
     return String.fromCharCode(e.which);
   };
@@ -177,15 +177,16 @@
     var c = jQuery(content);
     c.find('*').not(allowedTags).replaceWith(function () {
       var ret = jQuery();
+      var $this;
       try{
-	      var $this = jQuery(this);
-	      ret = $this.contents();
+        $this = jQuery(this);
+        ret = $this.contents();
       } catch(e){}
 
       // Handling jQuery bug (which may be fixed in the official release later)
       // http://bugs.jquery.com/ticket/13401 
       if(ret.length === 0){
-  	    $this.remove();
+        $this.remove();
       }
       return ret;
     });
@@ -462,11 +463,11 @@
           return null;
         }
         if (node.previousSibling && dom.canContainTextElement(dom.getBlockParent(node))) {
-          
+
           // if previous sibling is an empty text node, look further
           if (node.previousSibling.nodeType === dom.TEXT_NODE && node.previousSibling.length === 0) {
             node = node.previousSibling;
-            
+
             continue;
           }
           return node.previousSibling;
