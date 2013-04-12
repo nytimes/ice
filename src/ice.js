@@ -291,13 +291,15 @@
      * is used. If the range is in a parent delete node, then the range is positioned after the delete.
      */
     insert: function (node, range) {
+      // If the node is not defined, then we need to insert an
+      // invisible space and force propagation to the browser.
+      var isPropagating = !node;
+      node || (node = '\uFEFF');
+
       if (range) this.selection.addRange(range);
       else range = this.getCurrentRange();
 
-      if (typeof node === "string") {
-        //if (node.trim() === "") node = node.replace(/ /g, "\u205f");
-        node = document.createTextNode(node);
-      }
+      if (typeof node === "string") node = document.createTextNode(node);
 
       // If we have any nodes selected, then we want to delete them before inserting the new text.
       if (!range.collapsed) {
@@ -318,10 +320,10 @@
 
       var changeid = this.startBatchChange();
       // Send a dummy node to be inserted, if node is undefined
-      this._insertNode(node || document.createTextNode('\uFEFF'), range, !node);
+      this._insertNode(node, range, isPropagating);
       this.pluginsManager.fireNodeInserted(node, range);
       this.endBatchChange(changeid);
-      return false;
+      return isPropagating;
     },
 
     /**
@@ -798,14 +800,15 @@
 
       range.insertNode(node);
       range.setEnd(node, 1);
-      range.collapse();
 
       if (insertingDummy) {
         // Create a selection of the dummy character we inserted
         // which will be removed after it bubbles up to the final handler.
         range.setStart(node, 0);
-        range.setEnd(node, 1);
+      } else {
+        range.collapse();
       }
+
       this.selection.addRange(range);
     },
 
@@ -1428,14 +1431,13 @@
 
 
 	  // Inside a br - most likely in a placeholder of a new block - delete before handling.
-	  
 	  var range = this.getCurrentRange();
-	  var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
-	  if (br) {
-		range.moveToNextEl(br);
-		br.parentNode.removeChild(br);
-	  }
-	  
+    var br = ice.dom.parents(range.startContainer, 'br')[0] || null;
+    if (br) {
+      range.moveToNextEl(br);
+      br.parentNode.removeChild(br);
+    }
+
       // Ice will ignore the keyPress event if CMD or CTRL key is also pressed
       if (c !== null && e.ctrlKey !== true && e.metaKey !== true) {
         switch (e.keyCode) {
@@ -1447,7 +1449,7 @@
           default:
             // If we are in a deletion, move the range to the end/outside.
             this._moveRangeToValidTrackingPos(range, range.startContainer);
-            return this.insert(c);
+            return this.insert();
         }
       }
 

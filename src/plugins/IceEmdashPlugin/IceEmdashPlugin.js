@@ -14,12 +14,12 @@ IceEmdashPlugin.prototype = {
 
 	keyDown: function(e) {
 		// Catch dashes.
-		if(ice.dom.isBrowser('mozilla')) {
-			var version = parseInt(ice.dom.browser().version);
-			if ( (version > 14 && e.keyCode === 173) || (version <= 14 && e.keyCode === 109) ) {
-				return this.convertEmdash(e);
-			}
-		} else if(e.keyCode === 189) {
+		if (ice.dom.isBrowser('mozilla')) {
+      var version = parseInt(ice.dom.browser().version);
+      if ((version > 14 && e.keyCode === 173) || (version <= 14 && e.keyCode === 109)) {
+        return this.convertEmdash(e);
+      }
+		} else if (e.keyCode === 189) {
 			return this.convertEmdash(e);
 		}
 		return true;
@@ -47,17 +47,9 @@ IceEmdashPlugin.prototype = {
 							this._ice._insertNode(mdash, range);
 						} else {
 							range.insertNode(mdash);
-							/* TO be reverted once mozilla fixes FF 15 issue */
 							range.setStart(mdash, 1);
 							range.collapse(true);
-							/* FINISH revert */
 						}
-						/* TO be reverted once mozilla fixes FF 15 issue
-						range = this._ice.getCurrentRange();
-						range.moveStart(ice.dom.CHARACTER_UNIT, 1);
-						range.collapse(true);
-						this._ice.env.selection.addRange(range);
-						*/
 						this._ice._preventKeyPress = true;
 						return false;
 					}
