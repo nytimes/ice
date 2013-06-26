@@ -258,6 +258,16 @@
   dom.isStubElement = function (element) {
     return dom.STUB_ELEMENTS.lastIndexOf(element.nodeName.toLowerCase()) != -1;
   };
+  dom.removeBRFromChild = function (node) {
+    if (node && node.hasChildNodes()) {
+      for(var z=0; z < node.childNodes.length ; z++) {
+        var child = node.childNodes[z];
+        if (child && (ice.dom.BREAK_ELEMENT == ice.dom.getTagName(child))) {
+          child.parentNode.removeChild(child);
+        }
+      }
+    }
+  };
   dom.isChildOf = function (el, parent) {
     try {
       while (el && el.parentNode) {

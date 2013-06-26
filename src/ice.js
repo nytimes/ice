@@ -851,6 +851,9 @@
           // If the element is not a text or stub node, go deeper and check the children.
           if (elem.nodeType !== ice.dom.TEXT_NODE) {
             // Browsers like to insert breaks into empty paragraphs - remove them
+            if (ice.dom.BREAK_ELEMENT == ice.dom.getTagName(elem)) {
+              continue;
+            }
 
             if (ice.dom.isStubElement(elem)) {
               this._addNodeTracking(elem, false, true);
@@ -877,6 +880,8 @@
       if (this.mergeBlocks && b1 !== b2) {
         while (betweenBlocks.length)
           ice.dom.mergeContainers(betweenBlocks.shift(), b1);
+        ice.dom.removeBRFromChild(b2);
+        ice.dom.removeBRFromChild(b1);
         ice.dom.mergeContainers(b2, b1);
       }
 
@@ -946,6 +951,11 @@
           range.selectNodeContents(initialContainer);
           range.collapse();
           return false;
+        }
+
+        // If the next container is <br> element find the next node
+        if (ice.dom.BREAK_ELEMENT == ice.dom.getTagName(nextContainer)) {
+          nextContainer = ice.dom.getNextNode(nextContainer, this.element);
         }
 
         // If the next container is a text node, look at the parent node instead.
@@ -1113,7 +1123,7 @@
             prevContainer = prevContainer.lastElementChild;
           }
           // Before putting the caret into the last selectable child, lets see if the last element is a stub element. If it is, we need to put the caret there manually.
-          if (prevContainer.lastChild && prevContainer.lastChild.nodeType !== ice.dom.TEXT_NODE && ice.dom.isStubElement(prevContainer.lastChild)) {
+          if (prevContainer.lastChild && prevContainer.lastChild.nodeType !== ice.dom.TEXT_NODE && ice.dom.isStubElement(prevContainer.lastChild) && prevContainer.lastChild.tagName !== 'BR') {
             range.setStartAfter(prevContainer.lastChild);
             range.collapse(true);
             return true;
