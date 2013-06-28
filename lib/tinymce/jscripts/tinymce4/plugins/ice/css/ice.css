@@ -1,0 +1,27 @@
+.CT-hide .del, .CT-hide .del {
+	display: none;
+}
+
+.CT-hide .ins, .CT-hide .ins {
+	color: #333333;
+	background: none !important;
+  border: none !important; 
+}
+
+.ins,
+.del {
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	color: #000;
+	padding: 1px 0 2px;
+}
+
+.ins {
+	background-color: #e5ffcd;
+}
+
+.del {
+	text-decoration: line-through;
+	color: #555;
+	background-color: #e8e8e8;
+}
