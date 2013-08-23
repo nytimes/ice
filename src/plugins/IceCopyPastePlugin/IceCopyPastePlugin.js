@@ -82,8 +82,7 @@ IceCopyPastePlugin.prototype = {
 		}
 	} else if (c === 'v'){
 		if(ice.dom.isBrowser("webkit")){
-			var div = document.getElementById(self._pasteId);
-			div.focus();
+			this._ice.env.document.getElementById(self._pasteId).focus();
 		}
 	}
 	return true;
@@ -140,7 +139,12 @@ IceCopyPastePlugin.prototype = {
   // Create a temporary div and set focus to it so that the browser can paste into it.
   // Set a timeout to push a paste handler on to the end of the execution stack.
   setupPaste: function(stripTags) {
-    var div = this.createDiv(this._pasteId), self = this;
+    var div = this.createDiv(this._pasteId),
+        self = this,
+        range = this._ice.getCurrentRange();
+    
+    range.selectNodeContents(div);
+    this._ice.selection.addRange(range);
 
     div.onpaste = function() {
       setTimeout(function(){
@@ -148,19 +152,7 @@ IceCopyPastePlugin.prototype = {
       },0);
     };
 
-	if(this._ice.env.frame){
-		if(ice.dom.isBrowser("webkit")){
-			div.blur();
-			setTimeout(function(){
-				div.focus();
-			}, 0);
-		} else {
-			div.focus();
-		}
-	}
-	else{
 		div.focus();
-	}
     return true;
   },
 
@@ -169,8 +161,9 @@ IceCopyPastePlugin.prototype = {
   // and merge the pasted content into the original fragment body.
   handlePasteValue: function(stripTags) {
     // Get the pasted content.
-    var html = ice.dom.getHtml(document.getElementById(this._pasteId));
-    var childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
+    var doc = this._ice.env.document,
+        html = ice.dom.getHtml(doc.getElementById(this._pasteId)),
+        childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
     if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {
       html = ice.dom.getHtml(html);
     }
@@ -203,7 +196,7 @@ IceCopyPastePlugin.prototype = {
       range.setEndAfter(block.lastChild);
       this._ice.selection.addRange(range);
       var contents = range.extractContents();
-      var newblock = this._ice.env.document.createElement(this._ice.blockEl);
+      var newblock = doc.createElement(this._ice.blockEl);
       newblock.appendChild(contents);
       ice.dom.insertAfter(block, newblock);
 
@@ -228,11 +221,11 @@ IceCopyPastePlugin.prototype = {
             if(this._ice.isTracking) {
               insert = this._ice.createIceNode('insertType');
               this._ice.addChange('insertType', [insert]);
-              newEl = document.createElement(fragment.firstChild.tagName);
+              newEl = doc.createElement(fragment.firstChild.tagName);
               insert.innerHTML = fragment.firstChild.innerHTML;
               newEl.appendChild(insert);
             } else {
-              insert = newEl = document.createElement(fragment.firstChild.tagName);
+              insert = newEl = doc.createElement(fragment.firstChild.tagName);
               newEl.innerHTML = fragment.firstChild.innerHTML;
             }
             lastEl = insert;
@@ -242,7 +235,7 @@ IceCopyPastePlugin.prototype = {
         } else {
           if(!innerBlock) {
             // Create a new block and append an insert
-            newEl = document.createElement(this._ice.blockEl);
+            newEl = doc.createElement(this._ice.blockEl);
             ice.dom.insertBefore(prevBlock, newEl);
             if(this._ice.isTracking) {
               innerBlock = this._ice.createIceNode('insertType');
@@ -282,12 +275,13 @@ IceCopyPastePlugin.prototype = {
 
 
   createDiv: function(id) {
-    var oldEl = ice.dom.getId(id);
+    var doc = this._ice.env.document, // Document object of window or tinyMCE iframe
+        oldEl = doc.getElementById(id);
     if(oldEl) {
       ice.dom.remove(oldEl);
     }
 
-    var div = this._ice.env.document.createElement('div');
+    var div = doc.createElement('div');
     div.id = id;
     div.setAttribute('contentEditable', true);
     ice.dom.setStyle(div, 'width', '1px');
@@ -297,7 +291,8 @@ IceCopyPastePlugin.prototype = {
     ice.dom.setStyle(div, 'top', '10px');
     ice.dom.setStyle(div, 'left', '10px');
 
-    document.body.appendChild(div);
+    div.appendChild(doc.createElement('br'));
+    doc.body.appendChild(div);
     return div;
   },
 
@@ -305,67 +300,34 @@ IceCopyPastePlugin.prototype = {
   // into it, deleting the current selection with track changes, and selecting the contents in the
   // editable div.
   handleCut: function() {
-    this.cutElementId = 'icecut';
-    this.cutElement = this.createDiv(this.cutElementId);
-    var range = this._ice.getCurrentRange();
-    if(range.collapsed) return;
-    var html = range.getHTMLContents();
+    var self = this,
+        range = this._ice.getCurrentRange();
+    if (range.collapsed) return; // If nothing is selected, there's nothing to mark deleted
+
+    this.cutElement = this.createDiv('icecut');
+    // Chrome strips out spaces between text nodes and elements node during cut
+    this.cutElement.innerHTML = range.getHTMLContents().replace(/ </g, '&nbsp;<').replace(/> /g, '>&nbsp;');
+
     if (this._ice.isTracking) this._ice.deleteContents();
     else range.deleteContents();
-//    var crange = range.cloneRange();
-//	var crange = rangy.createRange();
-	var crange = document.createRange();
-//    crange.collapse(true);
-    this.cutElement.innerHTML = html;
 
+    var crange = this._ice.env.document.createRange();
     crange.setStart(this.cutElement.firstChild, 0);
-	crange.setEndAfter(this.cutElement.lastChild);
-    var self = this;
+    crange.setEndAfter(this.cutElement.lastChild);
 
-//	this.cutElement.blur();
-	if(this._ice.env.frame){
-		// TINYMCE
-		setTimeout(function(){
-			self.cutElement.focus();
-			
-			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
-			setTimeout(function() {
-				ice.dom.remove(self.cutElement);
-				range.setStart(range.startContainer, range.startOffset);
-				range.collapse(false);
-				self._ice.env.selection.addRange(range);
-				// Set focus back to ice element.
-				if(self._ice.env.frame) {
-					self._ice.env.frame.contentWindow.focus();
-				} else {
-					self._ice.element.focus();
-				}
-			}, 100);
-		}, 0);
-	} else {
-		// Vanilla Div
-		setTimeout(function(){
-			self.cutElement.focus();
-			
-			// After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
-			setTimeout(function() {
-				range.setStart(range.startContainer, range.startOffset);
-				range.collapse(false);
-				self._ice.env.selection.addRange(range);
-				// Set focus back to ice element.
-				if(self._ice.env.frame) {
-					self._ice.env.frame.contentWindow.focus();
-				} else {
-					self._ice.element.focus();
-				}
-			}, 100);
-		}, 0);
+    setTimeout(function() {
+      self.cutElement.focus();
 
-		if(ice.dom.getWebkitType() === "chrome"){
-			self.cutElement.focus();
-		}
-	}
-	self._ice.env.selection.addRange(crange);
+      // After the browser cuts out of the `cutElement`, reset the range and remove the cut element.
+      setTimeout(function() {
+        ice.dom.remove(self.cutElement);
+        range.setStart(range.startContainer, range.startOffset);
+        range.collapse(false);
+        self._ice.env.selection.addRange(range);
+      }, 100);
+    }, 0);
+    
+    self._ice.env.selection.addRange(crange);
   },
 
 
