@@ -162,7 +162,8 @@ IceCopyPastePlugin.prototype = {
   handlePasteValue: function(stripTags) {
     // Get the pasted content.
     var doc = this._ice.env.document,
-        html = ice.dom.getHtml(doc.getElementById(this._pasteId)),
+        pasteDiv = doc.getElementById(this._pasteId),
+        html = ice.dom.getHtml(pasteDiv),
         childBlocks = ice.dom.children('<div>' + html + '</div>', this._ice.blockEl);
     if(childBlocks.length === 1 && ice.dom.getNodeTextContent('<div>' + html + '</div>') === ice.dom.getNodeTextContent(childBlocks)) {
       html = ice.dom.getHtml(html);
@@ -270,6 +271,7 @@ IceCopyPastePlugin.prototype = {
       }
     }
     this._ice.endBatchChange(changeid);
+    pasteDiv.remove();
     this._cleanup(lastEl);
   },
 
