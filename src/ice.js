@@ -393,19 +393,23 @@
 
       var changeid = this.startBatchChange(this.changeTypes['deleteType'].alias);
       if (range.collapsed === false) {
-        this._deleteSelection(range);
-		if(browser["type"] === "mozilla"){
-			if(range.startContainer.parentNode.previousSibling){
-				range.setEnd(range.startContainer.parentNode.previousSibling, 0);
-				range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
-			} else {
-				range.setEnd(range.startContainer.parentNode, 0);
-			}
-			range.collapse(false);
+		if(this._currentUserIceNode(range.startContainer.parentNode)){
+			this._deleteSelection(range);
 		} else {
-			if(!this.visible(range.endContainer)){
-				range.setEnd(range.endContainer, range.endOffset - 1);
+			this._deleteSelection(range);
+			if(browser["type"] === "mozilla"){
+				if(range.startContainer.parentNode.previousSibling){
+					range.setEnd(range.startContainer.parentNode.previousSibling, 0);
+					range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
+				} else {
+					range.setEnd(range.startContainer.parentNode, 0);
+				}
 				range.collapse(false);
+			} else {
+				if(!this.visible(range.endContainer)){
+					range.setEnd(range.endContainer, range.endOffset - 1);
+					range.collapse(false);
+				}
 			}
 		}
       } else {
