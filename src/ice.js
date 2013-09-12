@@ -402,7 +402,7 @@
 					range.setEnd(range.startContainer.parentNode.previousSibling, 0);
 					range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
 				} else {
-					range.setEnd(range.startContainer.parentNode, 0);
+					range.setEndAfter(range.startContainer.parentNode);
 				}
 				range.collapse(false);
 			} else {
