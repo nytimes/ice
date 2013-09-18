@@ -1446,9 +1446,11 @@
      */
     _handleAncillaryKey: function (e) {
       var key = e.keyCode ? e.keyCode : e.which;
+	  var browser = ice.dom.browser();
       var preventDefault = true;
       var shiftKey = e.shiftKey;
 	  var self = this;
+	  var range = self.getCurrentRange();
       switch (key) {
         case ice.dom.DOM_VK_DELETE:
           preventDefault = this.deleteContents();
@@ -1461,13 +1463,41 @@
           this.pluginsManager.fireKeyPressed(e);
           break;
 
+		/************************************************************************************/
+		/** BEGIN: Handling of caret movements inside hidden .ins/.del elements on Firefox **/
+		/**  *Fix for carets getting stuck in .del elements when track changes are hidden  **/
         case ice.dom.DOM_VK_DOWN:
         case ice.dom.DOM_VK_UP:
         case ice.dom.DOM_VK_LEFT:
-        case ice.dom.DOM_VK_RIGHT:
           this.pluginsManager.fireCaretPositioned();
+		  if(browser["type"] === "mozilla"){
+			if(!this.visible(range.startContainer)){
+				if(range.startContainer.parentNode.previousSibling){
+					// When moving left and moving into a hidden element, skip it and go to the previousSibling
+					range.setEnd(range.startContainer.parentNode.previousSibling, 0);
+					range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
+					range.collapse(false);
+				}
+			}
+		  }	
           preventDefault = false;
           break;
+        case ice.dom.DOM_VK_RIGHT:
+          this.pluginsManager.fireCaretPositioned();
+		  if(browser["type"] === "mozilla"){
+			if(!this.visible(range.startContainer)){
+				if(range.startContainer.parentNode.nextSibling){
+					// When moving right and moving into a hidden element, skip it and go to the nextSibling
+					range.setStart(range.startContainer.parentNode.nextSibling,0);
+					range.collapse(true);
+				}
+			}
+		  }
+          preventDefault = false;
+          break;
+		/** END: Handling of caret movements inside hidden .ins/.del elements ***************/
+		/************************************************************************************/
+
 		case 32:
 		  preventDefault = true;
 		  var range = this.getCurrentRange();
@@ -1493,7 +1523,6 @@
         ice.dom.preventDefault(e);
         return false;
       }
-
       var preventDefault = false;
 
       if (this._handleSpecialKey(e) === false) {
@@ -1510,7 +1539,6 @@
           return false;
         }
       }
-
       switch (e.keyCode) {
         case 27:
           // ESC
