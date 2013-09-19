@@ -272,7 +272,7 @@ IceCopyPastePlugin.prototype = {
       }
     }
     this._ice.endBatchChange(changeid);
-    pasteDiv.remove();
+    pasteDiv.parentNode.removeChild(pasteDiv);
     this._cleanup(lastEl);
   },
 
