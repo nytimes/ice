@@ -1472,10 +1472,16 @@
           this.pluginsManager.fireCaretPositioned();
 		  if(browser["type"] === "mozilla"){
 			if(!this.visible(range.startContainer)){
+				// if Previous sibling exists in the paragraph, jump to the previous sibling
 				if(range.startContainer.parentNode.previousSibling){
 					// When moving left and moving into a hidden element, skip it and go to the previousSibling
 					range.setEnd(range.startContainer.parentNode.previousSibling, 0);
 					range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
+					range.collapse(false);
+				}
+				// if Previous sibling doesn't exist, get out of the hidden zone by moving to the right
+				else {
+					range.setEnd(range.startContainer.parentNode.nextSibling, 0);
 					range.collapse(false);
 				}
 			}
