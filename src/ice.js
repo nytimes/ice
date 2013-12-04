@@ -122,6 +122,7 @@
 
       this.initializeEnvironment();
       this.initializeEditor();
+      this.findTrackTags();
       this.initializeRange();
 
       this.pluginsManager.fireEnabled(this.element);
@@ -172,14 +173,12 @@
     },
 
     /**
-     * Initializes the content in the editor - cleans non-block nodes found between blocks and
-     * initializes the editor with any tracking tags found in the editing element.
+     * Initializes the content in the editor - cleans non-block nodes found between blocks.
      */
     initializeEditor: function () {
       // Clean the element html body - add an empty block if there is no body, or remove any
       // content between elements.
-      var self = this,
-        body = this.env.document.createElement('div');
+      var body = this.env.document.createElement('div');
       if (this.element.childNodes.length) {
         body.innerHTML = this.element.innerHTML;
         ice.dom.removeWhitespace(body);
@@ -187,10 +186,19 @@
       } else {
         body.appendChild(ice.dom.create('<' + this.blockEl + ' ><br/></' + this.blockEl + '>'));
       }
-      this.element.innerHTML = body.innerHTML;
+      if (this.element.innerHTML != body.innerHTML) {
+        this.element.innerHTML = body.innerHTML;
+      }
 
+    },
+ 
+    /*
+     * Updates the list of changes to include all track tags found inside the element.
+     */
+    findTrackTags: function () {
+      
       // Grab class for each changeType
-      var changeTypeClasses = [];
+      var self = this, changeTypeClasses = [];
       for (var changeType in this.changeTypes) {
         changeTypeClasses.push(this._getIceNodeClass(changeType));
       }
