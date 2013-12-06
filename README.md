@@ -1,14 +1,14 @@
 # ice.js
 
-Ice is a track changes implementation, built in javascript, for anything that is `contenteditable` on the web. Conceived by the CMS Group at The New York Times, ice has been piloting successfully for articles written in the newsroom.
+Ice is a track changes implementation, built in javascript, for anything that is `contenteditable` on the web. Conceived by the CMS Group at The New York Times, ice is powering the editor used for articles written in the newsroom.
 
 ## Demo
 
-[Check it out!](http://NYTimes.github.com/ice/demo/)
+[Try it](http://NYTimes.github.com/ice/demo/)
 
 ## Download
 
-[v0.4.2](http://nytimes.github.com/ice/downloads/ice_0.4.2.zip)
+[v0.5.0](http://nytimes.github.com/ice/downloads/ice_0.5.0.zip)
 
 ## Features
 
@@ -111,17 +111,21 @@ Additional options:
 ```
 ***
 
-**_Wordpress initialization_**
-
-     In testing - more to come soon.
-
-***
-
 ## Limitations/Dependencies
 
 - ice needs to be initialized after the DOM ready event fires.
-- ice was originally created for the simple markup behind nytimes.com articles (`p`, `a`, `em`, `strong`). As such, it requires that all text editing takes place in a common root block element, and that there are no other blocks found in the editor. Any type of inline elements are ok, inside of the common root blocks. 
-- Unfortunately, we haven't been able to test this across all browsers and versions. We know that it tests well in modern Firefox (5+) and Webkit browsers, and "seems to work" in IE7+. We intend to do more testing and get a better idea about what ice can support across browsers.
+- Wordpress support is limited. We need contribution from any willing WordPress developers.
+- Browser support is limited to Firefox (5+) and Webkit browsers, and minimal support for IE8+.
+
+## Changelog
+
+### Master
+- *up to date*
+
+### 0.5.0
+
+- Fixes cut, copy, paste for Firefox and Webkit browsers.
+- Fixes delete tracking in webkit browsers.
 
 ## License
 
