@@ -1513,10 +1513,21 @@
 		/************************************************************************************/
 
 		case 32:
-		  preventDefault = true;
 		  var range = this.getCurrentRange();
-		  this._moveRangeToValidTrackingPos(range, range.startContainer);
-		  this.insert('\u00A0' , range);
+		  if(!range.collapsed){
+			  preventDefault = true;
+			  this._moveRangeToValidTrackingPos(range, range.startContainer);
+			  this.insert('\u00A0' , range);
+		  }
+		  else{
+		  	/** if no range is selected -- and hence we are not "overwriting" a selection -- 
+		  	then we should allow the "space" to pass through as default rather than inserting '\u00A0'.
+		  	Allowing the space to be treated default makes auto-correct continue to work on (at least)
+		  	iPhones, where the "space" event is what triggers auto-correct, auto-complete, auto-capitalization, 
+		  	2 spaces marking the end of a sentence, etc. Otherwise, auto-correct breaks.
+		  	**/
+		  	preventDefault = false;
+		  }
 		  break;
         default:
           // Ignore key.
