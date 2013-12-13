@@ -120,7 +120,8 @@ Additional options:
 ## Changelog
 
 ### Master
-- *up to date*
+
+- Fixes bug where Webkit browsers were throwing errors when the letter "v" was pressed. 
 
 ### 0.5.0
 
