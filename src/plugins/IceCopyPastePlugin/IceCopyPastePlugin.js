@@ -34,14 +34,8 @@ IceCopyPastePlugin = function(ice_instance) {
   // Callback triggered at the end of the paste cleaning
   this.afterPasteClean = function(body) { return body; };
 
-  // Event Listeners
+  // Event Listener for copying
   ice_instance.element.oncopy = function() { return self.handleCopy.apply(self); };
-//  ice_instance.element.oncut = function() { return self.handleCut.apply(self); };
-
-  // We can't listen for `onpaste` unless we use an algorithm that temporarily switches
-  // out the body and lets the browser paste there (found it hard to maintain in mce).
-  // Instead, we'll watch the keydown event and handle paste with a typical temp element
-  // algorithm, which means that pasting from the context menu won't work.
 };
 
 IceCopyPastePlugin.prototype = {
@@ -55,38 +49,15 @@ IceCopyPastePlugin.prototype = {
   },
 
   keyDown: function(e) {
-    if (e.metaKey !== true && e.ctrlKey !== true) {
+    if (e.metaKey !== true && e.ctrlKey !== true)
       return;
-    }
-    if(e.keyCode == 86) {
+    if (e.keyCode == 86)
       this.handlePaste();
-    }
-	else if(e.keyCode == 88) {
-		this.handleCut();
-    }
-	return true;
+    else if (e.keyCode == 88)
+      this.handleCut();
+    return true;
   },
 
-  keyPress: function(e){
-	var c = null;
-	if (e.which == null) {
-		// IE.
-		c = String.fromCharCode(e.keyCode);
-	} else if (e.which > 0) {
-		c = String.fromCharCode(e.which);
-	}
-	var self = this;
-	if(this.cutElement && c === 'x'){
-		if(ice.dom.isBrowser("webkit")){
-			self.cutElement.focus();
-		}
-	} else if (c === 'v'){
-		if(ice.dom.isBrowser("webkit")){
-			this._ice.env.document.getElementById(self._pasteId).focus();
-		}
-	}
-	return true;
-  },
   handleCopy: function(e) {},
 
   // Inserts a temporary placeholder for the current range and removes
@@ -95,8 +66,8 @@ IceCopyPastePlugin.prototype = {
 
     var range = this._ice.getCurrentRange();
 
-    if(!range.collapsed) {
-      if(this._ice.isTracking) {
+    if (!range.collapsed) {
+      if (this._ice.isTracking) {
         this._ice.deleteContents();
         range = range.cloneRange();
       } else {
@@ -105,10 +76,10 @@ IceCopyPastePlugin.prototype = {
       }
     }
 
-    if(this._ice.isTracking)
+    if (this._ice.isTracking)
       this._ice._moveRangeToValidTrackingPos(range);
 
-    if(range.startContainer == this._ice.element) {
+    if (range.startContainer == this._ice.element) {
       // Fix a potentially empty body with a bad selection
       var firstBlock = ice.dom.find(this._ice.element, this._ice.blockEl)[0];
       if(!firstBlock) {
@@ -120,7 +91,6 @@ IceCopyPastePlugin.prototype = {
       this._ice.env.selection.addRange(range);
     }
 
-    
     this._tmpNode = this._ice.env.document.createElement(this._tmpNodeTagName);
     range.insertNode(this._tmpNode);
 
@@ -153,7 +123,7 @@ IceCopyPastePlugin.prototype = {
        event.stopPropagation();
     };
 
-		div.focus();
+    div.focus();
     return true;
   },
 
