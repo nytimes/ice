@@ -1512,10 +1512,15 @@
         /************************************************************************************/
 
         case 32:
-          preventDefault = true;
           var range = this.getCurrentRange();
-          this._moveRangeToValidTrackingPos(range, range.startContainer);
-          this.insert('\u00A0' , range);
+          if(!range.collapsed) {
+			      preventDefault = true;
+			      this._moveRangeToValidTrackingPos(range, range.startContainer);
+			      this.insert('\u00A0' , range);
+		      }
+		      else {
+    		  	preventDefault = false;
+		      }
           break;
         default:
           // Ignore key.
