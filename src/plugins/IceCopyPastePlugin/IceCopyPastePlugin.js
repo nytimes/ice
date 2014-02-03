@@ -409,18 +409,19 @@ IceCopyPastePlugin.prototype = {
 
   _cleanup: function(moveTo) {
     try {
+      // Set focus back to ice element.
+      if (this._ice.env.frame)
+        this._ice.env.frame.contentWindow.focus();
+      else
+        this._ice.element.focus();
+
       moveTo = moveTo && moveTo.lastChild || moveTo || this._tmpNode;
       // Move the range to the end of moveTo so that the cursor will be at the end of the paste.
       var range = this._ice.getCurrentRange();
       range.setStartAfter(moveTo);
       range.collapse(true);
       this._ice.selection.addRange(range);
-      // Set focus back to ice element.
-      if(this._ice.env.frame) {
-        this._ice.env.frame.contentWindow.focus();
-      } else {
-        this._ice.element.focus();
-      }
+      
       // Kill the tmp node.
       this._tmpNode.parentNode.removeChild(this._tmpNode);
       this._tmpNode = null;
