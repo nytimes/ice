@@ -9,6 +9,7 @@ $(document).ready(function() {
         '<p>a <em>left<span class="ins cts-1" userid="1" cid="1">ist</span></em> paragraph</p>' +
       '</div>');
     var changeEditor = getIce(el);
+	$("body").append(el);
     var range = changeEditor.env.selection.createRange();
 
     // Delete left through different user insert.
@@ -34,11 +35,13 @@ $(document).ready(function() {
         && el.find('.del:eq(0)').text() === 'a ', 
       'Deleted left through different user insert.');
 
+
     // Setup for deleting right, through different user insert
     el = jQuery('<div>' +
         '<p>a <em>right<span class="ins cts-1" userid="1" cid="1">ist</span></em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through different user insert.
     range.setStart(el.find('p')[0], 0);
@@ -68,11 +71,13 @@ $(document).ready(function() {
         && el.find('em > .ins > .del').text() === 'ist', 
       'Deleted right through different user insert.');
 
+
     // Setup for deleting left, through different user delete and insert
     el = jQuery('<div>' +
         '<p>a <em>l<span class="ins cts-1" userid="1" cid="1">ef</span><span class="del cts-1" userid="1" cid="1">ti</span>st</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through different user insert and delete.
     range.setStartAfter(el.find('em')[0]);
@@ -92,11 +97,13 @@ $(document).ready(function() {
         && el.find('em > .ins > .del').text() === 'ef', 
       'Deleted left through different user insert and delete.');
 
+
     // Setup for deleting right, through different user delete and insert
     el = jQuery('<div>' +
         '<p>a <em>r<span class="ins cts-1" userid="1" cid="1">ig</span><span class="del cts-1" userid="1" cid="1">hte</span>st</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through different user insert and delete.
     range.setStart(el.find('p')[0], 0);
@@ -121,6 +128,7 @@ $(document).ready(function() {
         '<p>a <em><span class="ins cts-1" userid="4" cid="1">left</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through same user insert.
     range.setStartAfter(el.find('em')[0]);
@@ -150,12 +158,14 @@ $(document).ready(function() {
     ok(el.text() === 'a ist paragraph'
         && el.find('.del').length === 3, 
       'Deleted left through same user insert.');
+
     
     // Setup for deleting right, through same user insert
     el = jQuery('<div>' +
         '<p>a <em><span class="ins cts-1" userid="4" cid="1">right</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete left through same user insert.
     range.setStart(el.find('p')[0], 0);
@@ -185,11 +195,14 @@ $(document).ready(function() {
         && el.find('.del').length === 3, 
       'Deleted right through same user insert.');
 
+
+
     // Setup for deleting left, through different user delete
     el = jQuery('<div>' +
         '<p>a<em> <span class="del cts-1" userid="1" cid="1">left</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through different user delete.
     range.setStartAfter(el.find('em')[0]);
@@ -222,11 +235,13 @@ $(document).ready(function() {
         && el.find('em').find('.del:eq(2)').text() === 'ist', 
       'Deleted left through different user delete.');
 
+
     // Setup for deleting right, through different user delete
     el = jQuery('<div>' +
         '<p>a <em><span class="del cts-1" userid="1" cid="1">right</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through different user delete.
     range.setStart(el.find('p')[0], 0);
@@ -252,11 +267,34 @@ $(document).ready(function() {
         && el.find('em').find('.del:eq(1)').text() === 'ist',
       'Deleted right through different user delete.');
 
+
+	// Setup for deleting right, and then checking the cursor position afterwards
+	// The cursor must be outside of (after) the .del region
+    el = jQuery('<div>' +
+        '<p>a <em><span class="del cts-1" userid="1" cid="1">right</span>ist</em> paragraph</p>' +
+      '</div>');
+    changeEditor = getIce(el);
+
+	// DO NOT append to body, to simulate hidden track change
+	// (Do not append el to $(body))
+
+    // Delete right through different user delete.
+    range.setStart(el.find('span.del')[0], 0);
+	range.moveStart('character', 5);
+    range.collapse(true);
+    changeEditor.deleteContents(true, range);
+
+	ok(range.startContainer === $("em")[0]
+			&& range.startOffset === 2,
+			"Deleting right results in the cursor after the .del element");
+
+
       // Setup for deleting left, through same user delete
     el = jQuery('<div>' +
         '<p>a<em> <span class="del cts-1" userid="4" cid="1">left</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete left through same user delete.
     range.setStartAfter(el.find('em')[0]);
@@ -292,6 +330,7 @@ $(document).ready(function() {
         '<p>a <em><span class="del cts-1" userid="4" cid="1">right</span>ist</em> paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through same user delete.
     range.setStart(el.find('p')[0], 0);
@@ -321,6 +360,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p>paragraph 2</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through block.
     range.setStart(el.find('p:eq(1)')[0], 0);
@@ -339,6 +379,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p>paragraph 2</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through block.
     range.setStart(el.find('p:eq(0)')[0], 0);
@@ -360,6 +401,7 @@ $(document).ready(function() {
         '<p><em>paragraph 1</em></p><p></p><p></p><p>paragraph 3</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through empty block.
     range.setStart(el.find('p:eq(3)')[0], 0);
@@ -382,6 +424,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p></p><p></p><p><em>paragraph</em> 2</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through block.
     range.setStart(el.find('p:eq(0)')[0], 0);
@@ -407,6 +450,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" cid="1" userid="1">delete1</span><span class="del cts-1" cid="2" userid="1">delete2</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through adjacent, different-user deletes
     range.setStartAfter(el.find('span:eq(1)')[0]);
@@ -426,6 +470,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" cid="1" userid="1">delete1</span><span class="del cts-1" cid="2" userid="1">delete2</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through adjacent, different-user deletes
     range.setStart(el.find('p:eq(0)')[0], 0);
@@ -445,6 +490,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" cid="1" userid="4">delete1</span><span class="del cts-1" cid="2" userid="4">delete2</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete left through adjacent, same-user deletes
     range.setStartAfter(el.find('span:eq(1)')[0]);
@@ -466,6 +512,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" cid="1" userid="4">delete1</span><span class="del cts-1" cid="2" userid="4">delete2</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through adjacent, same-user deletes
     range.setStart(el.find('p:eq(0)')[0], 0);
@@ -485,6 +532,7 @@ $(document).ready(function() {
         '<p>First paragraph.</p><ul><li>First item</li><li>2nd item</li><li>3rd item</li></ul><p>Next <em>pa</em>ragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete left through paragraphs and list
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -541,6 +589,7 @@ $(document).ready(function() {
         '<p>First <em>paragra</em>ph.</p><ul><li>Fir<i>st it</i>em</li><li>2nd item</li><li>3rd item</li></ul><p>Next paragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete right through paragraphs and list
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -590,6 +639,7 @@ $(document).ready(function() {
     '<p>First paragraph.<img></p><p><img></p><p>Next<img> <em>pa</em>ragraph</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through paragraphs with images
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -625,6 +675,7 @@ $(document).ready(function() {
         '<p>First <em>pa</em>ragraph.<img></p><p><img></p><p>Next<img> paragraph.</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through paragraphs with images
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -657,6 +708,7 @@ $(document).ready(function() {
     '<p>First paragraph.<img></p><ul><li><img></li><li>text<img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><p>Last <em>pa</em>ragraph.</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete left through lists with images between paragraphs with images
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -714,6 +766,7 @@ $(document).ready(function() {
         '<p>First <em>pa</em>ragraph.<img><ul><li><img></li><li><img></li><li>text<img></li><li><img>text</li><li><img></li></ul><p><img>Next paragraph.</p><ol><li><img></li></ol><img><p>Last paragraph.</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through lists with images between paragraphs with images
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -779,6 +832,7 @@ $(document).ready(function() {
     '<p>The <span class="ins cts-1" userid="1" cid="1"><img></span> te<em>x</em>t</p>' +
             '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete left through image inside different user insert
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -802,6 +856,7 @@ $(document).ready(function() {
     '<p>T<em>h</em>e <span class="ins cts-1" userid="1" cid="1"><img></span> text</p>' +
             '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete right through through image inside different user insert
     range.setStartAfter(el.find('em:eq(0)')[0]);
@@ -824,6 +879,7 @@ $(document).ready(function() {
         '<p>test delete test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('p')[0], 0);
@@ -839,6 +895,7 @@ $(document).ready(function() {
         '<p>test <em>delete</em> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Delete selection
     range.setStart(el.find('p')[0], 0);
@@ -855,6 +912,7 @@ $(document).ready(function() {
         '<p>test <em><b>del</b>ete</em> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('b')[0], 0);
@@ -874,6 +932,7 @@ $(document).ready(function() {
         '<p>paragraph 1</p><p></p><p>paragraph 3</p><p><em>pa</em>ragraph 4</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('p')[0], 0);
@@ -893,6 +952,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" userid="1" cid="1">delete</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('p')[0], 0);
@@ -910,6 +970,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" userid="1" cid="1"><b>del</b>ete</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('b')[0], 0);
@@ -928,6 +989,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" userid="1" cid="1"><b>del</b>ete</span><span class="ins cts-2" userid="1" cid="2"> small</span> test</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Delete selection
     range.setStart(el.find('p')[0], 0);
@@ -950,6 +1012,7 @@ $(document).ready(function() {
     // nodes are deleted and the existing user delete is merged with new delete nodes.
     el = jQuery('<div><p>text</p><p>text <span class="del cts-1" userid="4" cid="1">same user delete</span> text</p><p>text</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     range.setStart(el.find('p')[0], 0);
     range.setEnd(el.find('p:eq(2)')[0].childNodes[0], 0);
@@ -968,6 +1031,8 @@ $(document).ready(function() {
     el = jQuery('<div><p>text</p><img><p>second</p></div>');
 
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p')[0].childNodes[0], 4);
 
     changeEditor.deleteContents(true, range);
@@ -983,6 +1048,8 @@ $(document).ready(function() {
     el = jQuery('<div><p>text</p><img><p>second</p></div>');
 
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(1)')[0].childNodes[0], 0);
 
     changeEditor.deleteContents(false, range);
@@ -998,6 +1065,7 @@ $(document).ready(function() {
     // Delete right from A and expect the cursor to stay in place.
     el = jQuery('<div><p>text</p><p class="ice-avoid">avoided</p><p>text</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     range.setStart(el.find('p')[0].childNodes[0], 4);
 
@@ -1014,6 +1082,8 @@ $(document).ready(function() {
     // Delete left from A and expect the cursor to stay in place.
     el = jQuery('<div><p>text</p><p class="ice-avoid">avoided</p><p>second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(2)')[0].childNodes[0], 0);
 
     changeEditor.deleteContents(false, range);
@@ -1030,12 +1100,15 @@ $(document).ready(function() {
     // since a void element is the next container.
     el = jQuery('<div><p>text</p><img class="ice-avoid"><p>second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
     changeEditor.deleteContents(true, range);
 
     ok(el.find('img.ice-avoid')[0]);
     equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
     equal(range.startOffset, 4);
+
 
 
     // <div><p>text</p><img class="ice-avoid"><p>|second</p></div>
@@ -1045,6 +1118,8 @@ $(document).ready(function() {
     // since a void element is the previous container.
     el = jQuery('<div><p>text</p><img class="ice-avoid"><p>second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(1)')[0].childNodes[0], 0);
 
     changeEditor.deleteContents(false, range);
@@ -1053,7 +1128,6 @@ $(document).ready(function() {
     equal(range.startContainer, el.find('p:eq(1)')[0].childNodes[0]);
     equal(range.startOffset, 0);
 
-
     // <div><p>text|<img class="ice-avoid">second</p></div>
     //             |
     //             A
@@ -1061,9 +1135,10 @@ $(document).ready(function() {
     // since a void element is the next container.
     el = jQuery('<div><p>text<img class="ice-avoid">second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
     changeEditor.deleteContents(true, range);
-
     ok(el.find('img.ice-avoid')[0]);
     equal(range.startContainer, el.find('p:eq(0)')[0].childNodes[0]);
     equal(range.startOffset, 4);
@@ -1076,6 +1151,8 @@ $(document).ready(function() {
     // since a void element is the previous container.
     el = jQuery('<div><p>text<img class="ice-avoid">second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStartAfter(el.find('img')[0]);
 
     changeEditor.deleteContents(false, range);
@@ -1092,6 +1169,8 @@ $(document).ready(function() {
     // since a void element is the next container.
     el = jQuery('<div><p>text<span class="ice-avoid">avoid</span>second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('p:eq(0)')[0].childNodes[0], 4);
     changeEditor.deleteContents(true, range);
 
@@ -1106,6 +1185,8 @@ $(document).ready(function() {
     // since a void element is the previous container.
     el = jQuery('<div><p>text<span class="ice-avoid">avoid</span>|second</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStartAfter(el.find('span')[0]);
 
     changeEditor.deleteContents(false, range);
@@ -1121,6 +1202,8 @@ $(document).ready(function() {
     // and expect that the text is removed.
     el = jQuery('<div><p><span class="ins" cid="66" userid="4">text</span></p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('span')[0].childNodes[0], 0);
     range.setEnd(el.find('span')[0].childNodes[0], 4);
 
@@ -1136,6 +1219,8 @@ $(document).ready(function() {
     // insert and expect that the insert is removed.
     el = jQuery('<div><p><em><span class="ins" cid="66" userid="4">text</span></em></p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStartBefore(el.find('em')[0]);
     range.setEndAfter(el.find('em')[0]);
 
@@ -1151,6 +1236,8 @@ $(document).ready(function() {
     // expect same user insert to be removed, not deleted.
     el = jQuery('<div><p><em><span class="ins" cid="66" userid="4">text</span>text</em>text</p></div>');
     changeEditor = getIce(el);
+	$("body").append(el);
+
     range.setStart(el.find('span')[0].childNodes[0], 2);
     range.setEnd(el.find('p')[0].childNodes[1], 2);
     changeEditor.deleteContents(false, range);
