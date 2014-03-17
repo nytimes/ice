@@ -9,6 +9,7 @@ $(document).ready(function() {
         '<p>a paragraph</p>' +
       '</div>');
     var changeEditor = getIce(el);
+	$("body").append(el);
     var range = changeEditor.env.selection.createRange();
     
     // Insert at the end of a paragraph.  
@@ -42,6 +43,7 @@ $(document).ready(function() {
         '<p>test<span class="ins cts-1" userid="2" cid="1"> in 1 <span class="ins cts-2" userid="3" cid="2">in 2 </span></span><span class="ins cts-3" userid="4" cid="3">in 3</span> done.</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
     
     // Insert into same user insert.
     range.setStart(el.find('span[cid=3]')[0], 0);
@@ -73,6 +75,7 @@ $(document).ready(function() {
         '<p>test <span class="del cts-1" userid="1" cid="1">delete 1</span><span class="del cts-2" userid="2" cid="2"> delete 2<span class="del cts-3" userid="3" cid="3"> delete 3</span> delete 2.</span> The end.</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
 
     // Try to insert in a delete
     range.setStartAfter(el.find('span[cid=3]')[0], 0);
@@ -106,6 +109,7 @@ $(document).ready(function() {
         '<p><span class="del cts-1" userid="1" cid="1">delete</span></p><p> text</p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
         
     // Try to insert in a delete consuming whole paragraph
     range.setStart(el.find('p')[0], 0);
@@ -121,6 +125,7 @@ $(document).ready(function() {
         '<p><span class="del cts-1" userid="1" cid="1">del</span><span class="del cts-2" userid="1" cid="2">ete</span></p>' +
       '</div>');
     changeEditor = getIce(el);
+	$("body").append(el);
         
     // Try to insert in a delete consuming paragraph and no other blocks
     range.setStart(el.find('p')[0], 0);
@@ -130,6 +135,39 @@ $(document).ready(function() {
     ok(el.text() === 'delete test' 
         && el.find('.ins').parent().is('p'), 
       'Tried to insert in a delete that consumes the inside of a block with no following blocks.');
+
+
+	// Setup for inserting a space into a .del region.
+	el = jQuery('<div>' +
+			'<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+			'</div>');
+	changeEditor = getIce(el);
+	$("body").append(el);
+
+	range.setStart(el.find('span.del')[0], 1);
+	range.collapse(true);
+	changeEditor.insert(" ", range);
+	ok(el.find(".del").text() === "Long"
+			&& el.find(".ins").length === 1
+			&& el.find(".ins").text() === " ",
+			"Pressed spacebar from inside delete region.");
+	
+	
+	// Setup for inserting a space into a .del region, with track changes hidden.
+	el = jQuery('<div>' +
+			'<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+			'</div>');
+	changeEditor = getIce(el);
+	$("body").append(el);
+	el.find(".del").css({display:"none"});
+
+	range.setStart(el.find('span.del')[0], 1);
+	range.collapse(true);
+	changeEditor.insert(" ", range);
+	ok(el.find(".del").text() === "Long"
+			&& el.find(".ins").length === 1
+			&& el.find(".ins").text() === " ",
+			"Pressed spacebar from inside delete region.");
   });
 
 });

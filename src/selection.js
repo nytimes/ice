@@ -73,7 +73,7 @@
 
       var move = function (range, unitType, units, isStart) {
         if (units === 0) {
-          throw Error('InvalidArgumentException: units cannot be 0');
+		  return;
         }
 
         switch (unitType) {
