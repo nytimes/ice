@@ -135,14 +135,14 @@
       frag.appendChild(child);
     }
     return frag;
-  },
+  };
 
   /**
    * Returns this `node` or the first parent tracking node that matches the given `selector`.
    */
   dom.getNode = function (node, selector) {
     return dom.is(node, selector) ? node : dom.parents(node, selector)[0] || null;
-  },
+  };
 
   dom.getParents = function (elements, filter, stopEl) {
     var res = jQuery(elements).parents(filter);

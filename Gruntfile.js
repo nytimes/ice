@@ -55,6 +55,9 @@ module.exports = function(grunt) {
 
     uglify: {
       options: {
+        beautify : {
+            ascii_only : true
+          } ,
         preserveComments: false,
         banner: '//\n' +
           '// <%= pkg.name %> - v<%= pkg.version %>\n' +
@@ -64,7 +67,7 @@ module.exports = function(grunt) {
       },
       ice: {
         files: {
-          'dist/ice.min.js': ['lib/rangy/rangy-core.js', 'src/polyfills.js', 'src/ice.js', 'src/dom.js', 'src/bookmark.js', 'src/selection.js', 'src/icePlugin.js', 'src/icePluginManager.js', 'src/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js', 'src/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js', 'src/plugins/IceSmartQuotesPlugin/IceSmartQuotesPlugin.js', 'src/plugins/IceEmdashPlugin/IceEmdashPlugin.js']
+          'dist/ice.min.js': ['dist/ice.js']
         }
       },
       icemaster: {
@@ -76,17 +79,17 @@ module.exports = function(grunt) {
             '//\n'
         },
         files: {
-          'ice-master.min.js': ['lib/rangy/rangy-core.js', 'src/polyfills.js', 'src/ice.js', 'src/dom.js', 'src/bookmark.js', 'src/selection.js', 'src/icePlugin.js', 'src/icePluginManager.js', 'src/plugins/IceAddTitlePlugin/IceAddTitlePlugin.js', 'src/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js', 'src/plugins/IceSmartQuotesPlugin/IceSmartQuotesPlugin.js', 'src/plugins/IceEmdashPlugin/IceEmdashPlugin.js']
+          'ice-master.min.js': ['dist/ice.js']
         }
       },
       tinyice: {
         files: {
-          'dist/ice_editor_plugin.js': 'lib/tinymce/jscripts/tiny_mce/plugins/ice/editor_plugin.js'
+          'dist/ice_editor_plugin.js': 'lib/tinymce/js/tinymce/plugins/ice/plugin.min.js'
         }
       },
       tinysr: {
         files: {
-          'dist/sr_editor_plugin.js': 'lib/tinymce/jscripts/tiny_mce/plugins/icesearchreplace/editor_plugin.js'
+          'dist/sr_editor_plugin.js': 'lib/tinymce/js/tinymce/plugins/icesearchreplace/plugin.min.js'
         }
       }
     },
@@ -125,7 +128,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['connect', 'qunit']);
 
-  grunt.registerTask('build', ['clean:build', 'uglify:ice', 'uglify:icemaster', 'concat', 'compress:gz', 'cp', 'compress:zip']);
+  grunt.registerTask('build', ['clean:build', 'concat', 'uglify:ice', 'uglify:icemaster', 'compress:gz', 'cp', 'compress:zip']);
 
   grunt.registerTask('cp', function() {
     cpTinyDir('ice');
@@ -136,7 +139,7 @@ module.exports = function(grunt) {
   });
 
   var cpTinyDir = function(dir) {
-    grunt.file.recurse('lib/tinymce/jscripts/tiny_mce/plugins/' + dir + '/', function(abspath, rootdir, subdir, filename) {
+    grunt.file.recurse('lib/tinymce/js/tinymce/plugins/' + dir + '/', function(abspath, rootdir, subdir, filename) {
       grunt.file.copy(rootdir + '/' + (subdir ? subdir + '/' : '') + filename,'dist/tinymce/plugins/' + dir + '/' + (subdir ? subdir + '/' : '') + '/' + filename);
     });
   };
