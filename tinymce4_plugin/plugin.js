@@ -91,6 +91,11 @@
             ed.addCommand('initializeice', function (editor) {
                 ed = editor || ed;
                 tinymce.DOM.win.setTimeout(function () {
+                    // Protect against leaving the page before the timeout fires. Happens in automated testing.
+                    if (ed.getDoc() === null){
+                        return;
+                    }
+                    
                     ed.changeEditor = new ice.InlineChangeEditor({
                         element: ed.getBody(),
                         isTracking: self.isTracking,
