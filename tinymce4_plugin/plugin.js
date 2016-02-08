@@ -47,7 +47,9 @@
             var self = this, changeEditor = null;
 
             ed.handleEvents = function(e) {
-                return ed.changeEditor.handleEvent(e);
+                if (ed.changeEditor !== undefined){
+                    return ed.changeEditor.handleEvent(e);
+                }
             };
 
             ed.on('mouseup mousedown keydown keyup keypress', function (e) {
