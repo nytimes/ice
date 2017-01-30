@@ -17,7 +17,7 @@
     blockEl: 'p',
 
     // All permitted block element tagnames
-    blockEls: ['p', 'ol', 'ul', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'],
+    blockEls: ['p', 'ol', 'ul', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'div'],
 
     // Unique style prefix, prepended to a digit, incremented for each encountered user, and stored
     // in ice node class attributes - cts1, cts2, cts3, ...
