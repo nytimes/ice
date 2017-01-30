@@ -95,11 +95,27 @@ Additional options:
 ```
 ***
 
-**_Tinymce initialization_** - Add the ice plugin to your tinymce plugins directory and include the following in your tinymce init:
+**_Tinymce 3 initialization_** - Add the ice plugin to your tinymce plugins directory and include the following in your tinymce init:
 ```javascript
       tinymce.init({
         plugins: 'ice',
         theme_advanced_buttons1: 'ice_togglechanges,ice_toggleshowchanges,iceacceptall,icerejectall,iceaccept,icereject',
+        ice: {
+          user: { name: 'Miss T', id: 1},
+          preserveOnPaste: 'p,a[href],i,em,strong',
+          // Optional param - defaults to the css found in the plugin directory
+          css: 'http://example.com/custom.css'
+        },
+        ...
+      });
+```
+***
+
+**_Tinymce 4 initialization_** - Add the ice plugin to your tinymce plugins directory and include the following in your tinymce init:
+```javascript
+      tinymce.init({
+        plugins: 'ice',
+        toolbar: 'ice_togglechanges ice_toggleshowchanges iceacceptall icerejectall iceaccept icereject',
         ice: {
           user: { name: 'Miss T', id: 1},
           preserveOnPaste: 'p,a[href],i,em,strong',

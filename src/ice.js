@@ -10,6 +10,19 @@
     userNameAttribute: 'data-username',
     timeAttribute: 'data-time',
 
+    // date format for changes popup title attribute
+    titleDateFormat: 'm/d/Y h:ia',
+
+    // setting this to true means that the dummy white space character that is inserted by ice
+    // is selected before the event bubbles up to the final handler.
+    // Issue in Chrome with tinyMCE:
+    // When the event bubbles up to tinyMCE, the selection gets removed which leaves
+    // the "insert" element empty. If the insert element is
+    // a non block element (like span or a custom element like insert), Chrome will delete it as soon
+    // as it is empty and before the content text can be inserted into the element. So ensure this variable
+    // is set to false for ice to work correctly. (TinyMCE removes the dummy whitespace character anyway)
+    selectDummyCharacter: false,
+
     // Prepended to `changeType.alias` for classname uniqueness, if needed
     attrValuePrefix: '',
 
@@ -912,10 +925,18 @@
       range.insertNode(node);
       range.setEnd(node, 1);
 
+      /*
+      Always collapse the range if selectDummyCharacter is false, otherwise select it.
+      See comment where selectDummyCharacter is defined
+       */
+      if (self.selectDummyCharacter) {
       if (insertingDummy) {
         // Create a selection of the dummy character we inserted
         // which will be removed after it bubbles up to the final handler.
         range.setStart(node, 0);
+      } else {
+        range.collapse();
+      }
       } else {
         range.collapse();
       }
@@ -1464,8 +1485,7 @@
           preventDefault = this.deleteContents();
           this.pluginsManager.fireKeyPressed(e);
           break;
-        case 46:
-          // Key 46 is the DELETE key.
+        case ice.dom.DOM_VK_DELETE_KEY:
           preventDefault = this.deleteContents(true);
           this.pluginsManager.fireKeyPressed(e);
           break;
