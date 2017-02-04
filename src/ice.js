@@ -908,6 +908,8 @@
       if (insertingDummy && inCurrentUserInsert) return;
       // If we aren't in an insert node which belongs to the current user, then create a new ins node
       else if (!inCurrentUserInsert) node = this.createIceNode('insertType', node);
+      if (node.innerHTML && node.innerHTML === " ") node.innerHTML = "&nbsp;";
+      if (node.nodeType == 3 && node.data === " ") node.nodeValue = "\u00a0";
 
       range.insertNode(node);
       range.setEnd(node, 1);
