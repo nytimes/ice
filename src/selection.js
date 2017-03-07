@@ -1,4 +1,5 @@
 (function () {
+	
 
   var exports = this,
     Selection;
