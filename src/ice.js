@@ -1603,7 +1603,7 @@
 						default:
 							// If we are in a deletion, move the range to the end/outside.
 							this._moveRangeToValidTrackingPos(range, range.startContainer);
-							return this.insert();
+							return this.insert(e.key);
 					}
 				}
 
