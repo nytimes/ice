@@ -1067,6 +1067,11 @@
 													nextContainer = nextContainer.parentNode;
 												}
 
+												if (nextContainer.nodeName === 'IMG') {
+													nextContainer.parentNode.removeChild(nextContainer);
+													return;
+												}
+
 												// If the next container is non-editable, enclose it with a delete ice node and add an empty text node after it to position the caret.
 												if (!nextContainer.isContentEditable) {
 													returnValue = this._addNodeTracking(nextContainer, false, false);
@@ -1198,6 +1203,11 @@
 												// If the previous container is a text node, look at the parent node instead.
 												if (prevContainer.nodeType === ice.dom.TEXT_NODE) {
 													prevContainer = prevContainer.parentNode;
+												}
+
+												if (prevContainer.nodeName === 'IMG') {
+													prevContainer.parentNode.removeChild(prevContainer);
+													return;
 												}
 
 												// If the previous container is non-editable, enclose it with a delete ice node and add an empty text node before it to position the caret.
