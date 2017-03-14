@@ -1560,11 +1560,7 @@
 						// ESC
 						break;
 					default:
-						// If not Firefox then check if event is special arrow key etc.
-						// Firefox will handle this in keyPress event.
-						if (/Firefox/.test(navigator.userAgent) !== true) {
-							preventDefault = !(this._handleAncillaryKey(e));
-						}
+						preventDefault = !(this._handleAncillaryKey(e));
 						break;
 				}
 
