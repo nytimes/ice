@@ -60,6 +60,9 @@
 			// NOT IMPLEMENTED - Selector for elements that will not get track changes
 			noTrack: '.ice-no-track',
 
+			// Class name not tracked on deletion
+			classNotTracked: '',
+
 			// Selector for elements to avoid - move range before or after - similar handling to deletes
 			avoid: '.ice-avoid',
 
@@ -936,6 +939,11 @@
 				var b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0];
 				var b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
 				var betweenBlocks = new Array(); 
+
+				// Do not track editable fields
+				elements = elements.filter(function(element) {
+					return element.nodeType === 1  && element.className ? element.className.indexOf(this.classNotTracked) === -1 : element;
+				}.bind(this));
 
 				for (var i = 0; i < elements.length; i++) {
 					var elem = elements[i];
