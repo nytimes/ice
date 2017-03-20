@@ -46,6 +46,10 @@
 				}
 			},
 
+			// set maximum colors for tracked changes
+			// if set to 12, user 13 will have same color as user 1
+			styleColorsNumber: 0,
+
 			// If `true`, setup event listeners on `this.element` and handle events - good option for a basic
 			// setup without a text editor. Otherwise, when set to `false`, events need to be manually passed
 			// to `handleEvent`, which is good for a text editor with an event callback handler, like tinymce.
@@ -79,6 +83,7 @@
 
 			options || (options = {});
 			if (!options.element) throw Error("`options.element` must be defined for ice construction.");
+			if (!options.styleColorsNumber) throw Error("`options.styleColorsNumber` must be set to > 0 for ice construction.");
 
 			ice.dom.extend(true, this, defaults, options);
 
@@ -90,11 +95,7 @@
 			// Tracks all of the styles for users according to the following model:
 			//  [userId] => styleId; where style is "this.stylePrefix" + "this.uniqueStyleIndex"
 			_userStyles: {},
-			_styles: {},
-
-			// Incremented for each new user and appended to they style prefix, and dropped in the
-			// ice node class attribute.
-			_uniqueStyleIndex: 0,
+			_trackedUsersId: [],
 
 			_browserType: null,
 
@@ -197,22 +198,33 @@
 			findTrackTags: function () {
 
 				// Grab class for each changeType
+				var styleIndex = 1;
 				var self = this, changeTypeClasses = [];
+				var trackedElements = this.element.querySelectorAll('[data-cid]');
+
+				if(trackedElements.length) {
+					self._trackedUsersId = Array.prototype.map.call(trackedElements, function(elem) {
+						return parseInt(elem.attributes['data-userid'].nodeValue, 10);
+					}).filter(function(elem, idx, arr) {
+						return arr.indexOf(elem) == idx;
+					});
+				}
+
 				for (var changeType in this.changeTypes) {
 					changeTypeClasses.push(this._getIceNodeClass(changeType));
 				}
 
 				ice.dom.each(ice.dom.find(this.element, '.' + changeTypeClasses.join(', .')), function (i, el) {
-					var styleIndex = 0;
 					var ctnType = '';
 					var classList = el.className.split(' ');
 					for (var i = 0; i < classList.length; i++) {
-						var styleReg = new RegExp(self.stylePrefix + '-(\\d+)').exec(classList[i]);
-						if (styleReg) styleIndex = styleReg[1];
 						var ctnReg = new RegExp('(' + changeTypeClasses.join('|') + ')').exec(classList[i]);
 						if (ctnReg) ctnType = self._getChangeTypeFromAlias(ctnReg[1]);
 					}
 					var userid = ice.dom.attr(el, self.userIdAttribute);
+					if (trackedElements.length) {
+						styleIndex = self._trackedUsersId.indexOf(userid) ? el.className.match(/\d+/)[0] : self._trackedUsersId.length % self.styleColorsNumber + 1;
+					}
 					self.setUserStyle(userid, Number(styleIndex));
 					var changeid = ice.dom.attr(el, self.changeIdAttribute);
 					self._changes[changeid] = {
@@ -782,25 +794,17 @@
 			getUserStyle: function (userid) {
 				var styleIndex = null;
 				if (this._userStyles[userid]) styleIndex = this._userStyles[userid];
-				else styleIndex = this.setUserStyle(userid, this.getNewStyleId());
+				else styleIndex = this.setUserStyle(userid, this.getNewStyleId(userid));
 				return styleIndex;
 			},
 
 			setUserStyle: function (userid, styleIndex) {
 				var style = this.stylePrefix + '-' + styleIndex;
-				if (!this._styles[styleIndex]) this._styles[styleIndex] = true;
 				return this._userStyles[userid] = style;
 			},
 
-			getNewStyleId: function () {
-				var id = ++this._uniqueStyleIndex;
-				if (this._styles[id]) {
-					// Dupe.. create another..
-					return this.getNewStyleId();
-				} else {
-					this._styles[id] = true;
-					return id;
-				}
+			getNewStyleId: function (userid) {
+				return this._userStyles[userid] ? this._userStyles[userid].match(/\d+/)[0] : this._trackedUsersId.length % this.styleColorsNumber + 1;
 			},
 
 			addChange: function (ctnType, ctNodes) {
@@ -938,7 +942,7 @@
 				var elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
 				var b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0];
 				var b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
-				var betweenBlocks = new Array(); 
+				var betweenBlocks = new Array();
 
 				// Do not track editable fields
 				elements = elements.filter(function(element) {
