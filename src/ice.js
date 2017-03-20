@@ -125,7 +125,6 @@
 				this.initializeEnvironment();
 				this.initializeEditor();
 				this.findTrackTags();
-				this.initializeRange();
 
 				this.pluginsManager.fireEnabled(this.element);
 				return this;
@@ -158,18 +157,6 @@
 				// Hack for using custom tags in IE 8/7
 				this.env.document.createElement(this.changeTypes.insertType.tag);
 				this.env.document.createElement(this.changeTypes.deleteType.tag);
-			},
-
-			/**
-			 * Initializes the internal range object and sets focus to the editing element.
-			 */
-			initializeRange: function () {
-				var range = this.selection.createRange();
-				range.setStart(ice.dom.find(this.element, this.blockEls.join(', '))[0], 0);
-				range.collapse(true);
-				this.selection.addRange(range);
-				if (this.env.frame) this.env.frame.contentWindow.focus();
-				else this.element.focus();
 			},
 
 			/**
