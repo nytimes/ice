@@ -1006,9 +1006,6 @@
 										commonAncestor = range.commonAncestorContainer,
 											nextContainer, returnValue;
 
-											// If the current block is empty then let the browser handle the delete/event.
-											if (isEmptyBlock) return false;
-
 											// Some bugs in Firefox and Webkit make the caret disappear out of text nodes, so we try to put them back in.
 											if (commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 
@@ -1149,9 +1146,6 @@
 									initialOffset = range.startOffset,
 										commonAncestor = range.commonAncestorContainer,
 											lastSelectable, prevContainer;
-											// If the current block is empty, then let the browser handle the key/event.
-											if (isEmptyBlock) return false;
-
 											// Handle cases of the caret is at the start of a container or outside a text node
 											if (initialOffset === 0 || commonAncestor.nodeType !== ice.dom.TEXT_NODE) {
 												// If placed at the end of a container that cannot contain text, such as an ul element, place the caret at the end of the last item.
