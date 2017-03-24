@@ -80,6 +80,7 @@
 			// Data structure for modelling changes in the element according to the following model:
 			//  [changeid] => {`type`, `time`, `userid`, `username`}
 			this._changes = {};
+			this._userStyles = {};
 
 			options || (options = {});
 			if (!options.element) throw Error("`options.element` must be defined for ice construction.");
