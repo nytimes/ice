@@ -405,9 +405,9 @@
 					} else {
 						this._deleteSelection(range);
 						if(browser["type"] === "mozilla"){
-							if(range.startContainer.parentNode.previousSibling){
-								range.setEnd(range.startContainer.parentNode.previousSibling, 0);
-								range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
+							if(range.startContainer.parentNode.nextSibling){
+								range.setEnd(range.startContainer.parentNode.nextSibling, 0);
+								// range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
 							} else {
 								range.setEndAfter(range.startContainer.parentNode);
 							}
