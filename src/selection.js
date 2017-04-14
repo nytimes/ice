@@ -175,7 +175,7 @@
         }
 
         // Handle the case where the range conforms to (2) (noted in the comment above).
-        if (container.nodeType === ice.dom.ELEMENT_NODE) {
+        if (container.nodeType === ice.dom.ELEMENT_NODE && container.innerHTML !== '&nbsp;') {
           if (container.hasChildNodes()) {
             container = container.childNodes[offset];
 
