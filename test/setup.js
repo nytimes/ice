@@ -12,6 +12,7 @@ $(document).ready(function() {
 			userNameAttribute: 'username',
 			timeAttribute: 'time',
 			currentUser: { id: '4', name: 'Ted' },
+			styleColorsNumber: 12,
 			changeTypes : {
 				insertType: {tag: 'span', alias: 'ins' },
 				deleteType: {tag: 'span', alias: 'del' }
