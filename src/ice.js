@@ -1284,7 +1284,7 @@
 												if (this.mergeBlocks && ice.dom.is(ice.dom.getBlockParent(prevContainer, this.element), this.blockEl)) {
 													// Since the range is moved by character, it may have passed through empty blocks.
 													// <p>text {RANGE.START}</p><p></p><p>{RANGE.END} text</p>
-													if (prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
+													if (prevBlock && prevBlock !== ice.dom.getBlockParent(range.startContainer, this.element)) {
 														range.setStart(prevBlock, prevBlock.childNodes.length);
 													}
 													// The browsers like to auto-insert breaks into empty paragraphs - remove them.
