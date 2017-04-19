@@ -7,12 +7,15 @@ $(document).ready(function() {
 		return new ice.InlineChangeEditor({
 			element: el[0],
 			isTracking: true,
-			changeIdAttribute: 'cid',
-			userIdAttribute: 'userid',
-			userNameAttribute: 'username',
-			timeAttribute: 'time',
+			changeIdAttribute: 'data-cid',
+			userIdAttribute: 'data-userid',
+			userNameAttribute: 'data-username',
+			timeAttribute: 'data-time',
 			currentUser: { id: '4', name: 'Ted' },
+			preserveOnPaste: 'p,a[href],i,em,strong,span',
+			mergeBlocks: false,
 			styleColorsNumber: 12,
+			classNotTracked: null,
 			changeTypes : {
 				insertType: {tag: 'span', alias: 'ins' },
 				deleteType: {tag: 'span', alias: 'del' }
