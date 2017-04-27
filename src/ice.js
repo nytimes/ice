@@ -621,6 +621,8 @@
 			 */
 			acceptRejectChange: function (node, isAccept) {
 				var delSel, insSel, selector, removeSel, replaceSel, trackNode, changes, dom = ice.dom;
+				var nodeParent = node.parentElement;
+				var nodeParentChildElementCount = node.parentElement.childElementCount;
 
 				if (!node) {
 					var range = this.getCurrentRange();
@@ -641,7 +643,9 @@
 					replaceSel = delSel;
 				}
 
-				if (ice.dom.is(trackNode, replaceSel)) {
+				if (dom.is(trackNode, removeSel) && nodeParentChildElementCount === 1) {
+						dom.remove(nodeParent);
+				} else if (ice.dom.is(trackNode, replaceSel)) {
 					dom.each(changes, function (i, node) {
 						dom.replaceWith(node, ice.dom.contents(node));
 					});
