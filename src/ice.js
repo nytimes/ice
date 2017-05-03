@@ -654,7 +654,7 @@
 					replaceSel = delSel;
 				}
 
-				if (nodeParentChanges.length === 1 && dom.is(trackNode, removeSel)) {
+				if (nodeParentChanges.length === 1 && dom.is(trackNode, removeSel) && isAccept) {
 						dom.remove(nodeParent);
 				} else if (ice.dom.is(trackNode, replaceSel)) {
 					dom.each(changes, function (i, node) {
@@ -665,7 +665,7 @@
 					nodeParentChanges = nodeParentChanges.filter(function (node) {
 						return dom.hasNoTextOrStubContent(node);
 					});
-					if (nodeParentChanges.length) {
+					if (nodeParentChanges.length && isAccept) {
 						dom.remove(nodeParentChanges);
 					}
 				}
