@@ -654,9 +654,7 @@
 					replaceSel = delSel;
 				}
 
-				if (nodeParentChanges.length === 1 && dom.is(trackNode, removeSel) && isAccept) {
-						dom.remove(nodeParent);
-				} else if (ice.dom.is(trackNode, replaceSel)) {
+				if (ice.dom.is(trackNode, replaceSel)) {
 					dom.each(changes, function (i, node) {
 						dom.replaceWith(node, ice.dom.contents(node));
 					});
