@@ -642,7 +642,7 @@
 				changes = dom.find(this.element, '[' + this.changeIdAttribute + '=' + dom.attr(trackNode, this.changeIdAttribute) + ']');
 				nodeParentChanges = [].map.call(changes, function(change) {
 					var parent = change.parentElement;
-					while(this.blockParentsNodeName.indexOf(parent.nodeName) === -1) {
+					while(parent && this.blockParentsNodeName.indexOf(parent.nodeName) === -1) {
 						parent = parent.parentElement;
 					}
 
