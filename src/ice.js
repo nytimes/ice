@@ -314,6 +314,9 @@
 				if (range) this.selection.addRange(range);
 				else range = this.getCurrentRange();
 
+				range = range.cloneRange();
+				this.selection._selection.removeAllRanges();
+
 				if (typeof node === "string") node = document.createTextNode(node);
 
 				// If we have any nodes selected, then we want to delete them before inserting the new text.
