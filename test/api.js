@@ -5,16 +5,17 @@ $(document).ready(function() {
   test("InlineChangeEditor.constructor", function() {
 
     // Setup for empty element.
-    el = jQuery('<div></div>');
+		el = jQuery('<div></div>');
     changeEditor = getIce(el);
+    range = changeEditor.env.selection.createRange();
+		range.selectNode(el[0]);
 
     ok(el.find('p').length === 1, 'Paragraph was added to empty element.');
-    ok(el.find('p')[0] === changeEditor.env.selection.getRangeAt(0).startContainer
-        || el.find('p')[0] === changeEditor.env.selection.getRangeAt(0).startContainer.parentNode, 
+    ok(el.find('p')[0].parentNode.parentNode === range.startContainer, 
       'Range was initialized to contain the paragraph.');
     
     // Setup for multi-user/paragraph initialization.
-    var el = jQuery('<div><p>test <span class="ins cts-1" time="987654321" userid="2" username="Hank" cid="1">content</span> in paragraph one.</p><p>test <span class="del cts-2" time="987654321" userid="3" username="Bob" cid="2">content</span> in paragraph two.</p></div>');
+    var el = jQuery('<div><p>test <span class="ins cts-1" data-time="987654321" data-userid="2" data-username="Hank" data-cid="1">content</span> in paragraph one.</p><p>test <span class="del cts-2" data-time="987654321" data-userid="3" data-username="Bob" data-cid="2">content</span> in paragraph two.</p></div>');
     var changeEditor = getIce(el);
     var range = changeEditor.env.selection.createRange();
 
@@ -31,8 +32,8 @@ $(document).ready(function() {
 
   test("InlineChangeEditor.placeholdDeletes", function() {
     var el = jQuery('<div>\
-      <p>test <span class="del cts-1" cid="1">content</span> in paragraph one.</p>\
-      <p>test <em><span class="del cts-2" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>\
+      <p>test <span class="del cts-1" data-userid="1" data-cid="1">content</span> in paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
     changeEditor.placeholdDeletes();
@@ -44,7 +45,7 @@ $(document).ready(function() {
   });
 
   test("InlineChangeEditor.revertDeletePlaceholders", function() {
-    var html = '<p>test <span class="del cts-1" cid="1">content</span> in paragraph one.</p><p>test <em><span class="del cts-2" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>';
+    var html = '<p>test <span class="del cts-1" data-userid="1" data-cid="1">content</span> in paragraph one.</p><p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>';
     var el = jQuery('<div>' + html + '</div>');
     var changeEditor = getIce(el);
     changeEditor.placeholdDeletes();
@@ -56,8 +57,8 @@ $(document).ready(function() {
   test("InlineChangeEditor.getCleanContent", function() {
     // Make sure track changes tags are cleaned properly.
     var el = jQuery('<div>\
-      <p>test <span class="ins cts-1" cid="1">content</span> in paragraph one.</p>\
-      <p>test <em><span class="del cts-2" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>\
+      <p>test <span class="ins cts-1" data-userid="1" data-cid="1">content</span> in paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
     var content = changeEditor.getCleanContent();
@@ -68,8 +69,8 @@ $(document).ready(function() {
 
   test("InlineChangeEditor.acceptAll", function() {
     var el = jQuery('<div>\
-      <p>test <span class="ins" cid="1">content<span class="ins" cid="4"> in</span></span> paragraph one.</p>\
-      <p>test <em><span class="del" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>\
+      <p>test <span class="ins cts-1" data-userid="1" data-cid="1">content<span class="ins cts-1" data-userid="1" data-cid="4"> in</span></span> paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
     changeEditor.acceptAll();
@@ -80,8 +81,8 @@ $(document).ready(function() {
   
   test("InlineChangeEditor.rejectAll", function() {
     var el = jQuery('<div>\
-      <p>test <span class="ins" cid="1">content<span class="ins" cid="4"> in</span></span> paragraph one.</p>\
-      <p>test <em><span class="del" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>\
+      <p>test <span class="ins cts-1" data-userid="1" data-cid="1">content<span class="ins cts-2" data-userid="2" data-cid="4"> in</span></span> paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
     changeEditor.rejectAll();
@@ -92,37 +93,37 @@ $(document).ready(function() {
   
   test("InlineChangeEditor.acceptChange", function() {
     var el = jQuery('<div>\
-      <p>test <span class="ins" cid="1">content<span class="ins" cid="4"> in</span></span> paragraph one.</p>\
-      <p>test <em><span class="del" cid="2">content <span class="ins" cid="3">in</span></span><span class="del" cid="2">batch change cid</span> paragraph</em> two.</p>\
+      <p>test <span class="ins cts-1" data-userid="1" data-cid="1">content<span class="ins cts-1" data-userid="1" data-cid="4"> in</span></span> paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span><span class="del cts-2" data-userid="2" data-cid="2">batch change data-cid</span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
     
     var range = changeEditor.env.selection.createRange();
-    range.setStart(el.find('[cid=4]')[0], 1);
+    range.setStart(el.find('[data-cid=4]')[0], 0);
     range.collapse(true);
     changeEditor.env.selection.addRange(range);
     changeEditor.acceptChange();
-    changeEditor.acceptChange(jQuery(el).find('[cid=2]:eq(0)'));
+    changeEditor.acceptChange(jQuery(el).find('[data-cid=2]:eq(0)'));
 
-    ok(jQuery(el).find('[cid=4], [cid=2]').length === 0, 'Tracking nodes were not found in content.');
+    ok(jQuery(el).find('[data-cid=4], [data-cid=2]').length === 0, 'Tracking nodes were not found in content.');
     ok(jQuery(el).text() === 'test content in paragraph one.test  paragraph two.', 'Tracking nodes were accepted based on their respective tags.');
   });
   
   test("InlineChangeEditor.rejectChange", function() {
     var el = jQuery('<div>\
-      <p>test <span class="ins" cid="1">content<span class="ins" cid="4"> in</span></span> paragraph one.</p>\
-      <p>test <em><span class="del" cid="2">content <span class="ins" cid="3">in</span></span> paragraph</em> two.</p>\
+      <p>test <span class="ins cts-1" data-userid="1" data-cid="1">content<span class="ins cts-1" data-userid="1" data-cid="4"> in</span></span> paragraph one.</p>\
+      <p>test <em><span class="del cts-2" data-userid="2" data-cid="2">content <span class="ins cts-2" data-userid="2" data-cid="3">in</span></span> paragraph</em> two.</p>\
     </div>');
     var changeEditor = getIce(el);
 
     var range = changeEditor.env.selection.createRange();
-    range.setStart(el.find('[cid=4]')[0], 1);
+    range.setStart(el.find('[data-cid=4]')[0], 0);
     range.collapse(true);
     changeEditor.env.selection.addRange(range);
     changeEditor.rejectChange();
-    changeEditor.rejectChange(jQuery(el).find('[cid=2]'));
+    changeEditor.rejectChange(jQuery(el).find('[data-cid=2]'));
 
-    ok(jQuery(el).find('[cid=4], [cid=2]').length === 0, 'Tracking nodes were not found in content.');
+    ok(jQuery(el).find('[data-cid=4], [data-cid=2]').length === 0, 'Tracking nodes were not found in content.');
     ok(jQuery(el).text() === 'test content paragraph one.test content in paragraph two.', 'Tracking nodes were rejected based on their respective tags.');
   });
 });

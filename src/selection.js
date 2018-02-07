@@ -1,4 +1,5 @@
 (function () {
+	
 
   var exports = this,
     Selection;
@@ -174,8 +175,8 @@
         }
 
         // Handle the case where the range conforms to (2) (noted in the comment above).
-        if (container.nodeType === ice.dom.ELEMENT_NODE) {
-          if (container.hasChildNodes()) {
+        if (container.nodeType === ice.dom.ELEMENT_NODE && container.innerHTML !== '&nbsp;') {
+          if (container.hasChildNodes() && container.childNodes[offset]) {
             container = container.childNodes[offset];
 
             container = this.getPreviousTextNode(container);

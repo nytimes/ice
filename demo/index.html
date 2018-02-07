@@ -2,9 +2,10 @@
 <html>
 
 <head>
-	<link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
-  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-	<script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
+  <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<!--
+	<script type="text/javascript" src='../ice-master.min.js'></script>
+	-->
 	<script type="text/javascript" src='../lib/rangy/rangy-core.js'></script>
 	<script type="text/javascript" src='../src/polyfills.js'></script>
 	<script type="text/javascript" src='../src/ice.js'></script>
@@ -17,7 +18,8 @@
 	<script type="text/javascript" src='../src/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js'></script>
 	<script type="text/javascript" src='../src/plugins/IceEmdashPlugin/IceEmdashPlugin.js'></script>
 	<script type="text/javascript" src='../src/plugins/IceSmartQuotesPlugin/IceSmartQuotesPlugin.js'></script>
-	<script type="text/javascript" src="../lib/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
+	<script type="text/javascript" src="../lib/tinymce/js/tinymce/tinymce.js"></script>
+	<link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
 
 </head>
 
@@ -29,130 +31,6 @@
 		<p>
 			Ice is a track changes implementation, built in javascript, for anything that is contenteditable on the web. The following are demos of Ice in action. You can check out the code on <a href="https://github.com/NYTimes/ice">github</a>.
 		</p>
-		<h3>Contenteditable</h3>
-		<p>
-			With some text editing management of your own, Ice can be initialized on any element that is contenteditable. The following is a makeshift editor, made out of a `div` element container and some `p` root blocks. The editor buttons use Ice's API to change the user being tracked and toggle the visibility of changes.
-		</p>
-
-		<div class="editor">
-			<div class="control">
-				<strong>Set User:</strong>
-				<select onchange="setUser(this)">	
-					<option data-userid="11" data-username="Geoffrey Jellineck">Geoffrey Jellineck</option>
-					<option data-userid="22" data-username="Chuck Noblet">Chuck Noblet</option>
-					<option data-userid="33" data-username="Jerri Blank">Jerri Blank</option>
-				</select>
-			</div>
-			<div class="control">
-				<strong>Options:</strong>
-				<button onclick="javascript:toggleDel(this)">Show/Hide Changes</button>
-			</div>
-			<div>
-				<div class="control">
-					<strong>Style:</strong>
-					<button onclick="document.execCommand('bold', null, false);"><strong>B</strong></button>
-					<button onclick="document.execCommand('italic', null, false);"><em>i</em></button>
-					<button onclick="document.execCommand('underline', null, false);"><u>u</u></button>
-				</div>
-				<div class="control">
-					<strong>Indent:</strong>
-					<button onclick="document.execCommand('formatBlock', null, '<h2>');">H</button>
-					<button onclick="document.execCommand('formatBlock', null, '<p>');">p</button>
-					<button onclick="document.execCommand('formatBlock', null, '<blockquote>');">&quot;</button>
-				</div>
-				<div class="control">
-					<strong>List:</strong>
-					<button onclick="document.execCommand('indent', null, false);">&gt;</button>
-					<button onclick="document.execCommand('outdent', null, false);">&lt;</button>
-				</div>
-
-				<div class="control">
-					<strong>List:</strong>
-					<button onclick="document.execCommand('InsertUnorderedList', null, false);">UL</button>
-					<button onclick="document.execCommand('InsertOrderedList', null, false);">OL</button>
-				</div>
-                                <div class="control">
-                                        <strong>Insert:</strong>
-                                        <button onclick="insertSampleImage();">Sample image</button>
-                                </div>
-			</div>
-
-			<div id="content">
-				<div id="text-wrapper">
-					<div id="textbody">
-						<p><strong>Among the Wealthiest 1 Percent, Many Variations</strong><br/>By SHAILA DEWAN and ROBERT GEBELOFF</p>
-
-						
-						<p><span class="del cts-1" data-cid="2" data-userid="33" data-username="Jerri Blank" data-time="1326764311895" title="Deleted by Jerri Blank - 01/16/2012 8:38pm">Brooklyn</span><span class="ins cts-1" data-cid="3" data-userid="33" data-username="Jerri Blank" data-time="1326764319303" title="Inserted by Jerri Blank - 01/16/2012 8:38pm">Kings Point</span>, N.Y. &mdash; Adam Katz is happy to talk to reporters when he is promoting his business, a charter flight company based on Long Island called Talon Air.</p>
-						
-						<ul>
-							<li><a href="http://www.nytimes.com/packages/html/newsgraphics/2012/0115-one-percent-occupations/index.html?ref=business">The Top 1%</a></li>
-							<li><a href="http://www.nytimes.com/interactive/2012/01/15/business/one-percent-map.html?ref=business">What Percent Are You?</a></li>
-						</ul>
-
-						<p>But when the subject was his position as one of America's top earners, he <span class="del cts-1" data-cid="23" data-userid="33" data-username="Jerri Blank" data-time="1326765043953" title="Deleted by Jerri Blank - 01/16/2012 8:50pm">hesitated</span><span class="ins cts-1" data-cid="24" data-userid="33" data-username="Jerri Blank" data-time="1326765049283" title="Inserted by Jerri Blank - 01/16/2012 8:50pm">balked</span>. Seated at a desk fashioned from a jet fuel cell<span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:42pm" data-time="1326764560331" data-username="Geoffrey Jellineck" data-userid="11" data-cid="20" class="ins cts-3">, wearing a button-down shirt with the company logo,</span> he considered the public relations benefits and found them lacking: "It's not very popular to be in the 1 percent these days, is it?"</p>
-
-						<p><img src="http://graphics8.nytimes.com/images/2012/01/15/business/ONEPERCENT/ONEPERCENT-popup.jpg" width="540" /></p>
-
-
-						<p><span class="ins cts-2" data-cid="14" data-userid="22" data-username="Chuck Noblet" data-time="1326764402035" title="Inserted by Chuck Noblet - 01/16/2012 8:40pm">A few months ago, Mr. Katz was just a successful businessman with <span class="del cts-3" data-cid="15" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764492624" title="Deleted by Geoffrey Jellineck - 01/16/2012 8:41pm">four</span><span class="ins cts-3" data-cid="16" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764495239" title="Inserted by Geoffrey Jellineck - 01/16/2012 8:41pm">five</span> children, an $8 million home, a family real estate company in Manhattan and his passion, 10-year-old Talon Air.</span></p>
-						
-						<p>Now, the colossal gap between the very rich and everyone else <span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:46pm" data-time="1326764809499" data-username="Geoffrey Jellineck" data-userid="11" data-cid="22" class="ins cts-3">&mdash; the 1 percent versus the 99 percent &mdash; </span>has become a rallying point in this election season. As President Obama positions himself as a defender of the middle class, and Mitt Romney, the wealthiest of the Republican presidential candidates, decries such talk as "the bitter politics of envy," Mr. Katz has found himself on the wrong end of a new paradigm.</p><p><span class="ins cts-1" data-cid="30" data-userid="33" data-username="Jerri Blank" data-time="1326765098946" title="Inserted by Jerri Blank - 01/16/2012 8:51pm">As a member of the 1 percent, he is part of a club whose name conjures images of Wall Street bosses who are chauffeured from manse to Manhattan and fat cats who have armies of lobbyists at the ready.</span></p> <p>But in reality it is a far larger and more varied group, one that includes podiatrists and actuaries, executives and entrepreneurs, the self-made and the silver spoon set. They are clustered not just in New York and Los Angeles, but also in Denver and Dallas. The range of wealth in the 1 percent is vast &mdash; from households that bring in $380,000 a year, according to census data, up to billionaires like Warren E. Buffett and Bill Gates.</p><p>The top 1 percent of earners in a given year receives <a title="Related data from the Tax Policy Center." href="http://www.taxpolicycenter.org/numbers/displayatab.cfm?DocID=2972">just under a fifth</a> of the country's pretax income, <a title="A Congressional Budget Office report." href="http://www.cbo.gov/publications/collections/tax/2010/pre-tax_income_shares.pdf">about double their share</a> 30 years ago. They pay just over a fourth of all federal taxes, according to the Tax Policy Center. In 2007, they accounted for about 30 percent of philanthropic giving, according to Federal Reserve data. They received 22 percent of their income from capital gains, compared with 2 percent for everybody else.</p><p><span class="ins cts-3" data-cid="21" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764626633" title="Inserted by Geoffrey Jellineck - 01/16/2012 8:43pm">Still, they are not necessarily the idle rich. Mr. Katz, who sometimes commutes by amphibious plane and sometimes carries luggage for Talon Air passengers, likes to say he works "26/9."</span></p> <p>Most 1 percenters were born with socioeconomic advantages, which helps explain why the 1 percent is more likely than other Americans to have jobs, according to census data. They work longer hours, being three times more likely than the 99 percent to work more than 50 hours a week, and are more likely to be self-employed. Married 1 percenters are just as likely as other couples to have two incomes, but men are the big breadwinners, earning 75 percent of the money, compared with 64 percent of the income in other households.</p><p>Though many of the wealthy lean toward the Republican Party, in interviews, 1 percenters expressed a broad range of views on how to fix the economy. They think that President Obama is ruining it, or that Republicans in Congress have gone off the deep end. They favor a flat tax, or they believe the rich should pay a higher marginal rate. Some cheered on Occupy Wall Street, saying it was about time, while others wished the protesters would just get a job or take a bath. Still others were philosophical &mdash; perhaps because they could afford to be &mdash; viewing the <a href="http://topics.nytimes.com/top/reference/timestopics/subjects/r/recession_and_depression/index.html?inline=nyt-classifier" title="More articles about the recession." class="meta-classifier">recession</a> as something that would pass, like so many previous ups and downs.</p><p><span class="ins cts-2" data-cid="31" data-userid="22" data-username="Chuck Noblet" data-time="1326765165952" title="Inserted by Chuck Noblet - 01/16/2012 8:52pm">Of the 1 percenters interviewed for this article, almost all &amp;mdash; conservatives and liberals alike &amp;mdash; said the wealthy could and should shoulder more of the country's financial burden, and almost all said they viewed the current system as unfair. But they may prefer facing cuts to their own benefits like &lt;a href="http://topics.nytimes.com/top/reference/timestopics/subjects/s/social_security_us/index.html?inline=nyt-classifier" title="More articles about Social Security." class="meta-classifier"&gt;Social Security&lt;/a&gt; than paying more taxes. In &lt;a title="The survey, by the Russell Sage Foundation." href="http://www.russellsage.org/blog/r-mascarenhas/wealthiest-1-percent-and-common-good"&gt;one survey&lt;/a&gt; of wealthy Chicago families, almost twice as many respondents said they would cut government spending as those who said they would cut spending and raise revenue.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p><p>Even those who said the deck was stacked in their favor did not appreciate anti-rich rhetoric.</p><p>"I don't mind paying a little bit more in taxes. I don't mind putting money to programs that help the poor," said Anthony J. Bonomo of Manhasset, N.Y., who runs a medical malpractice insurance company and is a Republican. But, he said, he did mind taking a hit for the country's woes. "If those people could camp out in that park all day, why aren't they out looking for a job? Why are they blaming others?"</p><p>To many, 99 vs. 1 was an artificial distinction that overlooked hard work and moral character. "It shouldn't be relevant," said Mr. Katz , who said he both creates job and contributes to charitable causes. "I'm not hurting anyone. I'm helping a lot of people."</p><p><strong> The Enclave</strong></p><p>The placid sliver of Long Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p><p>A stretch of northwest Nassau County that includes Great Neck, Manhasset and Port Washington, this area has the country's highest concentration of 1 percenters, and one of the lowest unemployment rates in the state. Houses in Port Washington are worth only 10 percent less than they were at their peak, according to the <a href="http://topics.nytimes.com/top/reference/timestopics/subjects/s/standard_poors_caseshiller_home_price_index/index.html?inline=nyt-classifier" title="More articles about the Case-Shiller Home Price Index." class="meta-classifier">Standard &amp; Poor's Case-Shiller Home Price Index</a>, a far smaller decline than in the rest of the country. Yearly sales at the Americana Manhasset, the upscale granite and glass shopping center, have already exceeded their prerecession high. Even in down times, the 1 percent has <a title="Tables 1 and 2 in a related study (PDF). " href="http://www.treasury.gov/resource-center/tax-policy/Documents/incomemobilitystudy03-08revise.pdf">staying power</a>, being far more likely than any other group to stay where they are rather than slip to lower rungs of the economic ladder.</p>
-					</div>
-				</div>				
-			</div>
-
-		</div>
-
-		<script type="text/javascript">
-
-		$(function() {
-			text = document.getElementById('textbody');
-			window.tracker = new ice.InlineChangeEditor({
-				element: text,
-				handleEvents: true,
-				currentUser: {id: 11, name: 'Geoffrey Jellineck'},
-				plugins : ['IceAddTitlePlugin', 'IceSmartQuotesPlugin', 'IceEmdashPlugin', {
-						name : 'IceCopyPastePlugin',
-						settings : {
-							pasteType : 'formattedClean',
-							preserve : 'p,a[href],i,em,b,span,ul,ol,li,hr'
-						}
-					}
-				]
-			}).startTracking();
-		});
-
-		function setUser(el) {
-			var name = $(el).find(':selected').data('username');
-			var id = $(el).find(':selected').data('userid');
-			tracker.setCurrentUser({id: id, name: name});
-		}
-		
-		function toggleDel(el) {
-			var body = document.getElementById('textbody');
-			var button = $(el);
-			if ($(body).hasClass('CT-hide')) {
-				$(body).removeClass('CT-hide');
-			} else {
-				$(body).addClass('CT-hide');
-			}
-		}
-
-        function insertSampleImage() {
-                var range = tracker.getCurrentRange();
-                if (!ice.dom.isChildOf(range.startContainer, text)) {
-                        return false;
-                }
-                var image = document.createElement('img');
-                image.src = "http://graphics8.nytimes.com/images/2012/01/15/business/ONEPERCENT/ONEPERCENT-popup.jpg";
-                image.width = 160;
-                tracker.insert(image, range);
-                text.focus();
-        }
-
-		</script>
-
 
 		<h3>Tinymce Plugin</h3>
 		<p>
@@ -171,7 +49,145 @@
 			<div id="content">
 				<div id="tinymce-wrapper">
 					<textarea id="tinymce" style="width: 100%">
-						<p><span class="del cts-1" data-cid="2" data-userid="33" data-username="Jerri Blank" data-time="1326764311895" title="Deleted by Jerri Blank - 01/16/2012 8:38pm">Brooklyn</span><span class="ins cts-1" data-cid="3" data-userid="33" data-username="Jerri Blank" data-time="1326764319303" title="Inserted by Jerri Blank - 01/16/2012 8:38pm">Kings Point</span>, N.Y. &mdash; Adam Katz is happy to talk to reporters when he is promoting his business, a charter flight company based on Long Island called Talon Air.</p><p>But when the subject was his position as one of America's top earners, he <span class="del cts-1" data-cid="23" data-userid="33" data-username="Jerri Blank" data-time="1326765043953" title="Deleted by Jerri Blank - 01/16/2012 8:50pm">hesitated</span><span class="ins cts-1" data-cid="24" data-userid="33" data-username="Jerri Blank" data-time="1326765049283" title="Inserted by Jerri Blank - 01/16/2012 8:50pm">balked</span>. Seated at a desk fashioned from a jet fuel cell<span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:42pm" data-time="1326764560331" data-username="Geoffrey Jellineck" data-userid="11" data-cid="20" class="ins cts-3">, wearing a button-down shirt with the company logo,</span> he considered the public relations benefits and found them lacking: "It's not very popular to be in the 1 percent these days, is it?"</p><p><span class="ins cts-2" data-cid="14" data-userid="22" data-username="Chuck Noblet" data-time="1326764402035" title="Inserted by Chuck Noblet - 01/16/2012 8:40pm">A few months ago, Mr. Katz was just a successful businessman with <span class="del cts-3" data-cid="15" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764492624" title="Deleted by Geoffrey Jellineck - 01/16/2012 8:41pm">four</span><span class="ins cts-3" data-cid="16" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764495239" title="Inserted by Geoffrey Jellineck - 01/16/2012 8:41pm">five</span> children, an $8 million home, a family real estate company in Manhattan and his passion, 10-year-old Talon Air.</span></p><p>Now, the colossal gap between the very rich and everyone else <span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:46pm" data-time="1326764809499" data-username="Geoffrey Jellineck" data-userid="11" data-cid="22" class="ins cts-3">&mdash; the 1 percent versus the 99 percent &mdash; </span>has become a rallying point in this election season. As President Obama positions himself as a defender of the middle class, and Mitt Romney, the wealthiest of the Republican presidential candidates, decries such talk as "the bitter politics of envy," Mr. Katz has found himself on the wrong end of a new paradigm.</p><p><span class="ins cts-1" data-cid="30" data-userid="33" data-username="Jerri Blank" data-time="1326765098946" title="Inserted by Jerri Blank - 01/16/2012 8:51pm">As a member of the 1 percent, he is part of a club whose name conjures images of Wall Street bosses who are chauffeured from manse to Manhattan and fat cats who have armies of lobbyists at the ready.</span></p> <p>But in reality it is a far larger and more varied group, one that includes podiatrists and actuaries, executives and entrepreneurs, the self-made and the silver spoon set. They are clustered not just in New York and Los Angeles, but also in Denver and Dallas. The range of wealth in the 1 percent is vast &mdash; from households that bring in $380,000 a year, according to census data, up to billionaires like Warren E. Buffett and Bill Gates.</p><p>The top 1 percent of earners in a given year receives <a title="Related data from the Tax Policy Center." href="http://www.taxpolicycenter.org/numbers/displayatab.cfm?DocID=2972">just under a fifth</a> of the country's pretax income, <a title="A Congressional Budget Office report." href="http://www.cbo.gov/publications/collections/tax/2010/pre-tax_income_shares.pdf">about double their share</a> 30 years ago. They pay just over a fourth of all federal taxes, according to the Tax Policy Center. In 2007, they accounted for about 30 percent of philanthropic giving, according to Federal Reserve data. They received 22 percent of their income from capital gains, compared with 2 percent for everybody else.</p><p><span class="ins cts-3" data-cid="21" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764626633" title="Inserted by Geoffrey Jellineck - 01/16/2012 8:43pm">Still, they are not necessarily the idle rich. Mr. Katz, who sometimes commutes by amphibious plane and sometimes carries luggage for Talon Air passengers, likes to say he works "26/9."</span></p> <p>Most 1 percenters were born with socioeconomic advantages, which helps explain why the 1 percent is more likely than other Americans to have jobs, according to census data. They work longer hours, being three times more likely than the 99 percent to work more than 50 hours a week, and are more likely to be self-employed. Married 1 percenters are just as likely as other couples to have two incomes, but men are the big breadwinners, earning 75 percent of the money, compared with 64 percent of the income in other households.</p><p>Though many of the wealthy lean toward the Republican Party, in interviews, 1 percenters expressed a broad range of views on how to fix the economy. They think that President Obama is ruining it, or that Republicans in Congress have gone off the deep end. They favor a flat tax, or they believe the rich should pay a higher marginal rate. Some cheered on Occupy Wall Street, saying it was about time, while others wished the protesters would just get a job or take a bath. Still others were philosophical &mdash; perhaps because they could afford to be &mdash; viewing the <a href="http://topics.nytimes.com/top/reference/timestopics/subjects/r/recession_and_depression/index.html?inline=nyt-classifier" title="More articles about the recession." class="meta-classifier">recession</a> as something that would pass, like so many previous ups and downs.</p><p><span class="ins cts-2" data-cid="31" data-userid="22" data-username="Chuck Noblet" data-time="1326765165952" title="Inserted by Chuck Noblet - 01/16/2012 8:52pm">Of the 1 percenters interviewed for this article, almost all &amp;mdash; conservatives and liberals alike &amp;mdash; said the wealthy could and should shoulder more of the country's financial burden, and almost all said they viewed the current system as unfair. But they may prefer facing cuts to their own benefits like &lt;a href="http://topics.nytimes.com/top/reference/timestopics/subjects/s/social_security_us/index.html?inline=nyt-classifier" title="More articles about Social Security." class="meta-classifier"&gt;Social Security&lt;/a&gt; than paying more taxes. In &lt;a title="The survey, by the Russell Sage Foundation." href="http://www.russellsage.org/blog/r-mascarenhas/wealthiest-1-percent-and-common-good"&gt;one survey&lt;/a&gt; of wealthy Chicago families, almost twice as many respondents said they would cut government spending as those who said they would cut spending and raise revenue.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p><p>Even those who said the deck was stacked in their favor did not appreciate anti-rich rhetoric.</p><p>"I don't mind paying a little bit more in taxes. I don't mind putting money to programs that help the poor," said Anthony J. Bonomo of Manhasset, N.Y., who runs a medical malpractice insurance company and is a Republican. But, he said, he did mind taking a hit for the country's woes. "If those people could camp out in that park all day, why aren't they out looking for a job? Why are they blaming others?"</p><p>To many, 99 vs. 1 was an artificial distinction that overlooked hard work and moral character. "It shouldn't be relevant," said Mr. Katz , who said he both creates job and contributes to charitable causes. "I'm not hurting anyone. I'm helping a lot of people."</p><p><strong> The Enclave</strong></p><p>The placid sliver of Long Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p><p>A stretch of northwest Nassau County that includes Great Neck, Manhasset and Port Washington, this area has the country's highest concentration of 1 percenters, and one of the lowest unemployment rates in the state. Houses in Port Washington are worth only 10 percent less than they were at their peak, according to the <a href="http://topics.nytimes.com/top/reference/timestopics/subjects/s/standard_poors_caseshiller_home_price_index/index.html?inline=nyt-classifier" title="More articles about the Case-Shiller Home Price Index." class="meta-classifier">Standard &amp; Poor's Case-Shiller Home Price Index</a>, a far smaller decline than in the rest of the country. Yearly sales at the Americana Manhasset, the upscale granite and glass shopping center, have already exceeded their prerecession high. Even in down times, the 1 percent has <a title="Tables 1 and 2 in a related study (PDF). " href="http://www.treasury.gov/resource-center/tax-policy/Documents/incomemobilitystudy03-08revise.pdf">staying power</a>, being far more likely than any other group to stay where they are rather than slip to lower rungs of the economic ladder.</p>
+						<p style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;" data-mce-style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;">
+								<span class="del cts-5" title="Deleted by guest@twentyfour.com - 04/27/2017 11:00am" data-cid="25" data-userid="856" data-username="guest@twentyfour.com" data-time="1493283634890">&nbsp;beautifull&nbsp;document</span>
+								<br>
+								<br>
+						</p>
+						<p style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;" data-mce-style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;">
+								<br>
+								<span class="del cts-5" title="Deleted by guest@twentyfour.com - 04/27/2017 11:00am" data-cid="25" data-userid="856" data-username="guest@twentyfour.com" data-time="1493283634890">&nbsp;beautifull&nbsp;document</span>
+								<br>
+								<span>
+									<img src="standford_logo.png">
+								</span>
+							</span>
+						</p>
+						<p style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;" data-mce-style="margin-top: 0pt; margin-bottom: 0pt; text-align: justify; widows: 0; orphans: 0; font-size: 12pt;">
+						<span style="font-family: Arial; letter-spacing: -0.15pt;" data-mce-style="font-family: Arial; letter-spacing: -0.15pt;">
+							<span class="ins cts-2" title="Inserted by thy1 - 04/27/2017 10:37am" data-cid="5" data-userid="90" data-username="thy1" data-time="1493282268051">
+								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">Employment&nbsp;</span>
+								<span class="del cts-1" title="Deleted by guest@one.com - 04/27/2017 11:35am" data-cid="29" data-userid="877" data-username="guest@one.com" data-time="1493285746249">employement</span>
+								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;</span>
+								<span class="del cts-1" title="Deleted by guest@one.com - 04/27/2017 11:35am" data-cid="35" data-userid="877" data-username="guest@one.com" data-time="1493285750704">employment</span>
+							</span>
+						</span>
+						<span style="font-family: Arial; letter-spacing: -0.15pt;" data-mce-style="font-family: Arial; letter-spacing: -0.15pt;">
+							<span class="ins cts-3" title="Inserted by guest@two.com - 04/27/2017 10:56am" data-cid="3" data-userid="854" data-username="guest@two.com" data-time="1493283364079">
+								<span class="del cts-1" title="Deleted by guest@one.com - 04/27/2017 11:35am" data-cid="35" data-userid="877" data-username="guest@one.com" data-time="1493285750704">Employment</span>
+								<span class="ins cts-4" title="Inserted by guest@seventeen.com - 04/27/2017 10:58am" data-cid="27" data-userid="855" data-username="guest@seventeen.com" data-time="1493283527562">
+									<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;will&nbsp;</span>
+									<span class="ins cts-5" title="Inserted by guest@twentyfour.com - 04/27/2017 11:00am" data-cid="54" data-userid="856" data-username="guest@twentyfour.com" data-time="1493283657835">
+										<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">may</span>
+										<span class="ins cts-6" title="Inserted by guest@twentythree.com - 04/27/2017 11:05am" data-cid="19" data-userid="857" data-username="guest@twentythree.com" data-time="1493283914037">
+											<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;be</span>
+											<span class="ins cts-7" title="Inserted by guest@twentytwo.com - 04/27/2017 11:07am" data-cid="2" data-userid="858" data-username="guest@twentytwo.com" data-time="1493284037370">
+												<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;terminated</span>
+												<span class="ins cts-8" title="Inserted by guest@twentyone.com - 04/27/2017 11:09am" data-cid="4" data-userid="859" data-username="guest@twentyone.com" data-time="1493284148353">
+													<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;with</span>
+													<span class="ins cts-9" title="Inserted by guest@twenty.com - 04/27/2017 11:11am" data-cid="12" data-userid="860" data-username="guest@twenty.com" data-time="1493284260821">
+														<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;or&nbsp;without</span>
+														<span class="ins cts-10" title="Inserted by guest@eighteen.com - 04/27/2017 11:14am" data-cid="6" data-userid="861" data-username="guest@eighteen.com" data-time="1493284496682">
+															<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;cause&nbsp;and</span>
+															<span class="ins cts-11" title="Inserted by guest@nineteen.com - 04/27/2017 11:16am" data-cid="7" data-userid="862" data-username="guest@nineteen.com" data-time="1493284566927">
+																<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;with&nbsp;or&nbsp;without</span>
+																<span class="ins cts-12" title="Inserted by guest@sixteen.com - 04/27/2017 11:19am" data-cid="8" data-userid="863" data-username="guest@sixteen.com" data-time="1493284758609">
+																	<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;notice&nbsp;at</span>
+																	<span class="ins cts-1" title="Inserted by guest@fifteen.com - 04/27/2017 11:20am" data-cid="9" data-userid="864" data-username="guest@fifteen.com" data-time="1493284806895">
+																		<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;any&nbsp;time</span>
+																		<span class="ins cts-2" title="Inserted by guest@fourteen.com - 04/27/2017 11:23am" data-cid="11" data-userid="865" data-username="guest@fourteen.com" data-time="1493284989846">
+																			<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;at&nbsp;the&nbsp;will</span>
+																		</span>
+																		<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;</span>
+																		<span class="ins cts-3" title="Inserted by guest@thirteen.com - 04/27/2017 11:24am" data-cid="13" data-userid="866" data-username="guest@thirteen.com" data-time="1493285088114">
+																			<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">of&nbsp;either&nbsp;you</span>
+																			<span class="ins cts-4" title="Inserted by guest@twelve.com - 04/27/2017 11:25am" data-cid="14" data-userid="867" data-username="guest@twelve.com" data-time="1493285134712">
+																				<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;or&nbsp;the&nbsp;company</span>
+																				<span class="ins cts-5" title="Inserted by guest@eleven.com - 04/27/2017 11:26am" data-cid="16" data-userid="868" data-username="guest@eleven.com" data-time="1493285188939">
+																					<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">.&nbsp;Terms&nbsp;and&nbsp;conditions</span>
+																					<span class="ins cts-6" title="Inserted by guest@ten.com - 04/27/2017 11:27am" data-cid="43" data-userid="869" data-username="guest@ten.com" data-time="1493285267504">
+																						<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;of&nbsp;employment</span>
+																						<span class="ins cts-7" title="Inserted by guest@nine.com - 04/27/2017 11:28am" data-cid="18" data-userid="870" data-username="guest@nine.com" data-time="1493285319070">
+																							<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;with&nbsp;the&nbsp;co</span>
+																							<span class="ins cts-12" title="Inserted by guest@three.com - 04/27/2017 11:35am" data-cid="28" data-userid="876" data-username="guest@three.com" data-time="1493285712384">
+																								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">mpany</span>
+																							</span>
+																							<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">mpany</span>
+																							<span class="ins cts-8" title="Inserted by guest@eigh.com - 04/27/2017 11:29am" data-cid="20" data-userid="871" data-username="guest@eigh.com" data-time="1493285380297">
+																								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;m</span>
+																								<span class="ins cts-11" title="Inserted by guest@four.com - 04/27/2017 11:34am" data-cid="26" data-userid="875" data-username="guest@four.com" data-time="1493285662149">
+																									<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">and&nbsp;the&nbsp;company&nbsp;</span>
+																								</span>
+																								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">ay&nbsp;be&nbsp;notified</span>
+																								<span class="ins cts-9" title="Inserted by guest@seven.com - 04/27/2017 11:31am" data-cid="38" data-userid="872" data-username="guest@seven.com" data-time="1493285479938">
+																									<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;at&nbsp;the&nbsp;sole</span>
+																									<span class="ins cts-10" title="Inserted by guest@six.com - 04/27/2017 11:32am" data-cid="15" data-userid="873" data-username="guest@six.com" data-time="1493285536428">
+																										<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;discretion&nbsp;fo&nbsp;the&nbsp;company</span>
+																									</span>
+																								</span>
+																							</span>
+																						</span>
+																					</span>
+																				</span>
+																			</span>
+																		</span>
+																	</span>
+																</span>
+															</span>
+														</span>
+													</span>
+												</span>
+											</span>
+										</span>
+									</span>
+								</span>
+							</span>
+						</span>
+						<span style="font-family: Arial;" data-mce-style="font-family: Arial;">
+							<span class="ins cts-6" title="Inserted by guest@ten.com - 04/27/2017 11:27am" data-cid="17" data-userid="869" data-username="guest@ten.com" data-time="1493285258287">
+								<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">&nbsp;</span>
+								<span class="ins cts-10" title="Inserted by guest@five.com - 04/27/2017 11:33am" data-cid="24" data-userid="874" data-username="guest@five.com" data-time="1493285624112">
+									<span class="del cts-2" data-cid="42" data-userid="35" data-username="thibaut" data-time="1493295881311" title="Deleted by thibaut - 04/27/2017 2:24pm">and&nbsp;the&nbsp;company</span>
+								</span>
+							</span>
+						</span>
+						</p>
+						<p>
+							<span class="del cts-1" data-cid="2" data-userid="33" data-username="Jerri Blank" data-time="1326764311895" title="Deleted by Jerri Blank - 01/16/2012 8:38pm">BBrooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn <b>Brooklyn</b> Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn rooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn </span><img src="standford_logo.png">
+						</p>
+						<p>
+							<ul>
+								<li>one</li>
+								<li><span class="del cts-1" data-cid="3" data-userid="33" data-username="Jerri Blank" data-time="1326764319303" title="Inserted by Jerri Blank - 01/16/2012 8:38pm">Kings Point</span></li>
+								<li>three</li>
+							</ul>
+						</p>
+						<p>
+							<span class="del cts-1" data-cid="2" data-userid="33" data-username="Jerri Blank" data-time="1326764311895" title="Deleted by Jerri Blank - 01/16/2012 8:38pm">BBrooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn <bold>Brooklyn</bold> Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn rooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn Brooklyn </span><span class="ins cts-1" data-cid="3" data-userid="33" data-username="Jerri Blank" data-time="1326764319303" title="Inserted by Jerri Blank - 01/16/2012 8:38pm">Kings Point</span>
+						</p>
+						<p>
+							<span class="ins cts-1" data-cid="3" data-userid="33" data-username="Jerri Blank" data-time="1326764319303" title="Inserted by Jerri Blank - 01/16/2012 8:38pm">Kings Point</span>
+							, N.Y. &mdash; Adam Katz is happy to talk to reporters when he is promoting his business, a charter flight company based on Long Island called Talon Air.
+						</p>
+						<p>
+							But when the subject was his position as one of America's top earners, he <img src="standford_logo.png">
+							<span class="del cts-1" data-cid="23" data-userid="33" data-username="Jerri Blank" data-time="1326765043953" title="Deleted by Jerri Blank - 01/16/2012 8:50pm">hesitated</span>
+							<span class="ins cts-1" data-cid="24" data-userid="33" data-username="Jerri Blank" data-time="1326765049283" title="Inserted by Jerri Blank - 01/16/2012 8:50pm">balked</span>
+							. Seated at a desk fashioned from a jet fuel cell
+							<span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:42pm" data-time="1326764560331" data-username="Geoffrey Jellineck" data-userid="11" data-cid="20" class="ins cts-3">, wearing a button-down shirt with the company logo,</span>
+							he considered the public relations benefits and found them lacking: "It's not very popular to be in the 1 percent these days, is it?"
+						</p>
+						<img src="standford_logo.png">
+						<p>
+							<span class="ins cts-2" data-cid="14" data-userid="22" data-username="Chuck Noblet" data-time="1326764402035" title="Inserted by Chuck Noblet - 01/16/2012 8:40pm">A few months ago, Mr. Katz was just a successful businessman with 
+								<span class="del cts-3" data-cid="15" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764492624" title="Deleted by Geoffrey Jellineck - 01/16/2012 8:41pm">four</span>
+								<span class="ins cts-3" data-cid="16" data-userid="11" data-username="Geoffrey Jellineck" data-time="1326764495239" title="Inserted by Geoffrey Jellineck - 01/16/2012 8:41pm">five</span>
+								children, an $8 million home, a family real estate company in Manhattan and his passion, 10-year-old Talon Air.</span>
+						</p>
+						<p>Now, the colossal gap between the very rich and everyone else 
+							<span title="Inserted by Geoffrey Jellineck - 01/16/2012 8:46pm" data-time="1326764809499" data-username="Geoffrey Jellineck" data-userid="11" data-cid="22" class="ins cts-3">&mdash; the 1 percent versus the 99 percent &mdash; </span>
+							has become a rallying point in this election season. As President Obama positions himself as a defender of the middle class, and Mitt Romney, the wealthiest of the Republican presidential candidates, decries such talk as "the bitter politics of envy," Mr. Katz has found himself on the wrong end of a new paradigm.
+						</p>
 					</textarea>
 				</div>
 			</div>
@@ -182,7 +198,7 @@
 		tinymce.init({
 			mode: "exact",
 			elements: "tinymce",
-			theme: "advanced",
+			theme: "modern",
 			plugins: 'ice,icesearchreplace',
 			theme_advanced_buttons1: "bold,italic,underline,|,bullist,numlist,|,undo,redo,code,|,search,replace,|,ice_togglechanges,ice_toggleshowchanges,iceacceptall,icerejectall,iceaccept,icereject",
 			theme_advanced_buttons2: "",
@@ -195,7 +211,9 @@
 				user: { name: 'Geoffrey Jellineck', id: 11},
 				preserveOnPaste: 'p,a[href],i,em,b,span',
 				deleteTag: 'delete',
-				insertTag: 'insert'
+				insertTag: 'insert',
+				mergeBlocks: false,
+				styleColorsNumber: 1
 			},
 			height: '400'
 		});

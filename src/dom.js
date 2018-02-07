@@ -1,5 +1,7 @@
 (function () {
+	
   var exports = this,
+		_browser = null,
     dom = {};
 
   dom.DOM_VK_DELETE = 8;
@@ -23,7 +25,7 @@
   dom.CHARACTER_UNIT = 'character';
   dom.WORD_UNIT = 'word';
   dom.BREAK_ELEMENT = 'br';
-  dom.CONTENT_STUB_ELEMENTS = ['img', 'hr', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
+  dom.CONTENT_STUB_ELEMENTS = ['img', 'hr', 'br', 'iframe', 'param', 'link', 'meta', 'input', 'frame', 'col', 'base', 'area'];
   dom.BLOCK_ELEMENTS = ['p', 'div', 'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'td', 'th', 'fieldset', 'form', 'blockquote', 'dl', 'dt', 'dd', 'dir', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
   dom.TEXT_CONTAINER_ELEMENTS = ['p', 'div', 'pre', 'li', 'td', 'th', 'blockquote', 'dt', 'dd', 'center', 'address', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
@@ -752,18 +754,59 @@
     }
   };
   dom.browser = function () {
-    var result = {};
-    result.version = jQuery.browser.version;
-    if (jQuery.browser.mozilla === true) {
-      result.type = 'mozilla';
-    } else if (jQuery.browser.msie === true) {
-      result.type = 'msie';
-    } else if (jQuery.browser.opera === true) {
-      result.type = 'opera';
-    } else if (jQuery.browser.webkit === true) {
-      result.type = 'webkit';
+		if (_browser) {
+      return $.extend({}, _browser);
     }
-    return result;
+		
+    _browser = (function() {
+      function uaMatch( ua ) {
+        ua = ua.toLowerCase();
+	
+        var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+          /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+          /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+          /(msie) ([\w.]+)/.exec( ua ) ||
+          ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+          [];
+	
+	return {
+          browser: match[ 1 ] || "",
+          version: match[ 2 ] || "0"
+        };
+      }
+	
+      var ua = navigator.userAgent.toLowerCase(),
+          matched = uaMatch(ua),
+          browser = {
+            type: "unknown",
+            version : 0,
+            msie: false
+          };
+	
+      if ( matched.browser ) {
+        browser[ matched.browser ] = true;
+        browser.version = matched.version || 0;
+        browser.type = matched.browser;
+      }
+	
+      // Chrome is Webkit, but Webkit is also Safari.
+      if ( browser.chrome ) {
+        browser.webkit = true;
+      } else if ( browser.webkit ) {
+        browser.safari = true;
+      }
+      if (browser.webkit) {
+        browser.type = "webkit";
+      }
+      browser.firefox = (/firefox/.test(ua) == true);
+      if (! browser.msie) {
+        browser.msie = !! /trident/.test(ua); 
+      }
+			
+      return browser;
+    })();
+    
+    return $.extend({}, _browser);
   };
   dom.getBrowserType = function () {
     if (this._browserType === null) {

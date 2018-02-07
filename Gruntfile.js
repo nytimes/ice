@@ -84,12 +84,12 @@ module.exports = function(grunt) {
       },
       tinyice: {
         files: {
-          'dist/ice_editor_plugin.js': 'lib/tinymce/jscripts/tiny_mce/plugins/ice/editor_plugin.js'
+          'dist/ice_editor_plugin.js': 'lib/tinymce/js/tinymce/plugins/ice/plugin.min.js'
         }
       },
       tinysr: {
         files: {
-          'dist/sr_editor_plugin.js': 'lib/tinymce/jscripts/tiny_mce/plugins/icesearchreplace/editor_plugin.js'
+          'dist/sr_editor_plugin.js': 'lib/tinymce/js/tinymce/plugins/icesearchreplace/plugin.min.js'
         }
       }
     },
@@ -130,6 +130,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', ['clean:build', 'concat', 'uglify:ice', 'uglify:icemaster', 'compress:gz', 'cp', 'compress:zip']);
 
+  grunt.registerTask('package', ['clean:build', 'concat', 'compress:gz', 'cp', 'compress:zip']);
+
   grunt.registerTask('cp', function() {
     cpTinyDir('ice');
     //grunt.file.delete('dist/ice_editor_plugin.js');
@@ -139,7 +141,7 @@ module.exports = function(grunt) {
   });
 
   var cpTinyDir = function(dir) {
-    grunt.file.recurse('lib/tinymce/jscripts/tiny_mce/plugins/' + dir + '/', function(abspath, rootdir, subdir, filename) {
+    grunt.file.recurse('lib/tinymce/js/tinymce/plugins/' + dir + '/', function(abspath, rootdir, subdir, filename) {
       grunt.file.copy(rootdir + '/' + (subdir ? subdir + '/' : '') + filename,'dist/tinymce/plugins/' + dir + '/' + (subdir ? subdir + '/' : '') + '/' + filename);
     });
   };
