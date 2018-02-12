@@ -180,25 +180,19 @@
 				if (this.element.innerHTML != body.innerHTML) {
 					this.element.innerHTML = body.innerHTML;
 				}
-
 			},
 
 			/*
 			 * Updates the list of changes to include all track tags found inside the element.
 			 */
 			findTrackTags: function () {
-
 				// Grab class for each changeType
 				var styleIndex = 1;
 				var self = this, changeTypeClasses = [];
 				var trackedElements = this.element.querySelectorAll('[data-cid]');
 
-				if(trackedElements.length) {
-					self._trackedUsersId = Array.prototype.map.call(trackedElements, function(elem) {
-						return parseInt(elem.attributes['data-userid'].nodeValue, 10);
-					}).filter(function(elem, idx, arr) {
-						return arr.indexOf(elem) == idx;
-					});
+				if (trackedElements.length) {
+					self._trackedUsersId = this.getTrackedUserIds(trackedElements);
 				}
 
 				for (var changeType in this.changeTypes) {
@@ -212,9 +206,9 @@
 						var ctnReg = new RegExp('(' + changeTypeClasses.join('|') + ')').exec(classList[i]);
 						if (ctnReg) ctnType = self._getChangeTypeFromAlias(ctnReg[1]);
 					}
-					var userid = ice.dom.attr(el, self.userIdAttribute);
+					var userid = self._retrieveOrGenerateUserId(el);
 					if (trackedElements.length) {
-						styleIndex = self._trackedUsersId.indexOf(userid) ? el.className.match(/\d+/)[0] : self._trackedUsersId.length % self.styleColorsNumber + 1;
+						styleIndex = self._retrieveOrGenerateStyleIndex(el, userid);
 					}
 					self.setUserStyle(userid, Number(styleIndex));
 					var changeid = ice.dom.attr(el, self.changeIdAttribute);
@@ -225,6 +219,73 @@
 						time: ice.dom.attr(el, self.timeAttribute)
 					};
 				});
+			},
+
+			getTrackedUserIds: function(trackedElements) {
+				return Array.prototype.map.call(trackedElements, function(elem) {
+					var value = elem.attributes[this.userIdAttribute];
+					return value ? parseInt(value.nodeValue, 10) : this._hashNameToUserId(elem);
+				}.bind(this)).filter(function(elem, idx, arr) {
+					return arr.indexOf(elem) === idx;
+				});
+			},
+
+			_retrieveOrGenerateStyleIndex: function(nodeEl, userid) {
+				if (this._trackedUsersId.indexOf(userid)) {
+					var matchStyleIndex = nodeEl.className.match(/\d+/); // retrieve from current class 'cts-1'
+					if (matchStyleIndex) {
+						return matchStyleIndex[0];
+					}
+				}
+
+				return this._trackedUsersId.length % this.styleColorsNumber + 1;
+			},
+
+			_retrieveOrGenerateUserId: function(nodeEl) {
+				var userid = ice.dom.attr(nodeEl, this.userIdAttribute);
+				return userid ? userid : this._hashNameToUserId(nodeEl); 
+			},
+
+			_hashNameToUserId: function(nodeEl) {
+				var name = ice.dom.attr(nodeEl, this.userNameAttribute);
+				var hash = 0;
+				if (name.length === 0) {
+					return hash;
+				}
+				for (var i = 0; i < name.length; i++) {
+				  var chr   = name.charCodeAt(i);
+				  hash  = ((hash << 5) - hash) + chr;
+				  hash |= 0; // Convert to 32bit integer
+				}
+				return hash * (-1); // negative hash to protect from conflicts with real userIds
+			},
+
+			refreshTrackChangesStyle: function () {
+				var trackedElements = this.element.querySelectorAll('[data-cid]');
+				if (!trackedElements.length) {
+					return;
+				}
+
+				this._trackedUsersId = [];
+				this._userStyles = {}; // force a new color
+				trackedElements.forEach(function(el) {
+					var userid = this._retrieveOrGenerateUserId(el);
+
+					var matchStyleIndex = el.className.match(/\d+/); // retrieve from current class 'cts-1'
+					if (matchStyleIndex) {
+						var previousStyleClass = this.stylePrefix + '-' + matchStyleIndex[0];
+						if (ice.dom.hasClass(el, previousStyleClass)) {
+							ice.dom.removeClass(el, previousStyleClass);
+						}
+					}
+
+					var style = this.getUserStyle(userid);
+					ice.dom.addClass(el, style);
+
+					if (this._trackedUsersId.indexOf(userid) === -1) {
+						this._trackedUsersId.push(userid);
+					}
+				}.bind(this));
 			},
 
 			/**
@@ -802,10 +863,7 @@
 			},
 
 			getUserStyle: function (userid) {
-				var styleIndex = null;
-				if (this._userStyles[userid]) styleIndex = this._userStyles[userid];
-				else styleIndex = this.setUserStyle(userid, this.getNewStyleId(userid));
-				return styleIndex;
+				return this._userStyles[userid] ? this._userStyles[userid] : this.setUserStyle(userid, this.getNewStyleId(userid))
 			},
 
 			setUserStyle: function (userid, styleIndex) {

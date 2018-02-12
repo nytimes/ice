@@ -130,6 +130,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', ['clean:build', 'concat', 'uglify:ice', 'uglify:icemaster', 'compress:gz', 'cp', 'compress:zip']);
 
+  grunt.registerTask('package', ['clean:build', 'concat', 'compress:gz', 'cp', 'compress:zip']);
+
   grunt.registerTask('cp', function() {
     cpTinyDir('ice');
     //grunt.file.delete('dist/ice_editor_plugin.js');
