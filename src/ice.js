@@ -268,7 +268,9 @@
 
 				this._trackedUsersId = [];
 				this._userStyles = {}; // force a new color
-				trackedElements.forEach(function(el) {
+				// browser compatibility foreach
+				for (var i = 0; i < trackedElements.length; i++) {
+					var el = trackedElements[i];
 					var userid = this._retrieveOrGenerateUserId(el);
 
 					var matchStyleIndex = el.className.match(/\d+/); // retrieve from current class 'cts-1'
@@ -285,7 +287,7 @@
 					if (this._trackedUsersId.indexOf(userid) === -1) {
 						this._trackedUsersId.push(userid);
 					}
-				}.bind(this));
+				}
 			},
 
 			/**
