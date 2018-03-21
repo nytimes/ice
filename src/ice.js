@@ -384,7 +384,7 @@
 
 				// If we have any nodes selected, then we want to delete them before inserting the new text.
 				if (!range.collapsed) {
-					this.deleteContents();
+					this.deleteContents(null, range);
 					// Update the range
 					range = this.getCurrentRange();
 					if (range.startContainer === range.endContainer && this.element === range.startContainer) {
