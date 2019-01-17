@@ -1606,6 +1606,9 @@
 						var range = this.getCurrentRange();
 						this._moveRangeToValidTrackingPos(range, range.startContainer);
 						this.insert('\u00A0' , range);
+						range = this.getCurrentRange();
+						this._moveRangeToValidTrackingPos(range, range.startContainer);
+						this.insert('\u200B' , range);
 						break;
 					default:
 						// Ignore key.
