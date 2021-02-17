@@ -1048,7 +1048,10 @@
 						// If the element is not a text or stub node, go deeper and check the children.
 						if (elem.nodeType !== ice.dom.TEXT_NODE) {
 							// Browsers like to insert breaks into empty paragraphs - remove them
-							if (ice.dom.BREAK_ELEMENT == ice.dom.getTagName(elem)) {
+							if (
+								ice.dom.BREAK_ELEMENT == ice.dom.getTagName(elem) ||
+								(elem.classList && elem.classList.contains(this.classNotTracked))
+							) {
 								continue;
 							}
 
