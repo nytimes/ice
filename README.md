@@ -8,7 +8,7 @@ Ice is a track changes implementation, built in javascript, for anything that is
 
 ## Download
 
-[v0.5.0](http://nytimes.github.com/ice/downloads/ice_0.5.0.zip)
+[v0.5.0](http://nytimes.github.io/ice/downloads/ice_0.5.0.zip)
 
 ## Features
 
