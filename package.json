@@ -1,5 +1,5 @@
 {
-  "name": "ice",
+  "name": "@concordnow/ice",
   "description": "Track changes in JavaScript.",
   "version": "0.7.12",
   "author": "Matthew DeLambo <delambo@gmail.com>",
