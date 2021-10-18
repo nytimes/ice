@@ -9,13 +9,14 @@
   },
   "devDependencies": {
     "grunt": "^1.4.0",
-    "grunt-contrib-concat": "^2.0.0",
-    "grunt-contrib-jshint": "^3.0.0",
-    "grunt-contrib-qunit": "^5.1.0",
-    "grunt-contrib-uglify": "^5.0.1",
+    "grunt-cli": "^1.4.3",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-compress": "^2.0.0",
-    "grunt-contrib-connect": "^3.0.0"
+    "grunt-contrib-concat": "^2.0.0",
+    "grunt-contrib-connect": "^3.0.0",
+    "grunt-contrib-jshint": "^3.0.0",
+    "grunt-contrib-qunit": "^5.1.0",
+    "grunt-contrib-uglify": "^5.0.1"
   },
   "bugs": {
     "url": "http://github.com/nytimes/ice/issues"
