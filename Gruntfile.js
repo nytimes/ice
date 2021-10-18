@@ -56,8 +56,9 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         beautify : {
-            ascii_only : true
-          } ,
+          ascii_only: true,
+          beautify: false
+        },
         preserveComments: false,
         banner: '//\n' +
           '// <%= pkg.name %> - v<%= pkg.version %>\n' +
