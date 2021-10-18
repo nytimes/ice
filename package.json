@@ -7,6 +7,11 @@
     "type": "git",
     "url": "git://github.com/nytimes/ice"
   },
+  "scripts": {
+    "build": "grunt build",
+    "lint": "grunt jshint",
+    "test": "grunt test"
+  },
   "devDependencies": {
     "grunt": "^1.4.0",
     "grunt-cli": "^1.4.3",
