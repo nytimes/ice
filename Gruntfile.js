@@ -97,19 +97,24 @@ module.exports = function(grunt) {
     compress: {
       gz: {
         options: {
-          mode: 'gzip',
-          archive: 'ice.min.gz'
+          mode: 'gzip'
         },
-        dest: 'dist/',
-        src: 'dist/ice.min.js'
+        files: [{
+          expand: true,
+          cwd: 'dist/',
+          src: ['ice.min.js'],
+          dest: 'dist/',
+          ext: '.min.gz'
+        }]
       },
       zip: {
         options: {
           archive: 'dist/ice_<%= pkg.version %>.zip'
         },
-        files: [
-          {src: './**', cwd: 'dist/', expand:true}
-        ]
+        files: [{
+          expand:true,
+          src: ['dist/**']
+        }]
       }
     },
 
