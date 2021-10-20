@@ -25,7 +25,7 @@ module.exports = function(grunt) {
     qunit: {
       all: {
         options: {
-          urls: ['http://localhost:8000/ice/test/test.html']
+          urls: ['http://localhost:8000/test/test.html']
         }
       }
     },
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
     connect: {
       server: {
         options: {
-          base: '../'
+          base: './'
         }
       }
     },
@@ -151,5 +151,4 @@ module.exports = function(grunt) {
       grunt.file.copy(rootdir + '/' + (subdir ? subdir + '/' : '') + filename,'dist/tinymce/plugins/' + dir + '/' + (subdir ? subdir + '/' : '') + '/' + filename);
     });
   };
-
 };

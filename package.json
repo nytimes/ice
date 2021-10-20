@@ -13,6 +13,7 @@
     "test": "grunt test"
   },
   "devDependencies": {
+    "qunit": "^2.17.2",
     "grunt": "^1.4.0",
     "grunt-cli": "^1.4.3",
     "grunt-contrib-clean": "^2.0.0",
