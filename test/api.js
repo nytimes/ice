@@ -2,7 +2,6 @@ $(document).ready(function() {
 
   QUnit.module("ice core", function() {
 
-
     QUnit.test("InlineChangeEditor.constructor", function(assert) {
 
       // Setup for empty element.

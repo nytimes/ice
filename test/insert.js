@@ -9,7 +9,7 @@ $(document).ready(function() {
           '<p>a paragraph</p>' +
         '</div>');
       var changeEditor = getIce(el);
-    $("body").append(el);
+      $("body").append(el);
       var range = changeEditor.env.selection.createRange();
       
       // Insert at the end of a paragraph.  
@@ -139,8 +139,8 @@ $(document).ready(function() {
 
     // Setup for inserting a space into a .del region.
     el = jQuery('<div>' +
-    		'<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
-    		'</div>');
+        '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+        '</div>');
     changeEditor = getIce(el);
     $("body").append(el);
 
@@ -148,15 +148,15 @@ $(document).ready(function() {
     range.collapse(true);
     changeEditor.insert(" ", range);
     assert.ok(el.find(".del").text() === "Long"
-    		&& el.find(".ins").length === 1
-    		&& el.find(".ins").text() === " ",
-    		"Pressed spacebar from inside delete region.");
+        && el.find(".ins").length === 1
+        && el.find(".ins").text() === " ",
+        "Pressed spacebar from inside delete region.");
     
     
     // Setup for inserting a space into a .del region, with track changes hidden.
     el = jQuery('<div>' +
-    		'<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
-    		'</div>');
+        '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+        '</div>');
     changeEditor = getIce(el);
     $("body").append(el);
     el.find(".del").css({display:"none"});
@@ -165,9 +165,9 @@ $(document).ready(function() {
     range.collapse(true);
     changeEditor.insert(" ", range);
     assert.ok(el.find(".del").text() === "Long"
-    		&& el.find(".ins").length === 1
-    		&& el.find(".ins").text() === " ",
-    		"Pressed spacebar from inside delete region.");
+        && el.find(".ins").length === 1
+        && el.find(".ins").text() === " ",
+        "Pressed spacebar from inside delete region.");
     });
 
   });
