@@ -134,6 +134,7 @@ IceSmartQuotesPlugin.prototype = {
           // handling, in case the context has changed and we need to update the smart quote.
           case smartSingleLeft:
           case smartSingleRight:
+            // jshint -W086
             current = regularSingle;
           case regularSingle:
             // YEAR_ABBREVIATION - look 2 ahead to see if there are two digits in a row - not fool proof
@@ -169,7 +170,9 @@ IceSmartQuotesPlugin.prototype = {
             else if ((previous == null || isSpace(previous)) && (isSpace(next) && isSingle(getNextChar(data, pos, 1))))
               current = smartDoubleLeft;
             break;
+          // jshint +W086
         }
+
         if (current != null) data[pos] = current;
       }
     });

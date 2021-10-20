@@ -266,7 +266,7 @@ IcePluginManager.prototype = {
 
   fireCaretPositioned: function() {
     for (var i in this.plugins) {
-      this.plugins[i].caretPositioned()
+      this.plugins[i].caretPositioned();
     }
   },
 

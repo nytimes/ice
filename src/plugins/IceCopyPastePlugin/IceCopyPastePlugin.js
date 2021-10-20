@@ -362,9 +362,9 @@ IceCopyPastePlugin.prototype = {
       // Remove any foreign attributes that do not match the map.
       if(el.hasAttributes()) {
         var attributes = el.attributes;
-        for(var i = attributes.length - 1; i >= 0; i--) {
-          if(!ice.dom.inArray(attributes[i].name, attrMatches)) {
-            el.removeAttribute(attributes[i].name);
+        for(var j = attributes.length - 1; j >= 0; j--) {
+          if(!ice.dom.inArray(attributes[j].name, attrMatches)) {
+            el.removeAttribute(attributes[j].name);
           }
         }
       }
@@ -426,7 +426,7 @@ IceCopyPastePlugin.prototype = {
       this._tmpNode.parentNode.removeChild(this._tmpNode);
       this._tmpNode = null;
       // Kill any empty change nodes.
-      var ins = this._ice.env.document.getElementsByClassName(this._ice.changeTypes['insertType'].alias);
+      var ins = this._ice.env.document.getElementsByClassName(this._ice.changeTypes.insertType.alias);
       for(var i = 0; i < ins.length; i++) {
         if(!ins[i].textContent) {
           if(ins[i].parentNode) {

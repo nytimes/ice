@@ -8,8 +8,10 @@ IceAddTitlePlugin = function(ice_instance) {
 
 IceAddTitlePlugin.prototype = {
   nodeCreated: function(node, option) {
+    // jshint -W014
     node.setAttribute('title', (option.action || 'Modified') + ' by ' + node.getAttribute(this._ice.userNameAttribute)
         + ' - ' + ice.dom.date('m/d/Y h:ia', parseInt(node.getAttribute(this._ice.timeAttribute))));
+    // jshint +W014
   }
 };
 

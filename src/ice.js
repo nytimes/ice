@@ -202,8 +202,8 @@
 				ice.dom.each(ice.dom.find(this.element, '.' + changeTypeClasses.join(', .')), function (i, el) {
 					var ctnType = '';
 					var classList = el.className.split(' ');
-					for (var i = 0; i < classList.length; i++) {
-						var ctnReg = new RegExp('(' + changeTypeClasses.join('|') + ')').exec(classList[i]);
+					for (var j = 0; j < classList.length; j++) {
+						var ctnReg = new RegExp('(' + changeTypeClasses.join('|') + ')').exec(classList[j]);
 						if (ctnReg) ctnType = self._getChangeTypeFromAlias(ctnReg[1]);
 					}
 					var userid = self._retrieveOrGenerateUserId(el);
@@ -322,6 +322,7 @@
 			 */
 			handleEvent: function (e) {
 				if (!this.isTracking) return;
+				var needsToBubble;
 				if (e.type == 'mouseup') {
 					var self = this;
 					setTimeout(function () {
@@ -330,11 +331,11 @@
 				} else if (e.type == 'mousedown') {
 					return this.mouseDown(e);
 				} else if (e.type == 'keypress') {
-					var needsToBubble = this.keyPress(e);
+					needsToBubble = this.keyPress(e);
 					if (!needsToBubble) e.preventDefault();
 					return needsToBubble;
 				} else if (e.type == 'keydown') {
-					var needsToBubble = this.keyDown(e);
+					needsToBubble = this.keyDown(e);
 					if (!needsToBubble) e.preventDefault();
 					return needsToBubble;
 				} else if (e.type == 'keyup') {
@@ -467,13 +468,13 @@
 					range = this.getCurrentRange();
 				}
 
-				var changeid = this.startBatchChange(this.changeTypes['deleteType'].alias);
+				var changeid = this.startBatchChange(this.changeTypes.deleteType.alias);
 				if (range.collapsed === false) {
 					if(this._currentUserIceNode(range.startContainer.parentNode)){
 						this._deleteSelection(range);
 					} else {
 						this._deleteSelection(range);
-						if(browser["type"] === "mozilla"){
+						if(browser.type === "mozilla"){
 							if(range.startContainer.parentNode.nextSibling){
 								range.setEnd(range.startContainer.parentNode.nextSibling, 0);
 								// range.moveEnd(ice.dom.CHARACTER_UNIT, ice.dom.getNodeCharacterLength(range.endContainer));
@@ -491,7 +492,7 @@
 				} else {
 					if (right) {
 						// RIGHT DELETE
-						if(browser["type"] === "mozilla"){
+						if(browser.type === "mozilla"){
 							prevent = this._deleteRight(range);
 							// Handling track change show/hide
 							if(!this.visible(range.endContainer)){
@@ -534,7 +535,7 @@
 						}
 					} else {
 						// LEFT DELETE
-						if(browser["type"] === "mozilla"){
+						if(browser.type === "mozilla"){
 							prevent = this._deleteLeft(range);
 							// Handling track change show/hide
 							if(!this.visible(range.startContainer)){
@@ -865,7 +866,7 @@
 			},
 
 			getUserStyle: function (userid) {
-				return this._userStyles[userid] ? this._userStyles[userid] : this.setUserStyle(userid, this.getNewStyleId(userid))
+				return this._userStyles[userid] ? this._userStyles[userid] : this.setUserStyle(userid, this.getNewStyleId(userid));
 			},
 
 			setUserStyle: function (userid, styleIndex) {
@@ -937,7 +938,7 @@
 		        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
 			    });
 			    return uuid;
-				}
+				};
 
 				var id = getUuid(); // ++this._uniqueIDIndex;
 				if (this._changes[id]) {
@@ -1022,7 +1023,7 @@
 				var elements = ice.dom.getElementsBetween(bookmark.start, bookmark.end);
 				var b1 = ice.dom.parents(range.startContainer, this.blockEls.join(', '))[0];
 				var b2 = ice.dom.parents(range.endContainer, this.blockEls.join(', '))[0];
-				var betweenBlocks = new Array();
+				var betweenBlocks = [];
 
 				// Do not track editable fields
 				elements = elements.filter(function(element) {
@@ -1383,7 +1384,7 @@
 														range.setStart(prevBlock, prevBlock.childNodes.length);
 													}
 													// The browsers like to auto-insert breaks into empty paragraphs - remove them.
-													var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer)
+													var elements = ice.dom.getElementsBetween(range.startContainer, range.endContainer);
 													for (var i = 0; i < elements.length; i++) {
 														ice.dom.remove(elements[i]);
 													}
@@ -1570,7 +1571,7 @@
 					case ice.dom.DOM_VK_UP:
 					case ice.dom.DOM_VK_LEFT:
 						this.pluginsManager.fireCaretPositioned();
-						if (browser["type"] === "mozilla") {
+						if (browser.type === "mozilla") {
 							if (!this.visible(range.startContainer)) {
 								// if Previous sibling exists in the paragraph, jump to the previous sibling
 								if(range.startContainer.parentNode.previousSibling) {
@@ -1590,7 +1591,7 @@
 						break;
 					case ice.dom.DOM_VK_RIGHT:
 						this.pluginsManager.fireCaretPositioned();
-						if (browser["type"] === "mozilla") {
+						if (browser.type === "mozilla") {
 							if (!this.visible(range.startContainer)) {
 								if(range.startContainer.parentNode.nextSibling) {
 									// When moving right and moving into a hidden element, skip it and go to the nextSibling
@@ -1606,7 +1607,9 @@
 
 					case 32:
 						preventDefault = true;
+						// jshint -W004
 						var range = this.getCurrentRange();
+						// jshint +W004
 						this._moveRangeToValidTrackingPos(range, range.startContainer);
 						this.insert('\u00A0' , range);
 						range = this.getCurrentRange();

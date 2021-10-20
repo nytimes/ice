@@ -618,7 +618,7 @@
     }
     var above = function () {};
     if (dom.isset(parent) === true) {
-      for (value in parent.prototype) {
+      for (var value in parent.prototype) {
         if (child.prototype[value]) {
           above.prototype[value] = parent.prototype[value];
           continue;
@@ -650,7 +650,9 @@
     } else {
       for (var id in value) {
         if (value.hasOwnProperty(id) === true) {
+          // jshint -W004
           var res = cb.call(this, id);
+          // jshint +W004
           if (res === false) {
             break;
           }
@@ -717,9 +719,9 @@
     }
     if (firstOnly !== true) {
       al = array2.length;
-      for (var i = 0; i < al; i++) {
-        if (dom.inArray(array2[i], array1) === false) {
-          res.push(array2[i]);
+      for (var j = 0; j < al; j++) {
+        if (dom.inArray(array2[j], array1) === false) {
+          res.push(array2[j]);
         }
       }
     }
@@ -871,14 +873,14 @@
     return null;
   };
   dom.onBlockBoundary = function (leftContainer, rightContainer, blockEls) {
-    if (!leftContainer || !rightContainer) return false
+    if (!leftContainer || !rightContainer) return false;
     var bleft = dom.isChildOfTagNames(leftContainer, blockEls) || dom.is(leftContainer, blockEls.join(', ')) && leftContainer || null;
     var bright = dom.isChildOfTagNames(rightContainer, blockEls) || dom.is(rightContainer, blockEls.join(', ')) && rightContainer || null;
     return (bleft !== bright);
   };
 
   dom.isOnBlockBoundary = function (leftContainer, rightContainer, container) {
-    if (!leftContainer || !rightContainer) return false
+    if (!leftContainer || !rightContainer) return false;
     var bleft = dom.getBlockParent(leftContainer, container) || dom.isBlockElement(leftContainer, container) && leftContainer || null;
     var bright = dom.getBlockParent(rightContainer, container) || dom.isBlockElement(rightContainer, container) && rightContainer || null;
     return (bleft !== bright);

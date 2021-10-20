@@ -3,7 +3,7 @@
 if (typeof String.prototype.trim !== 'function') {
   String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g, '');
-  }
+  };
 }
 
 // Add ECMA262-5 Array methods if not supported natively
