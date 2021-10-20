@@ -1,9 +1,8 @@
 $(document).ready(function() {
 
-  QUnit.module("ice core", function() {
+  QUnit.module("ice core | InlineChangeEditor.insert", function() {
 
-    QUnit.test("InlineChangeEditor.insert", function(assert) {
-
+    QUnit.test("inserting into a block (paragraph in this case)", function(assert) {
       // Setup for inserting into a block (paragraph in this case).
       var el = jQuery('<div>' +
           '<p>a paragraph</p>' +
@@ -37,13 +36,16 @@ $(document).ready(function() {
       assert.ok(el.find('.ins:eq(0)').text() === 'At the beginning of ' 
             && el.text() === 'At the beginning of a new paragraph. The end.', 
           'Inserted at the beginning of a block.');
+    });
 
+    QUnit.test("nested inserts", function(assert) {
       // Setup for nested inserts.
-      el = jQuery('<div>' +
+      var el = jQuery('<div>' +
           '<p>test<span class="ins cts-1" userid="2" cid="1"> in 1 <span class="ins cts-2" userid="3" cid="2">in 2 </span></span><span class="ins cts-3" userid="4" cid="3">in 3</span> done.</p>' +
         '</div>');
-      changeEditor = getIce(el);
-    $("body").append(el);
+      var changeEditor = getIce(el);
+      $("body").append(el);
+      var range = changeEditor.env.selection.createRange();
       
       // Insert into same user insert.
       range.setStart(el.find('span[cid=3]')[0], 0);
@@ -69,14 +71,17 @@ $(document).ready(function() {
       assert.ok(el.find('[cid=2]').find('.ins').text() === 'sert' 
             && el.text() === 'test insert 1 insert 2 insert 3 done.', 
           'Inserted in a mult-user insert.');
-      
+    });
+
+    QUnit.test("inserting in deletes.", function(assert) {
       // Setup for inserting in deletes.
-      el = jQuery('<div>' +
+      var el = jQuery('<div>' +
           '<p>test <span class="del cts-1" userid="1" cid="1">delete 1</span><span class="del cts-2" userid="2" cid="2"> delete 2<span class="del cts-3" userid="3" cid="3"> delete 3</span> delete 2.</span> The end.</p>' +
         '</div>');
-      changeEditor = getIce(el);
-    $("body").append(el);
+      var changeEditor = getIce(el);
+      $("body").append(el);
 
+      var range = changeEditor.env.selection.createRange();
       // Try to insert in a delete
       range.setStartAfter(el.find('span[cid=3]')[0], 0);
       range.collapse(true);
@@ -103,14 +108,17 @@ $(document).ready(function() {
       assert.ok(el.find('.ins').text() === ' new insert.' 
             && el.text() === 'test delete 1 delete 2 delete 3 delete 2. new insert. The end.', 
           'Tried to insert in a delete that has an adjacent delete.');
+    });
 
+    QUnit.test("inserting into a block containing one delete", function(assert) {
       // Setup for inserting into a block containing one delete.
       el = jQuery('<div>' +
           '<p><span class="del cts-1" userid="1" cid="1">delete</span></p><p> text</p>' +
         '</div>');
-      changeEditor = getIce(el);
-    $("body").append(el);
-          
+      var changeEditor = getIce(el);
+      $("body").append(el);
+
+      var range = changeEditor.env.selection.createRange();
       // Try to insert in a delete consuming whole paragraph
       range.setStart(el.find('p')[0], 0);
       range.moveStart('character', 1);
@@ -119,14 +127,18 @@ $(document).ready(function() {
       assert.ok(el.text() === 'delete test text' 
           && el.find('.ins').parent().is('p'),
         'Tried to insert in a delete that consumes the inside of a block.');
+    });
 
+    QUnit.test("inserting into a block containing one delete and no other blocks", function(assert) {
       // Setup for inserting into a block containing one delete and no other blocks.
-      el = jQuery('<div>' +
+      var el = jQuery('<div>' +
           '<p><span class="del cts-1" userid="1" cid="1">del</span><span class="del cts-2" userid="1" cid="2">ete</span></p>' +
         '</div>');
-      changeEditor = getIce(el);
-    $("body").append(el);
-          
+
+      var changeEditor = getIce(el);
+      $("body").append(el);
+
+      var range = changeEditor.env.selection.createRange();
       // Try to insert in a delete consuming paragraph and no other blocks
       range.setStart(el.find('p')[0], 0);
       range.moveStart('character', 1);
@@ -135,40 +147,42 @@ $(document).ready(function() {
       assert.ok(el.text() === 'delete test' 
           && el.find('.ins').parent().is('p'), 
         'Tried to insert in a delete that consumes the inside of a block with no following blocks.');
-
-
-    // Setup for inserting a space into a .del region.
-    el = jQuery('<div>' +
-        '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
-        '</div>');
-    changeEditor = getIce(el);
-    $("body").append(el);
-
-    range.setStart(el.find('span.del')[0], 1);
-    range.collapse(true);
-    changeEditor.insert(" ", range);
-    assert.ok(el.find(".del").text() === "Long"
-        && el.find(".ins").length === 1
-        && el.find(".ins").text() === " ",
-        "Pressed spacebar from inside delete region.");
-    
-    
-    // Setup for inserting a space into a .del region, with track changes hidden.
-    el = jQuery('<div>' +
-        '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
-        '</div>');
-    changeEditor = getIce(el);
-    $("body").append(el);
-    el.find(".del").css({display:"none"});
-
-    range.setStart(el.find('span.del')[0], 1);
-    range.collapse(true);
-    changeEditor.insert(" ", range);
-    assert.ok(el.find(".del").text() === "Long"
-        && el.find(".ins").length === 1
-        && el.find(".ins").text() === " ",
-        "Pressed spacebar from inside delete region.");
     });
 
+    QUnit.test("inserting a space into a .del region", function(assert) {
+      // Setup for inserting a space into a .del region.
+      var el = jQuery('<div>' +
+          '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+          '</div>');
+      var changeEditor = getIce(el);
+      $("body").append(el);
+
+      var range = changeEditor.env.selection.createRange();
+
+      range.setStart(el.find('span.del')[0], 1);
+      range.collapse(true);
+      changeEditor.insert(" ", range);
+      assert.ok(el.find(".del").text() === "Long"
+          && el.find(".ins").length === 1
+          && el.find(".ins").text() === " ",
+          "Pressed spacebar from inside delete region.");
+      
+      
+      // Setup for inserting a space into a .del region, with track changes hidden.
+      el = jQuery('<div>' +
+          '<p>The placid sliver of <span class="del cts-3" data-cid="4" data-userid="11">Long</span> Island that F. Scott Fitzgerald immortalized in "The Great Gatsby" as West Egg and East Egg seems almost to have shrugged off the recession.</p>' +
+          '</div>');
+      changeEditor = getIce(el);
+      $("body").append(el);
+      el.find(".del").css({display:"none"});
+
+      range.setStart(el.find('span.del')[0], 1);
+      range.collapse(true);
+      changeEditor.insert(" ", range);
+      assert.ok(el.find(".del").text() === "Long"
+          && el.find(".ins").length === 1
+          && el.find(".ins").text() === " ",
+          "Pressed spacebar from inside delete region.");
+    });
   });
 });
