@@ -41,7 +41,7 @@ $(document).ready(function() {
     QUnit.test("nested inserts", function(assert) {
       // Setup for nested inserts.
       var el = jQuery('<div>' +
-          '<p>test<span class="ins cts-1" userid="2" cid="1"> in 1 <span class="ins cts-2" userid="3" cid="2">in 2 </span></span><span class="ins cts-3" userid="4" cid="3">in 3</span> done.</p>' +
+          '<p>test<span class="ins cts-1" userid="2" cid="1" data-username="hank"> in 1 <span class="ins cts-2" userid="3" cid="2" data-username="eve">in 2 </span></span><span class="ins cts-3" userid="4" cid="3" data-username="James">in 3</span> done.</p>' +
         '</div>');
       var changeEditor = getIce(el);
       $("body").append(el);
@@ -76,7 +76,7 @@ $(document).ready(function() {
     QUnit.test("inserting in deletes.", function(assert) {
       // Setup for inserting in deletes.
       var el = jQuery('<div>' +
-          '<p>test <span class="del cts-1" userid="1" cid="1">delete 1</span><span class="del cts-2" userid="2" cid="2"> delete 2<span class="del cts-3" userid="3" cid="3"> delete 3</span> delete 2.</span> The end.</p>' +
+          '<p>test <span class="del cts-1" userid="1" cid="1" data-username="hank">delete 1</span><span class="del cts-2" userid="2" cid="2" data-username="eve"> delete 2<span class="del cts-3" userid="3" cid="3" data-username="james"> delete 3</span> delete 2.</span> The end.</p>' +
         '</div>');
       var changeEditor = getIce(el);
       $("body").append(el);
@@ -113,7 +113,7 @@ $(document).ready(function() {
     QUnit.test("inserting into a block containing one delete", function(assert) {
       // Setup for inserting into a block containing one delete.
       el = jQuery('<div>' +
-          '<p><span class="del cts-1" userid="1" cid="1">delete</span></p><p> text</p>' +
+          '<p><span class="del cts-1" userid="1" cid="1" data-username="hank">delete</span></p><p> text</p>' +
         '</div>');
       var changeEditor = getIce(el);
       $("body").append(el);
@@ -132,7 +132,7 @@ $(document).ready(function() {
     QUnit.test("inserting into a block containing one delete and no other blocks", function(assert) {
       // Setup for inserting into a block containing one delete and no other blocks.
       var el = jQuery('<div>' +
-          '<p><span class="del cts-1" userid="1" cid="1">del</span><span class="del cts-2" userid="1" cid="2">ete</span></p>' +
+          '<p><span class="del cts-1" userid="1" cid="1" data-username="hank">del</span><span class="del cts-2" userid="1" cid="2" data-username="eve">ete</span></p>' +
         '</div>');
 
       var changeEditor = getIce(el);

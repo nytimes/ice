@@ -753,8 +753,8 @@ $(document).ready(function() {
       changeEditor.deleteContents(true);
 
       assert.ok(el.find('.del').length === 2 
-        &&el.find('.del > img').length === 0 
-        &&el.find('.del:eq(1)').text() === 'Next pa',
+        && el.find('.del > img').length === 0 
+        && el.find('.del:eq(1)').text() === 'Next par',
         'Delete right through paragraphs with images.');
     });
 

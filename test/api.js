@@ -102,7 +102,7 @@ $(document).ready(function() {
       range.setStart(el.find('[data-cid=4]')[0], 0);
       range.collapse(true);
       changeEditor.env.selection.addRange(range);
-      changeEditor.acceptChange();
+      changeEditor.acceptChange(jQuery(el).find('[data-cid=4]'));
       changeEditor.acceptChange(jQuery(el).find('[data-cid=2]:eq(0)'));
 
       assert.ok(jQuery(el).find('[data-cid=4], [data-cid=2]').length === 0, 'Tracking nodes were not found in content.');
@@ -120,7 +120,7 @@ $(document).ready(function() {
       range.setStart(el.find('[data-cid=4]')[0], 0);
       range.collapse(true);
       changeEditor.env.selection.addRange(range);
-      changeEditor.rejectChange();
+      changeEditor.rejectChange(jQuery(el).find('[data-cid=4]'));
       changeEditor.rejectChange(jQuery(el).find('[data-cid=2]'));
 
       assert.ok(jQuery(el).find('[data-cid=4], [data-cid=2]').length === 0, 'Tracking nodes were not found in content.');
