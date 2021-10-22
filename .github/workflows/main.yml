@@ -1,0 +1,36 @@
+name: 'CI/CD'
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+
+env:
+  NODE_VERSION: '12'
+
+jobs:
+  lint:
+    name: 'Lint'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    name: 'Tests'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run test
