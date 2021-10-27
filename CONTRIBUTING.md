@@ -1,5 +1,11 @@
 # Contributing
 
+## Install dependencies
+
+```console
+$ npm ci
+```
+
 ## Lint project
 
 ```console
@@ -10,4 +16,10 @@ $ npm run lint
 
 ```console
 $ npm run build
+```
+
+## Publish project
+
+```console
+$ npm publish
 ```
