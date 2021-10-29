@@ -10,10 +10,10 @@
   "scripts": {
     "build": "grunt build",
     "lint": "grunt jshint",
+    "release": "release-it",
     "test": "grunt test"
   },
   "devDependencies": {
-    "qunit": "^2.17.2",
     "grunt": "^1.4.0",
     "grunt-cli": "^1.4.3",
     "grunt-contrib-clean": "^2.0.0",
@@ -22,7 +22,9 @@
     "grunt-contrib-connect": "^3.0.0",
     "grunt-contrib-jshint": "^3.0.0",
     "grunt-contrib-qunit": "^5.1.0",
-    "grunt-contrib-uglify": "^5.0.1"
+    "grunt-contrib-uglify": "^5.0.1",
+    "qunit": "^2.17.2",
+    "release-it": "^14.11.6"
   },
   "bugs": {
     "url": "http://github.com/nytimes/ice/issues"
