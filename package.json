@@ -34,5 +34,9 @@
       "type": "MIT",
       "url": "https://github.com/nytimes/ice/blob/master/LICENSE"
     }
-  ]
+  ],
+  "volta": {
+    "node": "12.22.7",
+    "npm": "7.24.2"
+  }
 }
