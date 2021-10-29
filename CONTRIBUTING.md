@@ -18,8 +18,8 @@ $ npm run lint
 $ npm run build
 ```
 
-## Publish project
+## Release project
 
 ```console
-$ npm publish
+$ npm run release -- [major|minor|patch]
 ```
