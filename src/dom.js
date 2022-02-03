@@ -107,7 +107,9 @@
     });
   };
   dom.prepend = function (parent, elem) {
-    jQuery(parent).prepend(elem);
+    if (parent.nodeType === 1 || parent.nodeType === 11 || parent.nodeType === 9 ) {
+      parent.insertBefore(elem, parent.firstChild);
+    }
   };
   dom.append = function (parent, elem) {
     jQuery(parent).append(elem);
