@@ -32,6 +32,24 @@
   dom.STUB_ELEMENTS = dom.CONTENT_STUB_ELEMENTS.slice();
   dom.STUB_ELEMENTS.push(dom.BREAK_ELEMENT);
 
+  dom.isIterable = function(obj) {
+    // checks for null and undefined
+    if (obj == null) {
+      return false;
+    }
+    return typeof obj[Symbol.iterator] === 'function';
+  };
+
+  dom.applyOnIterable = function(element, fn) {
+    if (dom.isIterable(element)) {
+      for (var i = 0; i < element.length; i++) {
+        fn.call(undefined, element[i]);
+      }
+    } else {
+      fn.call(undefined, element);
+    }
+  };
+
   dom.getKeyChar = function (e) {
     return String.fromCharCode(e.which);
   };
