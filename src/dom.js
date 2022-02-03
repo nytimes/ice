@@ -99,9 +99,12 @@
     }
   };
   dom.remove = function (element) {
-    if (element) {
-      return jQuery(element).remove();
+    if (!element) {
+      return;
     }
+    dom.applyOnIterable(element, function(el) {
+      el.remove();
+    });
   };
   dom.prepend = function (parent, elem) {
     jQuery(parent).prepend(elem);
