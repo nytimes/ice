@@ -122,7 +122,9 @@
     }
   };
   dom.insertAfter = function (after, elem) {
-    jQuery(after).after(elem);
+    if ( after.parentNode ) {
+      after.parentNode.insertBefore(elem, after.nextSibling);
+    }
   };
   dom.getHtml = function (element) {
     return jQuery(element).html();
