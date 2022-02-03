@@ -112,7 +112,9 @@
     }
   };
   dom.append = function (parent, elem) {
-    jQuery(parent).append(elem);
+    if (parent.nodeType === 1 || parent.nodeType === 11 || parent.nodeType === 9 ) {
+      parent.appendChild(elem);
+    }
   };
   dom.insertBefore = function (before, elem) {
     jQuery(before).before(elem);
