@@ -74,7 +74,7 @@
     if (!startElement) {
       startElement = document;
     }
-    return jQuery.makeArray(jQuery(startElement).find(tagName));
+    return Array.from(startElement.querySelectorAll(tagName));
   };
   dom.getElementWidth = function (element) {
     return element.offsetWidth;
