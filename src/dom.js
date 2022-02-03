@@ -94,7 +94,8 @@
   };
   dom.empty = function (element) {
     if (element) {
-      return jQuery(element).empty();
+      while(element.firstChild) element.removeChild(element.firstChild);
+      return element;
     }
   };
   dom.remove = function (element) {
