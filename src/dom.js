@@ -90,7 +90,7 @@
     return result;
   };
   dom.trim = function (string) {
-    return jQuery.trim(string);
+    return string.trim();
   };
   dom.empty = function (element) {
     if (element) {
