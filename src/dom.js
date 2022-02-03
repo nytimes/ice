@@ -787,7 +787,7 @@
   };
   dom.browser = function () {
 		if (_browser) {
-      return $.extend({}, _browser);
+      return Object.assign({}, _browser);
     }
 		
     _browser = (function() {
@@ -838,7 +838,7 @@
       return browser;
     })();
     
-    return $.extend({}, _browser);
+    return Object.assign({}, _browser);
   };
   dom.getBrowserType = function () {
     if (this._browserType === null) {
