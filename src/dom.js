@@ -548,7 +548,7 @@
     return node;
   };
   dom.removeEmptyNodes = function (parent, callback) {
-    var elems = jQuery(parent).find(':empty');
+    var elems = Array.from(parent.querySelectorAll('*')).filter(function(el) { return !el.hasChildNodes(); });
     var i = elems.length;
     while (i > 0) {
       i--;
