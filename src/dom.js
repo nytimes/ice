@@ -61,7 +61,7 @@
     if (tagName) {
       className = tagName + className;
     }
-    return jQuery.makeArray(jQuery(startElement).find(className));
+    return Array.from(startElement.querySelectorAll(className));
   };
   dom.getId = function (id, startElement) {
     if (!startElement) {
