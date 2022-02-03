@@ -117,7 +117,9 @@
     }
   };
   dom.insertBefore = function (before, elem) {
-    jQuery(before).before(elem);
+    if (before.parentNode) {
+      before.parentNode.insertBefore(elem, before);
+    }
   };
   dom.insertAfter = function (after, elem) {
     jQuery(after).after(elem);
