@@ -4,7 +4,7 @@ Ice is a track changes implementation, built in javascript, for anything that is
 
 ## Demo
 
-[Try it](http://NYTimes.github.com/ice/demo/)
+[Try it](https://nytimes.github.io/ice/demo/)
 
 ## Download
 
