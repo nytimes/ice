@@ -1,9 +1,8 @@
 <!DOCTYPE HTML>
 <html>
-
 <head>
 	<link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
-  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
 	<script type="text/javascript" src='../lib/rangy/rangy-core.js'></script>
 	<script type="text/javascript" src='../src/polyfills.js'></script>
@@ -17,7 +16,7 @@
 	<script type="text/javascript" src='../src/plugins/IceCopyPastePlugin/IceCopyPastePlugin.js'></script>
 	<script type="text/javascript" src='../src/plugins/IceEmdashPlugin/IceEmdashPlugin.js'></script>
 	<script type="text/javascript" src='../src/plugins/IceSmartQuotesPlugin/IceSmartQuotesPlugin.js'></script>
-	<script type="text/javascript" src="../lib/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
+	<script type="text/javascript" src="../lib/tinymce/js/tinymce/tinymce.js"></script>
 
 </head>
 
@@ -182,15 +181,11 @@
 		tinymce.init({
 			mode: "exact",
 			elements: "tinymce",
-			theme: "advanced",
-			plugins: 'ice,icesearchreplace',
-			theme_advanced_buttons1: "bold,italic,underline,|,bullist,numlist,|,undo,redo,code,|,search,replace,|,ice_togglechanges,ice_toggleshowchanges,iceacceptall,icerejectall,iceaccept,icereject",
-			theme_advanced_buttons2: "",
-			theme_advanced_buttons3: "",
-			theme_advanced_buttons4: "",
-			theme_advanced_toolbar_location: "top",
-			theme_advanced_toolbar_align: "left",
+			plugins: 'searchreplace ice icesearchreplace',
+			toolbar1: "bold italic underline | bullist numlist | undo redo code | search replace",
+			toolbar2: "ice_togglechanges | ice_toggleshowchanges | iceacceptall icerejectall | iceaccept icereject",
 			extended_valid_elements: "p,span[*],delete[*],insert[*]",
+			content_css: "/ice/demo/demo.css",
 			ice: {
 				user: { name: 'Geoffrey Jellineck', id: 11},
 				preserveOnPaste: 'p,a[href],i,em,b,span',
